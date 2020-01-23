@@ -1,6 +1,9 @@
 <?php
 
 use Cleantalk\Common\Err;
+use Cleantalk\Uniforce\BFP;
+use Cleantalk\Uniforce\SFW;
+use Cleantalk\Uniforce\WAF;
 use Cleantalk\Variables\Server;
 
 // Exit if accessed directly.
@@ -8,7 +11,12 @@ if ( ! defined( 'CLEANTALK_ROOT' ) ) {
     header('HTTP/1.0 403 Forbidden');
     exit ();
 }
-$sfw           = new \Cleantalk\Uniforce\SFW();
+
+$uniforce_modules = array();
+if(  !empty( $uniforce_sfw_protection ) ) $uniforce_modules[] = new SFW();
+if(  !empty( $uniforce_waf_protection ) ) $uniforce_modules[] = new WAF();
+if(  !empty( $uniforce_bfp_protection ) ) $uniforce_modules[] = new BFP();
+
 ?>
 <!-- Login -->
 <?php if( empty($_SESSION["authenticated"]) || $_SESSION["authenticated"] != 'true' ) : ?>
@@ -84,11 +92,14 @@ $sfw           = new \Cleantalk\Uniforce\SFW();
                         <hr>
                         <p>Check detailed statistics on <a href="https://cleantalk.org/my<?php echo ! empty($uniforce_user_token) ? '?cp_mode=antispam&user_token='.$uniforce_user_token : ''; ?>" target="_blank">your Anti-Spam dashboard</a></p>
                         <p>Presumably CMS: <?php echo $uniforce_detected_cms; ?></p>
-                        <!--                    <p>Last spam check request to http://moderate3.cleantalk.org server was at Oct 07 2019 14:10:43.</p>-->
-                        <!--                    <p>Average request time for past 7 days: 0.399 seconds.</p>-->
-                        <p>SpamFireWall base contains <?php echo $uniforce_sfw_entries; ?> entries.</p>
-                        <p>SpamFireWall was updated: <?php echo $uniforce_sfw_last_update ? date('M d Y H:i:s', $uniforce_sfw_last_update) : 'never';?>.</p>
-                        <p>SpamFireWall logs were sent: <?php echo $uniforce_sfw_last_logs_send ? date('M d Y H:i:s', $uniforce_sfw_last_logs_send) : 'never';?>.</p>
+                        <?php
+                        if( ! empty( $uniforce_modules ) ) {
+                            foreach( $uniforce_modules as $module ) {
+                                echo $module->get_module_statistics();
+                                echo '<br>';
+                            }
+                        }
+                        ?>
                         <p>Modified files:</p>
                         <?php foreach($uniforce_modified_files as $file){;?>
                             <p>&nbsp; - <?php echo $file; ?></p>

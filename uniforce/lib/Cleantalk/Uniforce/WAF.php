@@ -4,7 +4,7 @@
 namespace Cleantalk\Uniforce;
 
 
-class WAF
+class WAF extends UniforceModules
 {
 
     public function __construct()
@@ -12,4 +12,8 @@ class WAF
         error_log('WebApplication FireWall class instantiated.');
     }
 
+    public function get_module_statistics()
+    {
+        return 'WAF: statistics is empty.';
+    }
 }

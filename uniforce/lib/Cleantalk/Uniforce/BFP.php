@@ -4,7 +4,7 @@
 namespace Cleantalk\Uniforce;
 
 
-class BFP
+class BFP extends UniforceModules
 {
 
     /**
@@ -15,4 +15,10 @@ class BFP
         error_log('BruteForse Protection class instantiated.');
 
     }
+
+    function get_module_statistics()
+    {
+        return 'BFP: statistics is empty.';
+    }
+
 }
