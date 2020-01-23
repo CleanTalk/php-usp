@@ -621,11 +621,11 @@ class API{
 		if( $ssl )
 			array_push( $presets, 'ssl' );
 		
-		$result = \Cleantalk\ApbctUni\Helper::http__request( $url, $data,  $presets );
+		$result = Helper::http__request( $url, $data,  $presets );
 		
 		// Retry with SSL enabled if failed
 		if( ! empty ( $result['error'] ) && $ssl === false )
-			$result = \Cleantalk\ApbctUni\Helper::http__request( $url, $data, 'api ssl' );
+			$result = Helper::http__request( $url, $data, 'api ssl' );
 		
 		return $result;
 	}
