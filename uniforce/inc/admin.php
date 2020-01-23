@@ -8,6 +8,11 @@ use Cleantalk\Uniforce\SFW;
 use Cleantalk\Variables\Post;
 use Cleantalk\Variables\Server;
 
+/**
+ * Method notice_paid_till
+ *
+ * AJAX handler (returns json result)
+ */
 function uniforce_key_validate() {
 
     $result = API::method__notice_paid_till(
@@ -25,6 +30,11 @@ function uniforce_key_validate() {
 
 }
 
+/**
+ * Method get_api_key
+ *
+ * AJAX handler (returns json result)
+ */
 function uniforce_get_key() {
 
     $result = API::method__get_api_key(
@@ -48,6 +58,11 @@ function uniforce_get_key() {
 
 }
 
+/**
+ * Check files to modify and runs installation
+ *
+ * AJAX handler (returns json result)
+ */
 function uniforce_do_install() {
 
     // Parsing key
@@ -119,7 +134,15 @@ function uniforce_do_install() {
 
 }
 
-function uniforce_install( $files, $api_key, $cms, $exclusions ){
+/**
+ *  Modify files
+ *
+ * @param $files
+ * @param $api_key
+ * @param $cms
+ * @param $exclusions
+ */
+function uniforce_install($files, $api_key, $cms, $exclusions ){
 	
 	foreach ($files as $file){
 		
@@ -178,7 +201,15 @@ function uniforce_install( $files, $api_key, $cms, $exclusions ){
         uniforce_install_cron();
 }
 
-function uniforce_install_config( $modified_files, $api_key, $cms, $exclusions ){
+/**
+ * Modify config
+ *
+ * @param $modified_files
+ * @param $api_key
+ * @param $cms
+ * @param $exclusions
+ */
+function uniforce_install_config($modified_files, $api_key, $cms, $exclusions ){
 	
 	$path_to_config = CLEANTALK_ROOT . 'config.php';
 	$salt = str_pad(rand(0, getrandmax()), 6, '0').str_pad(rand(0, getrandmax()), 6, '0');
@@ -203,6 +234,9 @@ function uniforce_install_config( $modified_files, $api_key, $cms, $exclusions )
 
 }
 
+/**
+ * Modify cron
+ */
 function uniforce_install_cron(){
 
 	Cron::addTask( 'sfw_update', 'spbct_sfw_update', 86400, time() + 60 );
@@ -210,7 +244,13 @@ function uniforce_install_cron(){
 
 }
 
-function uniforce_uninstall( $files = array() ){
+/**
+ *  Uninstall
+ *
+ * @param array $files
+ * @return bool
+ */
+function uniforce_uninstall($files = array() ){
 	
 	global $uniforce_modified_files;
 	
@@ -258,7 +298,14 @@ function uniforce_uninstall( $files = array() ){
 
 }
 
-function uniforce_detect_cms( $path_to_index, $out = 'Unknown' ){
+/**
+ *  Detecting CMS
+ *
+ * @param $path_to_index
+ * @param string $out
+ * @return string
+ */
+function uniforce_detect_cms($path_to_index, $out = 'Unknown' ){
 	
 	if( is_file($path_to_index) ){
 	
@@ -293,7 +340,15 @@ function uniforce_detect_cms( $path_to_index, $out = 'Unknown' ){
 
 }
 
-function uniforce_do_login( $apikey, $password, $email ) {
+/**
+ *  Login handler
+ *  AJAX handler (returns json result)
+ *
+ * @param $apikey
+ * @param $password
+ * @param $email
+ */
+function uniforce_do_login($apikey, $password, $email ) {
 
     // Simple brute force protection
     sleep(2);
@@ -320,6 +375,10 @@ function uniforce_do_login( $apikey, $password, $email ) {
 
 }
 
+/**
+ * Logout handler
+ * AJAX handler (returns json result)
+ */
 function uniforce_do_logout() {
 
     session_start();
@@ -329,6 +388,10 @@ function uniforce_do_logout() {
 
 }
 
+/**
+ * Save settings handler
+ * AJAX handler (returns json result)
+ */
 function uniforce_do_save_settings() {
 
     $path_to_config = CLEANTALK_ROOT . 'config.php';
@@ -361,6 +424,10 @@ function uniforce_do_save_settings() {
 
 }
 
+/**
+ * Uninstall handler
+ * AJAX handler (returns json result)
+ */
 function uniforce_do_uninstall() {
 
         session_start();
