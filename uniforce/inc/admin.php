@@ -402,6 +402,7 @@ function uniforce_do_save_settings() {
     File::replace__variable( $path_to_config, 'uniforce_sfw_protection', (bool)Post::get( 'uniforce_sfw_protection' ) );
     File::replace__variable( $path_to_config, 'uniforce_waf_protection', (bool)Post::get( 'uniforce_waf_protection' ) );
     File::replace__variable( $path_to_config, 'uniforce_bfp_protection', (bool)Post::get( 'uniforce_bfp_protection' ) );
+    File::replace__variable( $path_to_config, 'uniforce_cms_admin_page', Post::get( 'uniforce_bfp_protection_url' ) );
 
     // SFW actions
     if( Post::get( 'spam_firewall' ) && Post::get( 'apikey' ) ){

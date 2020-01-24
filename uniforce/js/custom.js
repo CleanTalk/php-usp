@@ -239,6 +239,7 @@ jQuery(document).ready(function($) {
 				uniforce_sfw_protection: $('#uniforce_sfw_protection').is(':checked') ? 1 : 0,
 				uniforce_waf_protection: $('#uniforce_waf_protection').is(':checked') ? 1 : 0,
 				uniforce_bfp_protection: $('#uniforce_bfp_protection').is(':checked') ? 1 : 0,
+				uniforce_bfp_protection_url: $('#uniforce_bfp_protection_url').val().trim(),
 			},
 			{
 				callback: function(result, data, params, obj) {

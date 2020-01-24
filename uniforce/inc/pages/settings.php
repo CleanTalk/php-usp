@@ -87,7 +87,7 @@ if(  !empty( $uniforce_bfp_protection ) ) $uniforce_modules[] = new BFP();
 
                             </div>
                             <div class="form-group row">
-                                <label for="uniforce_bfp_protection_url">Admin page URL</label>
+                                <label for="uniforce_bfp_protection_url">Admin page URI</label>
                                 <input type="text" class="checkbox style-2 pull-right" id="uniforce_bfp_protection_url" name="uniforce_bfp_protection_url" value="<?php echo $uniforce_cms_admin_page; ?>" <?php if (empty($uniforce_bfp_protection)) echo "disabled"; ?>>
                             </div>
                         </div>
