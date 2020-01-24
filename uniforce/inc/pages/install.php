@@ -52,7 +52,7 @@ if ( ! defined( 'CLEANTALK_ROOT' ) ) {
                 <input type="text" class="input-field" name="addition_scripts" />
             </div>
             <input type="hidden" id="uniforce_security" name="security" value="<?php echo md5( Server::get( 'SERVER_NAME' ) ) ?>">
-            <button type="submit" class="btn btn-setup" >Install</button>
+            <button type="submit" class="btn btn-setup" disabled>Install</button>
         </form>
         <div class="setup-links">
             <a href="https://cleantalk.org/publicoffer" target="_blank">
