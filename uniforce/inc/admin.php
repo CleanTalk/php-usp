@@ -229,7 +229,8 @@ function uniforce_install_config($modified_files, $api_key, $cms, $exclusions ){
 	if( $exclusions )
 		File::inject__variable( $path_to_config, 'uniforce_exclusions', $exclusions, true );
 	File::inject__variable( $path_to_config, 'uniforce_apikey', $api_key );
-	File::inject__variable( $path_to_config, 'uniforce_detected_cms', $cms );
+	File::inject__variable( $path_to_config, 'uniforce_detected_cms', $cms['name'] );
+    File::inject__variable( $path_to_config, 'uniforce_cms_admin_page', $cms['admin_page'] );
 	File::inject__variable( $path_to_config, 'uniforce_is_installed', true );
 
 }
@@ -268,6 +269,7 @@ function uniforce_uninstall($files = array() ){
 	File::clean__variable( $path_to_config, 'uniforce_user_token' );
 	File::clean__variable( $path_to_config, 'uniforce_account_name_ob' );
 	File::clean__variable( $path_to_config, 'uniforce_detected_cms' );
+    File::clean__variable( $path_to_config, 'uniforce_cms_admin_page' );
 	File::clean__variable( $path_to_config, 'uniforce_admin_password' );
 	File::clean__variable( $path_to_config, 'uniforce_modified_files' );
 	File::clean__variable( $path_to_config, 'uniforce_exclusions' );
@@ -303,9 +305,9 @@ function uniforce_uninstall($files = array() ){
  *
  * @param $path_to_index
  * @param string $out
- * @return string
+ * @return array
  */
-function uniforce_detect_cms($path_to_index, $out = 'Unknown' ){
+function uniforce_detect_cms($path_to_index, $out = array( 'name' => 'Unknown', 'admin_page' => '' ) ){
 	
 	if( is_file($path_to_index) ){
 	
@@ -314,25 +316,25 @@ function uniforce_detect_cms($path_to_index, $out = 'Unknown' ){
 		
 		//X-Cart 4
 		if (preg_match('/(xcart_4_.*?)/', $index_file))
-			$out = 'X-Cart 4';
+			$out = array( 'name' => 'X-Cart 4', 'admin_page' => '' );
 		//osTicket
 		if (preg_match('/osticket/i', $index_file))
-			$out = 'osTicket';
+			$out = array( 'name' => 'osTicket', 'admin_page' => '' );
 		// PrestaShop
 		if (preg_match('/(PrestaShop.*?)/', $index_file))
-			$out = 'PrestaShop';
+			$out = array( 'name' => 'PrestaShop', 'admin_page' => '' );
 		// Question2Answer
 		if (preg_match('/(Question2Answer.*?)/', $index_file))
-			$out = 'Question2Answer';
+			$out = array( 'name' => 'Question2Answer', 'admin_page' => '' );
 		// FormTools
 		if (preg_match('/(use\sFormTools.*?)/', $index_file))
-			$out = 'FormTools';
+			$out = array( 'name' => 'FormTools', 'admin_page' => '' );
 		// SimplaCMS
 		if (preg_match('/(Simpla CMS.*?)/', $index_file))
-			$out = 'Simpla CMS';
+			$out = array( 'name' => 'Simpla CMS', 'admin_page' => '' );
         // Joomla!
         if (preg_match('/(JOOMLA.*?)/i', $index_file))
-            $out = 'Joomla';
+            $out = array( 'name' => 'Joomla', 'admin_page' => '/administrator' );
 		
 	}
 	

@@ -74,16 +74,21 @@ if(  !empty( $uniforce_bfp_protection ) ) $uniforce_modules[] = new BFP();
                                 <p>Account registered for email: <?php echo !empty($uniforce_account_name_ob) ? $uniforce_account_name_ob : 'unkonown';  ?></p>
                             </div>
                             <div class="form-group row">
-                                <label for="check_reg">Enable Security FireWall</label>
+                                <label for="uniforce_sfw_protection">Enable Security FireWall</label>
                                 <input type="checkbox" class="checkbox style-2 pull-right" id="uniforce_sfw_protection" name="uniforce_sfw_protection" <?php if (!empty($uniforce_sfw_protection)) echo "checked"; ?>>
                             </div>
                             <div class="form-group row">
-                                <label for="check_all_post_data">Enable WebApplication FireWall</label>
+                                <label for="uniforce_waf_protection">Enable WebApplication FireWall</label>
                                 <input type="checkbox" class="checkbox style-2 pull-right" id="uniforce_waf_protection" name="uniforce_waf_protection" <?php if (!empty($uniforce_waf_protection)) echo "checked"; ?>>
                             </div>
                             <div class="form-group row">
-                                <label for="swf_on">Enable BruteForce protection</label>
+                                <label for="uniforce_bfp_protection">Enable BruteForce protection</label>
                                 <input type="checkbox" class="checkbox style-2 pull-right" id="uniforce_bfp_protection" name="uniforce_bfp_protection" <?php if (!empty($uniforce_bfp_protection)) echo "checked"; ?>>
+
+                            </div>
+                            <div class="form-group row">
+                                <label for="uniforce_bfp_protection_url">Admin page URL</label>
+                                <input type="text" class="checkbox style-2 pull-right" id="uniforce_bfp_protection_url" name="uniforce_bfp_protection_url" value="<?php echo $uniforce_cms_admin_page; ?>" <?php if (empty($uniforce_bfp_protection)) echo "disabled"; ?>>
                             </div>
                         </div>
                     </div>
