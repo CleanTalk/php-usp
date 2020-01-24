@@ -2,6 +2,7 @@
 
 use Cleantalk\Uniforce\Cron;
 use Cleantalk\Common\Err;
+use Cleantalk\Variables\Server;
 
 define( 'DS', DIRECTORY_SEPARATOR );
 define( 'CLEANTALK_SITE_ROOT', realpath(__DIR__ . DS . '..' . DS . '..' . DS ) . DS );
@@ -14,6 +15,8 @@ define( 'CLEANTALK_CRON_FILE', CLEANTALK_ROOT . 'data' . DS . 'cron_data.php' );
 
 require_once CLEANTALK_LIB . 'autoloader.php';
 require_once CLEANTALK_ROOT . 'config.php';
+
+define( 'CLEANTALK_URI', preg_replace( '/^(.*\/)(.*?.php)?/', '$1',  Server::get('REQUEST_URI') ) );
 
 // Create empty error object
 Err::getInstance();

@@ -23,7 +23,7 @@ if ( ! defined( 'CLEANTALK_ROOT' ) ) {
             <br />
             <p>Enter your <a class="underlined" href="https://cleantalk.org/my/">CleanTalk dashboard</a> to view statistics.</p>
             <br />
-            <p>You can manage settings here: <a class="underlined" href="index.php"><?php echo Server::get( 'REQUEST_SCHEME' ) . '://' . Server::get( 'HTTP_HOST' ) . '/uniforce/index.php'; ?></a></p>
+            <p>You can manage settings <?php echo '<a href="' . CLEANTALK_URI . '">here</a>'; ?>.</p>
         </div>
         <!-- Start Error box -->
         <div class="alert alert-danger alert-dismissible fade in" style="display:none" role="alert">
