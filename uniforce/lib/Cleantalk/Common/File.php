@@ -79,7 +79,18 @@ class File{
 		}else
 			return Err::add(__CLASS__, __FUNCTION__, 'No file'); // No template PHP file
 	}
-	
+
+    /**
+     * Remove all content from the file
+     *
+     * @param string $file_path
+     *
+     * return void;
+     */
+    public static function clean_file_full($file_path ) {
+        file_put_contents( $file_path, "<?php\n" );
+    }
+
 	public static function replace__variable( $file_path, $variable, $value ){
 		$injection = "\n\t\$$variable = " . var_export( $value, true ) . ";";
 		$needle = '\s*\$' . $variable . '\s?=[\S\s]*?;';
