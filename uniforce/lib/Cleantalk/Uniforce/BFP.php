@@ -4,7 +4,7 @@
 namespace Cleantalk\Uniforce;
 
 
-class BFP extends UniforceModules
+class BFP
 {
 
     /**
@@ -19,6 +19,10 @@ class BFP extends UniforceModules
     function get_module_statistics()
     {
         return 'BFP: statistics is empty.';
+    }
+
+    function is_logged_in() {
+        return false;
     }
 
 }

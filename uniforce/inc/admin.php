@@ -4,7 +4,7 @@ use Cleantalk\Common\API;
 use Cleantalk\Common\Err;
 use Cleantalk\Common\File;
 use Cleantalk\Uniforce\Cron;
-use Cleantalk\Uniforce\SFW;
+use Cleantalk\Uniforce\FireWall;
 use Cleantalk\Variables\Post;
 use Cleantalk\Variables\Server;
 
@@ -75,6 +75,11 @@ function uniforce_do_install() {
 
         // Add index.php to files for modification if exists
         $files_to_mod[] = 'index.php';
+
+        // JOOMLA ONLY: Add administrator/index.php to files for modification if exists
+        if( $cms['name'] == 'Joomla' ) {
+            $files_to_mod[] = 'administrator/index.php';
+        }
 
         //Additional scripts to modify
         if( Post::get( 'addition_scripts' ) ){
@@ -240,8 +245,8 @@ function uniforce_install_config($modified_files, $api_key, $cms, $exclusions ){
  */
 function uniforce_install_cron(){
 
-	Cron::addTask( 'sfw_update', 'spbct_sfw_update', 86400, time() + 60 );
-	Cron::addTask( 'sfw_send_logs', 'spbct_sfw_send_logs', 3600 );
+	Cron::addTask( 'sfw_update', 'uniforce_sfw_update', 86400, time() + 60 );
+	Cron::addTask( 'sfw_send_logs', 'uniforce_sfw_send_logs', 3600 );
 
 }
 
@@ -407,7 +412,7 @@ function uniforce_do_save_settings() {
     // SFW actions
     if( Post::get( 'spam_firewall' ) && Post::get( 'apikey' ) ){
 
-        $sfw = new SFW();
+        $sfw = new FireWall();
 
         // Update SFW
         $result = $sfw->sfw_update( Post::get( 'apikey' ) );

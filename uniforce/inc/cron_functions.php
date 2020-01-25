@@ -1,23 +1,21 @@
 <?php
 
-use Cleantalk\Uniforce\SFW;
+use Cleantalk\Uniforce\FireWall;
 use Cleantalk\Common\Err;
 use Cleantalk\Common\File;
 
 function uniforce_sfw_update(){
 	
-	global $apikey, $spam_firewall;
+	global $uniforce_apikey, $uniforce_sfw_protection;
 	
 	// SFW actions
-	if( isset($apikey, $spam_firewall ) ){
-		
-		$sfw = new SFW();
-		
+	if( ! empty( $uniforce_apikey ) && ! empty( $uniforce_sfw_protection ) ){
+
 		// Update SFW
-		$result = $sfw->sfw_update( $apikey );
+		$result = FireWall::sfw_update( $uniforce_apikey );
 		if( ! Err::check() ){
-			File::replace__variable( CLEANTALK_CONFIG_FILE, 'sfw_last_update', time() );
-			File::replace__variable( CLEANTALK_CONFIG_FILE, 'sfw_entries', $result );
+			File::replace__variable( CLEANTALK_CONFIG_FILE, 'uniforce_sfw_last_update', time() );
+			File::replace__variable( CLEANTALK_CONFIG_FILE, 'uniforce_sfw_entries', $result );
 			
 		}
 	}
@@ -27,21 +25,21 @@ function uniforce_sfw_update(){
 
 function uniforce_sfw_logs_send(){
 	
-	global $apikey, $spam_firewall;
+	global $uniforce_apikey, $uniforce_sfw_protection;
 	
 	// SFW actions
-	if( isset($apikey, $spam_firewall ) ){
+	if( ! empty( $uniforce_apikey ) && ! empty( $uniforce_sfw_protection ) ){
 		
-		$sfw = new SFW();
+		$sfw = new FireWall();
 		
 		// Send SFW logs
-		$result = $sfw->logs__send( $apikey );
+		$result = $sfw->logs__send( $uniforce_apikey );
 		
 		if( ! empty( $result['error'] ) )
 			Err::add( $result['error'] );
 		
 		if( ! Err::check() )
-			File::replace__variable( CLEANTALK_CONFIG_FILE, 'sfw_last_logs_send', time() );
+			File::replace__variable( CLEANTALK_CONFIG_FILE, 'uniforce_sfw_last_logs_send', time() );
 	}
 	
 	return ! Err::check() ? true : false;

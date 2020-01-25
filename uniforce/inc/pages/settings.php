@@ -2,8 +2,7 @@
 
 use Cleantalk\Common\Err;
 use Cleantalk\Uniforce\BFP;
-use Cleantalk\Uniforce\SFW;
-use Cleantalk\Uniforce\WAF;
+use Cleantalk\Uniforce\FireWall;
 use Cleantalk\Variables\Server;
 
 // Exit if accessed directly.
@@ -13,8 +12,7 @@ if ( ! defined( 'CLEANTALK_ROOT' ) ) {
 }
 
 $uniforce_modules = array();
-if(  !empty( $uniforce_sfw_protection ) ) $uniforce_modules[] = new SFW();
-if(  !empty( $uniforce_waf_protection ) ) $uniforce_modules[] = new WAF();
+if(  !empty( $uniforce_sfw_protection ) ) $uniforce_modules[] = new FireWall();
 if(  !empty( $uniforce_bfp_protection ) ) $uniforce_modules[] = new BFP();
 
 ?>
