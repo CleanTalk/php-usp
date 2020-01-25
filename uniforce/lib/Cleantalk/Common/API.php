@@ -279,7 +279,7 @@ class API{
 		$request = array(
 			'auth_key'    => $api_key,
 			'method_name' => 'security_logs',
-			'timestamp'   => current_time('timestamp'),
+			'timestamp'   => time(),
 			'data'        => json_encode($data),
 			'rows'        => count($data),
 		);
