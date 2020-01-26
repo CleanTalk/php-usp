@@ -41,19 +41,19 @@ class FireWall extends \Cleantalk\Security\FireWall
             $sfw_send_logs_time = $uniforce_sfw_last_logs_send ? date('M d Y H:i:s', $uniforce_sfw_last_logs_send) : 'never.';
             $info .= 'Security FireWall was updated: ' . $sfw_updated_time . '<br>';
             $info .= 'Security FireWall contains: ' . $uniforce_sfw_entries . ' entires.<br>';
-            $info .= 'Security FireWall logs was send: ' . $sfw_send_logs_time . '<br>';
+            $info .= 'Security FireWall logs were sent: ' . $sfw_send_logs_time . '<br>';
             $info .= '<br>';
         }
         if( ! empty( $uniforce_waf_protection ) && $uniforce_waf_protection ) {
             $waf_send_logs_time = $uniforce_waf_last_logs_send ? date('M d Y H:i:s', $uniforce_waf_last_logs_send) : 'never.';
             $info .= 'WebApplication FireWall was triggered: ' . $uniforce_waf_trigger_count . '<br>';
-            $info .= 'WebApplication FireWall logs was send: ' . $waf_send_logs_time . '<br>';
+            $info .= 'WebApplication FireWall logs were sent: ' . $waf_send_logs_time . '<br>';
             $info .= '<br>';
         }
         if( ! empty( $uniforce_bfp_protection ) && $uniforce_bfp_protection ) {
             $bfp_send_logs_time = $uniforce_bfp_last_logs_send ? date('M d Y H:i:s', $uniforce_bfp_last_logs_send) : 'never.';
             $info .= 'BruteForce Protection was triggered: ' . $uniforce_bfp_trigger_count . '<br>';
-            $info .= 'BruteForce Protection logs was send: ' . $bfp_send_logs_time . '<br>';
+            $info .= 'BruteForce Protection logs were sent: ' . $bfp_send_logs_time . '<br>';
             $info .= '<br>';
         }
         return $info;
