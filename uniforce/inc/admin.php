@@ -247,6 +247,8 @@ function uniforce_install_cron(){
 
 	Cron::addTask( 'sfw_update', 'uniforce_sfw_update', 86400, time() + 60 );
 	Cron::addTask( 'sfw_send_logs', 'uniforce_sfw_send_logs', 3600 );
+    Cron::addTask( 'waf_send_logs', 'uniforce_waf_send_logs', 3600 );
+    Cron::addTask( 'bfp_send_logs', 'uniforce_bfp_send_logs', 3600 );
 
 }
 
@@ -434,21 +436,60 @@ function uniforce_do_save_settings() {
     File::replace__variable( $path_to_config, 'uniforce_cms_admin_page', Post::get( 'uniforce_bfp_protection_url' ) );
 
     // SFW actions
-    if( Post::get( 'spam_firewall' ) && Post::get( 'apikey' ) ){
+    if( Post::get( 'uniforce_sfw_protection' ) && Post::get( 'apikey' ) ){
+        if( Post::get( 'uniforce_sfw_protection' ) ) {
 
-        $sfw = new FireWall();
+            // Update SFW
+            $result = FireWall::sfw_update( Post::get( 'apikey' ) );
+            if( ! Err::check() ){
+                File::replace__variable( $path_to_config, 'uniforce_sfw_last_update', time() );
+                File::replace__variable( $path_to_config, 'uniforce_sfw_entries', $result );
+            }
 
-        // Update SFW
-        $result = $sfw->sfw_update( Post::get( 'apikey' ) );
-        if( ! Err::check() ){
-            File::replace__variable( $path_to_config, 'uniforce_sfw_last_update', time() );
-            File::replace__variable( $path_to_config, 'uniforce_sfw_entries', $result );
+            // Send SFW logs
+            $result = FireWall::logs__send( Post::get( 'apikey' ), 'sfw_logs' );
+            if( empty( $result['error'] ) && ! Err::check() ) {
+                File::replace__variable( $path_to_config, 'uniforce_sfw_last_logs_send', time() );
+            }
+
+        } else {
+            // @ToDO replace variables to default, remove Cron tasks, clean data files
         }
 
-        // Send SFW logs
-        $result = $sfw->logs__send( Post::get( 'apikey' ) );
-        if( empty( $result['error'] ) && ! Err::check() )
-            File::replace__variable( $path_to_config, 'uniforce_sfw_last_logs_send', time() );
+    }
+
+    // WAF actions
+    if( Post::get( 'uniforce_waf_protection' ) && Post::get( 'apikey' ) ){
+        if( Post::get( 'uniforce_waf_protection' ) ) {
+
+            // Send WAF logs
+            $result = FireWall::logs__send( Post::get( 'apikey' ), 'waf_logs' );
+            if( empty( $result['error'] ) && ! Err::check() ) {
+                File::replace__variable( $path_to_config, 'uniforce_waf_last_logs_send', time() );
+                File::replace__variable( $path_to_config, 'uniforce_waf_trigger_count', 0 );
+            }
+
+        } else {
+            // @ToDO replace variables to default, remove Cron tasks, clean data files
+        }
+
+    }
+
+    // BFP actions
+    if( Post::get( 'uniforce_bfp_protection' ) && Post::get( 'apikey' ) ){
+        if( Post::get( 'uniforce_bfp_protection' ) ) {
+
+            // Send BFP logs
+            $result = FireWall::logs__send( Post::get( 'apikey' ), 'bfp_logs' );
+            if( empty( $result['error'] ) && ! Err::check() ) {
+                File::replace__variable( $path_to_config, 'uniforce_bfp_last_logs_send', time() );
+                File::replace__variable( $path_to_config, 'uniforce_bfp_trigger_count', 0 );
+            }
+
+        } else {
+            // @ToDO replace variables to default, remove Cron tasks, clean data files
+        }
+
     }
 
     Err::check() or die(json_encode(array('success' => true)));

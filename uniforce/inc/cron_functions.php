@@ -16,7 +16,6 @@ function uniforce_sfw_update(){
 		if( ! Err::check() ){
 			File::replace__variable( CLEANTALK_CONFIG_FILE, 'uniforce_sfw_last_update', time() );
 			File::replace__variable( CLEANTALK_CONFIG_FILE, 'uniforce_sfw_entries', $result );
-			
 		}
 	}
 	
@@ -29,11 +28,9 @@ function uniforce_sfw_logs_send(){
 	
 	// SFW actions
 	if( ! empty( $uniforce_apikey ) && ! empty( $uniforce_sfw_protection ) ){
-		
-		$sfw = new FireWall();
-		
+
 		// Send SFW logs
-		$result = $sfw->logs__send( $uniforce_apikey );
+		$result = FireWall::logs__send( $uniforce_apikey, 'sfw_logs' );
 		
 		if( ! empty( $result['error'] ) )
 			Err::add( $result['error'] );
@@ -43,4 +40,50 @@ function uniforce_sfw_logs_send(){
 	}
 	
 	return ! Err::check() ? true : false;
+}
+
+function uniforce_waf_logs_send(){
+
+    global $uniforce_apikey, $uniforce_waf_protection;
+
+    // SFW actions
+    if( ! empty( $uniforce_apikey ) && ! empty( $uniforce_waf_protection ) ){
+
+        // Send SFW logs
+        $result = FireWall::logs__send( $uniforce_apikey, 'waf_logs' );
+
+        if( ! empty( $result['error'] ) )
+            Err::add( $result['error'] );
+
+        if( ! Err::check() ) {
+            File::replace__variable( CLEANTALK_CONFIG_FILE, 'uniforce_waf_last_logs_send', time() );
+            File::replace__variable( CLEANTALK_CONFIG_FILE, 'uniforce_waf_trigger_count', 0 );
+        }
+
+    }
+
+    return ! Err::check() ? true : false;
+}
+
+function uniforce_bfp_logs_send(){
+
+    global $uniforce_apikey, $uniforce_bfp_protection;
+
+    // SFW actions
+    if( ! empty( $uniforce_apikey ) && ! empty( $uniforce_bfp_protection ) ){
+
+        // Send SFW logs
+        $result = FireWall::logs__send( $uniforce_apikey, 'bfp_logs' );
+
+        if( ! empty( $result['error'] ) )
+            Err::add( $result['error'] );
+
+        if( ! Err::check() ) {
+            File::replace__variable( CLEANTALK_CONFIG_FILE, 'uniforce_bfp_last_logs_send', time() );
+            File::replace__variable( CLEANTALK_CONFIG_FILE, 'uniforce_bfp_trigger_count', 0 );
+        }
+
+    }
+
+    return ! Err::check() ? true : false;
 }

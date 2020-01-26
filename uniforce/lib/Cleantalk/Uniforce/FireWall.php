@@ -211,9 +211,9 @@ class FireWall extends \Cleantalk\Security\FireWall
 
     }
 
-    public function logs__send( $ct_key ) {
+    public static function logs__send( $ct_key, $logs_type ) {
 
-        $log_dir_path = CLEANTALK_ROOT . 'data/sfw_logs';
+        $log_dir_path = CLEANTALK_ROOT . 'data/' . $logs_type;
 
         if( is_dir( $log_dir_path ) ){
 
