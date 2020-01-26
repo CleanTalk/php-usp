@@ -14,26 +14,11 @@ if( empty( $uniforce_apikey ) )
 $spbct_checkjs_val = md5( $uniforce_apikey );
 global $apbct_checkjs_val;
 
-// BruteForce Protection
-if ( ! empty( $uniforce_bfp_protection ) ) {
-
-    if( ! empty( $uniforce_cms_admin_page ) && $uniforce_cms_admin_page != '' && stripos( Server::get('REQUEST_URI'), $uniforce_cms_admin_page ) !== false ) {
-
-        $bfp           = new BFP();
-
-        if( $bfp->is_logged_in() ) {
-            return;
-        }
-
-        // Doing BruteForce protection.
-
-    }
-}
-
 // Security FireWall
-if ( ! empty( $uniforce_sfw_protection ) || ! empty( $uniforce_waf_protection ) ) {
+if ( ! empty( $uniforce_sfw_protection ) || ! empty( $uniforce_waf_protection ) || ! empty( $uniforce_bfp_protection ) ) {
 
     $params = array(
+        'bfp_enabled'       => ! empty( $uniforce_bfp_protection ) ? (bool) $uniforce_bfp_protection : false,
         'waf_enabled'       => ! empty( $uniforce_waf_protection ) ? (bool) $uniforce_waf_protection : false,
         'waf_xss_check'     => ! empty( $uniforce_waf_protection ) ? (bool) $uniforce_waf_protection : false,
         'waf_sql_check'     => ! empty( $uniforce_waf_protection ) ? (bool) $uniforce_waf_protection : false,
@@ -41,6 +26,16 @@ if ( ! empty( $uniforce_sfw_protection ) || ! empty( $uniforce_waf_protection ) 
     );
 
     $firewall = new FireWall( $params );
+
+    // BruteForce protection.
+    if( $uniforce_bfp_protection ) {
+        if( ! empty( $uniforce_cms_admin_page ) && $uniforce_cms_admin_page != '' && stripos( Server::get('REQUEST_URI'), $uniforce_cms_admin_page ) !== false ) {
+
+            $firewall->bfp_check();
+
+        }
+    }
+
 
     // Skip the check
     // Set skip test cookie
@@ -60,9 +55,12 @@ if ( ! empty( $uniforce_sfw_protection ) || ! empty( $uniforce_waf_protection ) 
         }
     }
 
+    // Spam FireWall check
     if( $uniforce_sfw_protection ) {
         $firewall->ip__test();
     }
+
+    // WebApplication FireWall check
     if( $uniforce_waf_protection ) {
         $firewall->waf__test();
     }

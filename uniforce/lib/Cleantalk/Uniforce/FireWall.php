@@ -12,9 +12,51 @@ use Cleantalk\Variables\Server;
 class FireWall extends \Cleantalk\Security\FireWall
 {
 
-    public function get_module_statistics()
+    public $bfp_enabled       = true;
+
+    public function __construct($params = array())
     {
-        return 'SFW: statistics is empty.';
+        parent::__construct($params);
+
+        $this->bfp_enabled = isset($params['waf_enabled']) ? (bool)$params['waf_enabled'] : false;
+
+    }
+
+    public static function get_module_statistics()
+    {
+        global $uniforce_sfw_protection,
+               $uniforce_waf_protection,
+               $uniforce_bfp_protection,
+               $uniforce_sfw_last_update,
+               $uniforce_sfw_entries,
+               $uniforce_sfw_last_logs_send,
+               $uniforce_waf_trigger_count,
+               $uniforce_waf_last_logs_send,
+               $uniforce_bfp_trigger_count,
+               $uniforce_bfp_last_logs_send;
+
+        $info = '';
+        if( ! empty( $uniforce_sfw_protection ) && $uniforce_sfw_protection ) {
+            $sfw_updated_time = $uniforce_sfw_last_update ? date('M d Y H:i:s', $uniforce_sfw_last_update) : 'never.';
+            $sfw_send_logs_time = $uniforce_sfw_last_logs_send ? date('M d Y H:i:s', $uniforce_sfw_last_logs_send) : 'never.';
+            $info .= 'Security FireWall was updated: ' . $sfw_updated_time . '<br>';
+            $info .= 'Security FireWall contains: ' . $uniforce_sfw_entries . ' entires.<br>';
+            $info .= 'Security FireWall logs was send: ' . $sfw_send_logs_time . '<br>';
+            $info .= '<br>';
+        }
+        if( ! empty( $uniforce_waf_protection ) && $uniforce_waf_protection ) {
+            $waf_send_logs_time = $uniforce_waf_last_logs_send ? date('M d Y H:i:s', $uniforce_waf_last_logs_send) : 'never.';
+            $info .= 'WebApplication FireWall was triggered: ' . $uniforce_waf_trigger_count . '<br>';
+            $info .= 'WebApplication FireWall logs was send: ' . $waf_send_logs_time . '<br>';
+            $info .= '<br>';
+        }
+        if( ! empty( $uniforce_bfp_protection ) && $uniforce_bfp_protection ) {
+            $bfp_send_logs_time = $uniforce_bfp_last_logs_send ? date('M d Y H:i:s', $uniforce_bfp_last_logs_send) : 'never.';
+            $info .= 'BruteForce Protection was triggered: ' . $uniforce_bfp_trigger_count . '<br>';
+            $info .= 'BruteForce Protection logs was send: ' . $bfp_send_logs_time . '<br>';
+            $info .= '<br>';
+        }
+        return $info;
     }
 
     public function ip__test()
@@ -128,6 +170,11 @@ class FireWall extends \Cleantalk\Security\FireWall
         }
 
 
+    }
+
+    public function bfp_check()
+    {
+        return true;
     }
 
     //Add entries to SFW log
