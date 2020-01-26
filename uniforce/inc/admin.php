@@ -292,7 +292,10 @@ function uniforce_uninstall($files = array() ){
 	File::replace__variable( CLEANTALK_CRON_FILE, 'uniforce_tasks', array() );
 	
 	// Deleting SFW nets
-	File::clean__variable( CLEANTALK_ROOT . 'data' . DS . 'sfw_nets.php', 'uniforce_sfw_nets' );
+	File::clean_file_full( CLEANTALK_ROOT . 'data' . DS . 'sfw_nets.php' );
+
+	// Deleting any logs
+    uniforce_uninstall_logs();
 	
 	if(isset($files)){
 		foreach ( $files as $file ){
@@ -302,6 +305,27 @@ function uniforce_uninstall($files = array() ){
 	}
 	
 	return ! Err::check();
+
+}
+
+/**
+ * Unlink any logs files from the system
+ */
+function uniforce_uninstall_logs() {
+
+    $log_dir_paths = array();
+    $log_dir_paths[] = CLEANTALK_ROOT . 'data/sfw_logs';
+
+    foreach ( $log_dir_paths as $log_dir_path ) {
+
+        $log_files = array_diff( scandir( $log_dir_path ), array( '.', '..', 'index.php' ) );
+        if( ! empty( $log_files ) ){
+            foreach ( $log_files as $log_file ){
+                unlink( $log_dir_path . DS . $log_file );
+            }
+        }
+
+    }
 
 }
 
