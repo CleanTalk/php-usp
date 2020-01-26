@@ -14,12 +14,12 @@ class Cron extends \Cleantalk\Common\Cron
 
     public static function getTasks(){
         require self::CRON_FILE;
-        return $tasks;
+        return $uniforce_tasks;
     }
 
     // Save option with tasks
     public static function saveTasks( $tasks ){
-        File::replace__variable( self::CRON_FILE, 'tasks', $tasks );
+        File::replace__variable( self::CRON_FILE, 'uniforce_tasks', $tasks );
         return ! Err::check();
     }
 
