@@ -10,11 +10,6 @@ if ( ! defined( 'CLEANTALK_ROOT' ) ) {
     header('HTTP/1.0 403 Forbidden');
     exit ();
 }
-
-$uniforce_modules = array();
-if(  !empty( $uniforce_sfw_protection ) ) $uniforce_modules[] = new FireWall();
-if(  !empty( $uniforce_bfp_protection ) ) $uniforce_modules[] = new BFP();
-
 ?>
 <!-- Login -->
 <?php if( empty($_SESSION["authenticated"]) || $_SESSION["authenticated"] != 'true' ) : ?>
@@ -95,18 +90,11 @@ if(  !empty( $uniforce_bfp_protection ) ) $uniforce_modules[] = new BFP();
                         <hr>
                         <p>Check detailed statistics on <a href="https://cleantalk.org/my<?php echo ! empty($uniforce_user_token) ? '?cp_mode=antispam&user_token='.$uniforce_user_token : ''; ?>" target="_blank">your Anti-Spam dashboard</a></p>
                         <p>Presumably CMS: <?php echo $uniforce_detected_cms; ?></p>
-                        <?php
-                        if( ! empty( $uniforce_modules ) ) {
-                            foreach( $uniforce_modules as $module ) {
-                                echo $module->get_module_statistics();
-                                echo '<br>';
-                            }
-                        }
-                        ?>
                         <p>Modified files:</p>
                         <?php foreach($uniforce_modified_files as $file){;?>
                             <p>&nbsp; - <?php echo $file; ?></p>
                         <?php } ?>
+                        <p><?php echo FireWall::get_module_statistics(); ?></p>
                     </div>
                 </div>
                 <input type="hidden" id="uniforce_security" name="security" value="<?php echo $uniforce_security ?>">
