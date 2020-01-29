@@ -14,7 +14,7 @@ define( 'CLEANTALK_CONFIG_FILE', CLEANTALK_ROOT . 'config.php' );
 define( 'CLEANTALK_CRON_FILE', CLEANTALK_ROOT . 'data' . DS . 'cron_data.php' );
 
 require_once CLEANTALK_LIB . 'autoloader.php';
-require_once CLEANTALK_ROOT . 'config.php';
+require_once CLEANTALK_CONFIG_FILE;
 
 define( 'CLEANTALK_URI', preg_replace( '/^(.*\/)(.*?.php)?/', '$1',  Server::get('REQUEST_URI') ) );
 
