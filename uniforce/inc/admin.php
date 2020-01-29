@@ -81,6 +81,11 @@ function uniforce_do_install() {
             $files_to_mod[] = 'administrator/index.php';
         }
 
+        // BITRIX ONLY: Add bitrix/admin/index.php to files for modification if exists
+        if( $cms['name'] == 'Bitrix' ) {
+            $files_to_mod[] = 'bitrix/admin/index.php';
+        }
+
         //Additional scripts to modify
         if( Post::get( 'addition_scripts' ) ){
             // Merging
@@ -373,6 +378,10 @@ function uniforce_detect_cms($path_to_index, $out = array( 'name' => 'Unknown', 
         // Drupal 8
         if(preg_match('/(DrupalKernel.*?)/', $index_file))
             $out = array( 'name' => 'Drupal8', 'admin_page' => '' );
+        // Bitrix
+        if(preg_match('/(bitrix.*?)/', $index_file))
+            $out = array( 'name' => 'Bitrix', 'admin_page' => '/bitrix/admin' );
+
 	}
 	
 	return $out;
