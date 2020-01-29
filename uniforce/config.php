@@ -9,9 +9,9 @@
 	$uniforce_sfw_last_update = 0;
 	$uniforce_sfw_entries = 0;
 	$uniforce_sfw_last_logs_send = 0;
-    $uniforce_waf_trigger_count = 0;
-    $uniforce_waf_last_logs_send = 0;
-    $uniforce_bfp_trigger_count = 0;
+	$uniforce_waf_trigger_count = 0;
+    $uniforce_sfw_trigger_count = 0;
+	$uniforce_bfp_trigger_count = 0;
     $uniforce_bfp_last_logs_send = 0;
 
 // Response language
