@@ -5,7 +5,6 @@ namespace Cleantalk\Uniforce;
 
 use Cleantalk\Common\Err;
 use Cleantalk\Common\File;
-use Cleantalk\Uniforce\Helper;
 use Cleantalk\Variables\Get;
 use Cleantalk\Variables\Server;
 
@@ -31,23 +30,17 @@ class FireWall extends \Cleantalk\Security\FireWall
                $uniforce_sfw_entries,
                $uniforce_sfw_last_logs_send,
                $uniforce_waf_trigger_count,
-               $uniforce_waf_last_logs_send,
+               $uniforce_sfw_trigger_count,
                $uniforce_bfp_trigger_count,
                $uniforce_bfp_last_logs_send;
 
         $info = '';
-        if( ! empty( $uniforce_sfw_protection ) && $uniforce_sfw_protection ) {
+        if( (! empty( $uniforce_sfw_protection ) && $uniforce_sfw_protection) || (! empty( $uniforce_waf_protection ) && $uniforce_waf_protection) ) {
             $sfw_updated_time = $uniforce_sfw_last_update ? date('M d Y H:i:s', $uniforce_sfw_last_update) : 'never.';
             $sfw_send_logs_time = $uniforce_sfw_last_logs_send ? date('M d Y H:i:s', $uniforce_sfw_last_logs_send) : 'never.';
             $info .= 'Security FireWall was updated: ' . $sfw_updated_time . '<br>';
             $info .= 'Security FireWall contains: ' . $uniforce_sfw_entries . ' entires.<br>';
             $info .= 'Security FireWall logs were sent: ' . $sfw_send_logs_time . '<br>';
-            $info .= '<br>';
-        }
-        if( ! empty( $uniforce_waf_protection ) && $uniforce_waf_protection ) {
-            $waf_send_logs_time = $uniforce_waf_last_logs_send ? date('M d Y H:i:s', $uniforce_waf_last_logs_send) : 'never.';
-            $info .= 'WebApplication FireWall was triggered: ' . $uniforce_waf_trigger_count . '<br>';
-            $info .= 'WebApplication FireWall logs were sent: ' . $waf_send_logs_time . '<br>';
             $info .= '<br>';
         }
         if( ! empty( $uniforce_bfp_protection ) && $uniforce_bfp_protection ) {
@@ -172,12 +165,167 @@ class FireWall extends \Cleantalk\Security\FireWall
 
     }
 
+    /**
+     * @return bool
+     * @throws \Exception
+     */
     public function bfp_check()
     {
-        return true;
+        global $spbct_checkjs_val;
+
+        if( isset( $_COOKIE['spbct_authorized'] ) && $_COOKIE['spbct_authorized'] == $spbct_checkjs_val ) {
+            return true;
+        }
+
+        $black_list = CLEANTALK_ROOT . 'data/bfp_blacklist.php';
+        $fast_black_list = CLEANTALK_ROOT . 'data/bfp_fast_blacklist.php';
+        $block_time = 3600; // 1 hour
+        $allowed_count = 10;
+        $allowed_interval = 900; // 15 min
+
+        if ( ! file_exists($black_list) ) {
+            throw new \Exception( 'UniForce: Blacklist ' . $black_list . ' does not exist.');
+        }
+
+        require_once $black_list;
+
+        if ( ! isset( $bad_ips ) ) {
+            throw new \Exception( 'UniForce: Blacklist ' . $black_list . ' have the wrong format.');
+        }
+
+        if ( ! file_exists($fast_black_list) ) {
+            throw new \Exception( 'UniForce: Fast-Blacklist ' . $fast_black_list . ' does not exist.');
+        }
+
+        require_once $fast_black_list;
+
+        if ( ! isset( $fast_bad_ips ) ) {
+            throw new \Exception( 'UniForce: Fast-Blacklist ' . $fast_black_list . ' have the wrong format.');
+        }
+
+        $current_ip = Helper::ip__get( array('real') );
+
+        $found_ip['found'] = false;
+
+        // Check against black list
+        if( ! empty( $bad_ips ) ) {
+            foreach( $bad_ips as $bad_ip => $bad_ip_added ) {
+                if( $bad_ip == $current_ip ) {
+                    $found_ip['found'] = true;
+                    $found_ip['added'] = $bad_ip_added;
+                }
+            }
+        }
+
+        if( $found_ip['found'] ) {
+            if( $found_ip['added'] + $block_time < time() ) {
+                // Remove the IP from the blacklist and proceed the checking
+                unset( $bad_ips[$current_ip] );
+                File::replace__variable( $black_list, 'bad_ips', $bad_ips );
+            } else {
+                $this->result = 'DENY_BY_BFP';
+                return false;
+            }
+        }
+
+        $found_ip['found'] = false;
+
+        $js_on = spbct_js_test();
+
+        // Check count of logins
+        if( ! empty( $fast_bad_ips ) ) {
+            foreach( $fast_bad_ips as $fast_bad_ip => $fast_bad_ip_info ) {
+                if( $fast_bad_ip == $current_ip && $fast_bad_ip_info['added'] + $allowed_interval > time() ) {
+                    $found_ip['found'] = true;
+                    $found_ip['added'] = $fast_bad_ip_info['added'];
+                    $found_ip['js_on'] = $js_on;
+                    $found_ip['count'] = ++$fast_bad_ip_info['count'];
+                } else {
+                    unset( $fast_bad_ips[$current_ip] );
+                }
+            }
+        }
+
+        if( $found_ip['found'] ) {
+            if( $found_ip['count'] > $allowed_count ) {
+                // Check count of the logins and move the IP to the black list.
+                // @ToDo increase allowed count to 20 if JS is on!
+                $bad_ips[$current_ip] = time();
+                File::replace__variable( $black_list, 'bad_ips', $bad_ips );
+                unset( $fast_bad_ips[$current_ip] );
+                File::replace__variable( $fast_black_list, 'fast_bad_ips', $fast_bad_ips );
+                $this->result = 'DENY_BY_BFP';
+                return false;
+            } else {
+                $fast_bad_ips[$current_ip] = array(
+                    'added' => $found_ip['added'],
+                    'js_on' => $found_ip['js_on'],
+                    'count' => $found_ip['count']
+                );
+                File::replace__variable( $fast_black_list, 'fast_bad_ips', $fast_bad_ips );
+                return true;
+            }
+        } else {
+            $fast_bad_ips[$current_ip] = array(
+                'added' => time(),
+                'js_on' => $js_on,
+                'count' => 1
+            );
+            File::replace__variable( $fast_black_list, 'fast_bad_ips', $fast_bad_ips );
+            return true;
+        }
+
     }
 
-    //Add entries to SFW log
+    public static function is_logged_in( $cms ) {
+
+        switch ( $cms ) {
+            case 'Joomla' :
+                if( class_exists('JFactory') ) {
+                    $user = \JFactory::getUser();
+                    if( $user->id ) {
+                        return true;
+                    }
+                } else {
+                    return false;
+                }
+                break;
+            case 'Drupal7' :
+                global $user;
+                if( isset( $user->uid ) && $user->uid != 0 ) {
+                    return true;
+                } else {
+                    return false;
+                }
+                break;
+            case 'Drupal8' :
+                if( class_exists('Drupal') ) {
+                    $current= \Drupal::currentUser();
+                    if ( ! $current->id() ) {
+                        return false;
+                    }
+                    else {
+                        return true;
+                    }
+                }
+                break;
+            case 'Bitrix' :
+                if( class_exists( 'CUser') ) {
+                    if( \CUser::IsAuthorized() ) {
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }
+                break;
+            default :
+                // @ToDo implement universal logic for coockies checking
+                return true;
+                break;
+        }
+
+    }
+
     public function update_logs( $ip, $result, $pattern = array() )
     {
 
@@ -186,34 +334,182 @@ class FireWall extends \Cleantalk\Security\FireWall
 
         global $salt;
 
-        $time = time();
-        $log_path = CLEANTALK_ROOT . 'data/sfw_logs/' . hash('sha256', $ip . $salt) . '.log';
+        // Parameters
+        $time            = time();
+        $page_url        = addslashes((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off' ? 'https://' : 'http://') . $_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI']);
+        $page_url        = substr($page_url, 0 , 4096);
+        $http_user_agent = !empty($_SERVER['HTTP_USER_AGENT'])
+            ? addslashes(htmlspecialchars(substr($_SERVER['HTTP_USER_AGENT'], 0, 300)))
+            : 'unknown';
+        $request_method  = $_SERVER['REQUEST_METHOD'];
+        $x_forwarded_for = !empty($_SERVER['HTTP_X_FORWARDED_FOR'])
+            ? $_SERVER['HTTP_X_FORWARDED_FOR']
+            : '';
+        $x_forwarded_for = addslashes(htmlspecialchars(substr($x_forwarded_for, 0 , 15)));
+        $id              = md5($ip.$http_user_agent.$result);
+        $pattern         = !empty($pattern)
+            ? json_encode($pattern)
+            : '';
+
+        $log_path = CLEANTALK_ROOT . 'data/fw_logs/' . hash('sha256', $ip . $salt) . '.log';
 
         if ( file_exists($log_path) ) {
 
             $log = file_get_contents($log_path);
             $log = explode(',', $log);
 
-            $all_entries = isset($log[1]) ? $log[1] : 0;
-            $blocked_entries = isset($log[2]) ? $log[2] : 0;
-            $blocked_entries = $result == 'blocked' ? $blocked_entries + 1 : $blocked_entries;
+            $all_entries = isset($log[5]) ? $log[5] : 0;
 
-            $log = array( $ip, intval($all_entries) + 1, $blocked_entries, $time );
+            $log = array(
+                $id,
+                $ip,
+                $time,
+                $result,
+                empty($pattern) ? NULL : $pattern,
+                intval($all_entries) + 1,
+                $page_url,
+                $http_user_agent,
+                $request_method,
+                empty($x_forwarded_for) ? NULL : $x_forwarded_for,
+            );
 
         } else {
 
-            $blocked = $result == 'blocked' ? 1 : 0;
-            $log = array($ip, 1, $blocked, $time);
+            $log = array(
+                $id,
+                $ip,
+                $time,
+                $result,
+                empty($pattern) ? NULL : $pattern,
+                1,
+                $page_url,
+                $http_user_agent,
+                $request_method,
+                empty($x_forwarded_for) ? NULL : $x_forwarded_for,
+            );
 
         }
 
-        file_put_contents( $log_path, implode(',', $log) );
+        file_put_contents( $log_path, implode(',', $log), LOCK_EX );
 
     }
 
-    public static function logs__send( $ct_key, $logs_type ) {
+    public static function security__update_logs( $params = null ) {
 
-        $log_dir_path = CLEANTALK_ROOT . 'data/' . $logs_type;
+        global $salt;
+
+        $params_default = array(
+            'event'        => null,
+            'page_url'     => null,
+            'user_agent'   => null,
+        );
+        $params = array_merge($params_default, $params);
+
+        // Cutting to 1024 symbols
+        $params['user_agent'] = is_string($params['user_agent'])
+            ? substr($params['user_agent'], 0, 1024)
+            : $params['user_agent'];
+
+        $auth_ip = Helper::ip__get( array('real') );
+
+        $values = array(
+            'datetime'     => date('Y-m-d H:i:s'),
+            'event'        => $params['event'],
+            'auth_ip'      => $auth_ip,
+            'page_url'     => $params['page_url'],
+            'user_agent'   => $params['user_agent'],
+        );
+
+        // Inserting to the logs.
+        $log_path = CLEANTALK_ROOT . 'data/security_logs/' . hash('sha256', $auth_ip . $salt) . '.log';
+
+        $log = array(
+            $values['event'],
+            $values['auth_ip'],
+            $values['datetime'],
+            $values['page_url'],
+            $values['user_agent']
+        );
+
+        file_put_contents( $log_path, implode(',', $log), LOCK_EX );
+
+    }
+
+    /**
+     * Send logs about bruteforce, auth, e.t.c.
+     *
+     * @param $ct_key
+     */
+    public static function security__logs__send( $ct_key ) {
+
+        $log_dir_path = CLEANTALK_ROOT . 'data/security_logs';
+
+        if( is_dir( $log_dir_path ) ) {
+
+            $log_files = array_diff(scandir($log_dir_path), array('.', '..', 'index.php'));
+
+            if (!empty($log_files)) {
+
+                //Compile logs
+                $data = array();
+
+                foreach ( $log_files as $log_file ) {
+                    $log = file_get_contents($log_dir_path . DS . $log_file);
+                    $log = explode(',', $log);
+                    $data[] = array(
+                        'datetime' => 	    strval($record->datetime),
+                        'user_login' =>     null,
+                        'event' => 		    strval($record->event),
+                        'auth_ip' => 	    strpos(':', $record->auth_ip) === false ? (int)sprintf('%u', ip2long($record->auth_ip)) : (string)$record->auth_ip,
+                        'page_url' => 		strval($record->page),
+                        'event_runtime' => 	null,
+                        'role' => 	        null,
+                    );
+
+                    // Adding user agent if it's login event
+                    if(in_array(strval($record->event), array( 'login', 'login_2fa', 'login_new_device', 'logout', ))){
+                        $data[] = array_merge(
+                            array_pop($data),
+                            array(
+                                'user_agent' => $record->user_agent,
+                            )
+                        );
+                    }
+                }
+
+                $result = API::method__security_logs( $ct_key, $data );
+
+                if(empty($result['error'])){
+
+                    //Clear local table if it's ok.
+                    if( $result['rows'] == count( $data ) ){
+
+                        foreach ( $log_files as $log_file ){
+                            unlink( $log_dir_path . DS . $log_file );
+                        }
+
+                        return $result;
+
+                    }else
+                        return array( 'error' => 'SENT_AND_RECEIVED_LOGS_COUNT_DOESNT_MACH' );
+                }else
+                    return $result;
+            }else
+                return array( 'error' => 'NO_LOGS_TO_SEND' );
+        }else
+            return array( 'error' => 'NO_LOGS_TO_SEND' );
+
+    }
+
+    /**
+     * Send logs about firewall - sfw, waf
+     *
+     * @param $ct_key
+     * @return array|bool|mixed
+     */
+    public static function logs__send( $ct_key ) {
+
+        $log_dir_path = CLEANTALK_ROOT . 'data/fw_logs';
 
         if( is_dir( $log_dir_path ) ){
 
@@ -227,19 +523,49 @@ class FireWall extends \Cleantalk\Security\FireWall
                 foreach ( $log_files as $log_file ){
                     $log = file_get_contents( $log_dir_path . DS . $log_file );
                     $log = explode( ',', $log );
-                    $ip                = isset( $log[0] ) ? $log[0] : '';
-                    $all_entries       = isset( $log[1] ) ? $log[1] : 0;
-                    $blocked_entries   = isset( $log[2] ) ? $log[2] : 0;
-                    $timestamp_entries = isset( $log[3] ) ? $log[3] : 0;
-                    $data[] = array(
-                        $ip,
-                        $all_entries,
-                        $all_entries - $blocked_entries,
-                        $timestamp_entries
+
+                    $to_data = array(
+                        'datetime'        => isset( $log[2] ) ? $log[2] : 0,
+                        'page_url'        => isset( $log[6] ) ? $log[6] : 0,
+                        'visitor_ip'      => isset( $log[1] ) ? ( Helper::ip__validate($log[1]) == 'v4' ? (int)sprintf('%u', ip2long($log[1])) : (string)$log[1] ) : 0,
+                        'http_user_agent' => isset( $log[7] ) ? $log[7] : 0,
+                        'request_method'  => isset( $log[8] ) ? $log[8] : 0,
+                        'x_forwarded_for' => isset( $log[9] ) ? $log[9] : 0,
+                        'hits'            => isset( $log[5] ) ? $log[5] : 0,
                     );
+
+                    // Legacy
+                    switch($log[3]){
+                        case 'PASS_BY_TRUSTED_NETWORK': $to_data['status_efw'] = 3;  break;
+                        case 'PASS_BY_WHITELIST':       $to_data['status_efw'] = 2;  break;
+                        case 'PASS':                    $to_data['status_efw'] = 1;  break;
+                        case 'DENY':                    $to_data['status_efw'] = 0;  break;
+                        case 'DENY_BY_NETWORK':         $to_data['status_efw'] = -1; break;
+                        case 'DENY_BY_DOS':             $to_data['status_efw'] = -2; break;
+                        case 'DENY_BY_WAF_XSS':         $to_data['status_efw'] = -3; $to_data['waf_attack_type'] = 'XSS';           $to_data['waf_comment'] = $log[4]; break;
+                        case 'DENY_BY_WAF_SQL':         $to_data['status_efw'] = -4; $to_data['waf_attack_type'] = 'SQL_INJECTION'; $to_data['waf_comment'] = $log[4]; break;
+                        case 'DENY_BY_WAF_FILE':        $to_data['status_efw'] = -5; $to_data['waf_attack_type'] = 'MALWARE';       $to_data['waf_comment'] = $log[4]; break;
+                        case 'DENY_BY_WAF_EXPLOIT':     $to_data['status_efw'] = -6; $to_data['waf_attack_type'] = 'EXPLOIT';       $to_data['waf_comment'] = $log[4]; break;
+                    }
+
+                    switch($log[3]){
+                        case 'PASS_BY_TRUSTED_NETWORK': $to_data['status'] = 3;  break;
+                        case 'PASS_BY_WHITELIST':       $to_data['status'] = 2;  break;
+                        case 'PASS':                    $to_data['status'] = 1;  break;
+                        case 'DENY':                    $to_data['status'] = 0;  break;
+                        case 'DENY_BY_NETWORK':         $to_data['status'] = -1; break;
+                        case 'DENY_BY_DOS':             $to_data['status'] = -2; break;
+                        case 'DENY_BY_WAF_XSS':         $to_data['status'] = -3; $to_data['waf_attack_type'] = 'XSS';           $to_data['waf_comment'] = $log[4]; break;
+                        case 'DENY_BY_WAF_SQL':         $to_data['status'] = -4; $to_data['waf_attack_type'] = 'SQL_INJECTION'; $to_data['waf_comment'] = $log[4]; break;
+                        case 'DENY_BY_WAF_FILE':        $to_data['status'] = -5; $to_data['waf_attack_type'] = 'MALWARE';       $to_data['waf_comment'] = $log[4]; break;
+                        case 'DENY_BY_WAF_EXPLOIT':     $to_data['status'] = -6; $to_data['waf_attack_type'] = 'EXPLOIT';       $to_data['waf_comment'] = $log[4]; break;
+                    }
+
+                    $data[] = $to_data;
                 }
-                unset( $log_file );
-                $result = API::method__security_logs( $ct_key, $data );
+                unset($log_file);
+
+                $result = API::method__security_logs__sendFWData( $ct_key, $data );
 
                 //Checking answer and deleting all lines from the table
                 if( empty( $result['error'] ) ){
@@ -347,10 +673,11 @@ class FireWall extends \Cleantalk\Security\FireWall
             case 'DENY':                $reason = 'Blacklisted'; break;
             case 'DENY_BY_NETWORK':	    $reason = 'Hazardous network';	               break;
             case 'DENY_BY_DOS':         $reason = 'Blocked by DoS prevention system'; break;
-            case 'DENY_BY_WAF_XSS':	    $reason = 'Blocked by Web Application Firewall: XSS atatck detected.'; break;
+            case 'DENY_BY_WAF_XSS':	    $reason = 'Blocked by Web Application Firewall: XSS attack detected.'; break;
             case 'DENY_BY_WAF_SQL':	    $reason = 'Blocked by Web Application Firewall: SQL-injection detected.'; break;
             case 'DENY_BY_WAF_EXPLOIT':	$reason = 'Blocked by Web Application Firewall: Exploit detected.'; break;
             case 'DENY_BY_WAF_FILE':    $reason = 'Blocked by Web Application Firewall: Malicious files upload.'; break;
+            case 'DENY_BY_BFP':         $reason = 'Blocked by Brute Force Protection: Too many invalid log-ins.'; break;
         }
 
         if( file_exists( CLEANTALK_INC . 'spbc_die_page.html' ) ){

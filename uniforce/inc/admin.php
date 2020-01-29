@@ -246,9 +246,9 @@ function uniforce_install_config($modified_files, $api_key, $cms, $exclusions ){
 function uniforce_install_cron(){
 
 	Cron::addTask( 'sfw_update', 'uniforce_sfw_update', 86400, time() + 60 );
-	Cron::addTask( 'sfw_send_logs', 'uniforce_sfw_send_logs', 3600 );
-    Cron::addTask( 'waf_send_logs', 'uniforce_waf_send_logs', 3600 );
-    Cron::addTask( 'bfp_send_logs', 'uniforce_bfp_send_logs', 3600 );
+	Cron::addTask( 'security_send_logs', 'uniforce_security_send_logs', 3600 );
+    Cron::addTask( 'fw_send_logs', 'uniforce_fw_send_logs', 3600 );
+    Cron::addTask( 'clean_black_lists', 'uniforce_clean_black_lists', 86400 );
 
 }
 
@@ -316,7 +316,8 @@ function uniforce_uninstall($files = array() ){
 function uniforce_uninstall_logs() {
 
     $log_dir_paths = array();
-    $log_dir_paths[] = CLEANTALK_ROOT . 'data/sfw_logs';
+    $log_dir_paths[] = CLEANTALK_ROOT . 'data/security_logs';
+    $log_dir_paths[] = CLEANTALK_ROOT . 'data/fw_logs';
 
     foreach ( $log_dir_paths as $log_dir_path ) {
 
@@ -366,7 +367,12 @@ function uniforce_detect_cms($path_to_index, $out = array( 'name' => 'Unknown', 
         // Joomla!
         if (preg_match('/(JOOMLA.*?)/i', $index_file))
             $out = array( 'name' => 'Joomla', 'admin_page' => '/administrator' );
-		
+        // Drupal 7
+        if(preg_match('/(DRUPAL_ROOT.*?)/', $index_file))
+            $out = array( 'name' => 'Drupal7', 'admin_page' => '' );
+        // Drupal 8
+        if(preg_match('/(DrupalKernel.*?)/', $index_file))
+            $out = array( 'name' => 'Drupal8', 'admin_page' => '' );
 	}
 	
 	return $out;
@@ -435,9 +441,9 @@ function uniforce_do_save_settings() {
     File::replace__variable( $path_to_config, 'uniforce_bfp_protection', (bool)Post::get( 'uniforce_bfp_protection' ) );
     File::replace__variable( $path_to_config, 'uniforce_cms_admin_page', Post::get( 'uniforce_bfp_protection_url' ) );
 
-    // SFW actions
-    if( Post::get( 'uniforce_sfw_protection' ) && Post::get( 'apikey' ) ){
-        if( Post::get( 'uniforce_sfw_protection' ) ) {
+    // FireWall actions
+    if( Post::get( 'uniforce_sfw_protection' ) || Post::get( 'uniforce_waf_protection' ) && Post::get( 'apikey' ) ){
+        if( Post::get( 'uniforce_sfw_protection' ) || Post::get( 'uniforce_waf_protection' ) ) {
 
             // Update SFW
             $result = FireWall::sfw_update( Post::get( 'apikey' ) );
@@ -446,27 +452,10 @@ function uniforce_do_save_settings() {
                 File::replace__variable( $path_to_config, 'uniforce_sfw_entries', $result );
             }
 
-            // Send SFW logs
-            $result = FireWall::logs__send( Post::get( 'apikey' ), 'sfw_logs' );
+            // Send FW logs
+            $result = FireWall::logs__send( Post::get( 'apikey' ) );
             if( empty( $result['error'] ) && ! Err::check() ) {
                 File::replace__variable( $path_to_config, 'uniforce_sfw_last_logs_send', time() );
-            }
-
-        } else {
-            // @ToDO replace variables to default, remove Cron tasks, clean data files
-        }
-
-    }
-
-    // WAF actions
-    if( Post::get( 'uniforce_waf_protection' ) && Post::get( 'apikey' ) ){
-        if( Post::get( 'uniforce_waf_protection' ) ) {
-
-            // Send WAF logs
-            $result = FireWall::logs__send( Post::get( 'apikey' ), 'waf_logs' );
-            if( empty( $result['error'] ) && ! Err::check() ) {
-                File::replace__variable( $path_to_config, 'uniforce_waf_last_logs_send', time() );
-                File::replace__variable( $path_to_config, 'uniforce_waf_trigger_count', 0 );
             }
 
         } else {
@@ -480,7 +469,7 @@ function uniforce_do_save_settings() {
         if( Post::get( 'uniforce_bfp_protection' ) ) {
 
             // Send BFP logs
-            $result = FireWall::logs__send( Post::get( 'apikey' ), 'bfp_logs' );
+            $result = FireWall::security__logs__send( Post::get( 'apikey' ) );
             if( empty( $result['error'] ) && ! Err::check() ) {
                 File::replace__variable( $path_to_config, 'uniforce_bfp_last_logs_send', time() );
                 File::replace__variable( $path_to_config, 'uniforce_bfp_trigger_count', 0 );

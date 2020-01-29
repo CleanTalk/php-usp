@@ -1,6 +1,6 @@
 <?php
 
-use Cleantalk\Uniforce\BFP;
+use Cleantalk\Common\File;
 use Cleantalk\Uniforce\FireWall;
 use Cleantalk\Variables\Cookie;
 use Cleantalk\Variables\Server;
@@ -12,7 +12,10 @@ if( empty( $uniforce_apikey ) )
     return;
 
 $spbct_checkjs_val = md5( $uniforce_apikey );
-global $apbct_checkjs_val;
+global $spbct_checkjs_val;
+
+// Helper functions
+require_once( CLEANTALK_INC . 'functions.php' );
 
 // Security FireWall
 if ( ! empty( $uniforce_sfw_protection ) || ! empty( $uniforce_waf_protection ) || ! empty( $uniforce_bfp_protection ) ) {
@@ -29,9 +32,26 @@ if ( ! empty( $uniforce_sfw_protection ) || ! empty( $uniforce_waf_protection ) 
 
     // BruteForce protection.
     if( $uniforce_bfp_protection ) {
+        // @ToDo If the login form is on front page?!?!?
         if( ! empty( $uniforce_cms_admin_page ) && $uniforce_cms_admin_page != '' && stripos( Server::get('REQUEST_URI'), $uniforce_cms_admin_page ) !== false ) {
 
-            $firewall->bfp_check();
+            // Catching buffer and doing protection
+            ob_start( 'uniforce_attach_js' );
+
+            if( ! empty( $_POST ) && isset( $_POST['spbct_login_form'] ) ) {
+
+                try {
+                    $bfp_result = $firewall->bfp_check();
+                } catch ( Exception $exception ) {
+                    error_log( var_export( $exception->getMessage(), 1 ));
+                }
+
+                if( ! $bfp_result ) {
+                    File::replace__variable( CLEANTALK_CONFIG_FILE, 'uniforce_bfp_trigger_count', ++$uniforce_bfp_trigger_count );
+                    $firewall->_die( $uniforce_account_name_ob, $firewall->result );
+                }
+
+            }
 
         }
     }
@@ -59,7 +79,6 @@ if ( ! empty( $uniforce_sfw_protection ) || ! empty( $uniforce_waf_protection ) 
     if( $uniforce_sfw_protection ) {
         $firewall->ip__test();
     }
-
     // WebApplication FireWall check
     if( $uniforce_waf_protection ) {
         $firewall->waf__test();
@@ -87,6 +106,42 @@ if ( ! empty( $uniforce_sfw_protection ) || ! empty( $uniforce_waf_protection ) 
         }
     }
 
+}
+
+function uniforce_attach_js( $buffer ){
+
+    global $spbct_checkjs_val, $uniforce_detected_cms, $uniforce_bfp_protection, $firewall;
+
+    if(
+        !(isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') // No ajax
+        && preg_match('/^\s*(<!doctype|<html)[\s\S]*html>\s*$/i', $buffer) == 1 // Only for HTML documents
+    ){
+        $html_addition =
+            '<script>var spbct_checkjs_val = "' . $spbct_checkjs_val . '";</script>'
+            .'<script src="/uniforce/js/ct_js_test.js"></script>'
+            .'<script src="/uniforce/js/ct_ajax_catch.js"></script>';
+        $buffer = preg_replace(
+            '/<\/body>\s*<\/html>\s*$/i',
+            $html_addition.'</body></html>',
+            $buffer,
+            1
+        );
+    }
+
+    if( ! empty( $uniforce_bfp_protection ) && FireWall::is_logged_in( $uniforce_detected_cms ) ) {
+        setcookie( 'spbct_authorized', $spbct_checkjs_val, 0, '/' );
+        if( $uniforce_detected_cms == 'Unknown' ) {
+            FireWall::security__update_logs( array(
+                'event' => 'login',
+                'page_url' => Server::get('HTTP_HOST') . Server::get('REQUEST_URI'),
+                'user_agent' => Server::get('HTTP_USER_AGENT'),
+            ) );
+        }
+    } else {
+        setcookie( 'spbct_authorized', $spbct_checkjs_val, time()-3600, '/' );
+    }
+
+    return $buffer;
 }
 
 // Set Cookies test for cookie test

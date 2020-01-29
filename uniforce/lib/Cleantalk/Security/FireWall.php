@@ -424,7 +424,7 @@ class FireWall
 			case 'DENY':                $reason = __('Blacklisted', 'security-malware-firewall');                      break;
 			case 'DENY_BY_NETWORK':	    $reason = __('Hazardous network', 'security-malware-firewall');	               break; 
 			case 'DENY_BY_DOS':         $reason = __('Blocked by DoS prevention system', 'security-malware-firewall'); break;
-			case 'DENY_BY_WAF_XSS':	    $reason = __('Blocked by Web Application Firewall: XSS atatck detected.',    'security-malware-firewall'); break;
+			case 'DENY_BY_WAF_XSS':	    $reason = __('Blocked by Web Application Firewall: XSS attack detected.',    'security-malware-firewall'); break;
 			case 'DENY_BY_WAF_SQL':	    $reason = __('Blocked by Web Application Firewall: SQL-injection detected.', 'security-malware-firewall'); break;
 			case 'DENY_BY_WAF_EXPLOIT':	$reason = __('Blocked by Web Application Firewall: Exploit detected.',       'security-malware-firewall'); break;
 			case 'DENY_BY_WAF_FILE':    $reason = __('Blocked by Web Application Firewall: Malicious files upload.', 'security-malware-firewall'); break;
