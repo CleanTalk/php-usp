@@ -224,6 +224,7 @@ class FireWall extends \Cleantalk\Security\FireWall
                 File::replace__variable( $black_list, 'bad_ips', $bad_ips );
             } else {
                 $this->result = 'DENY_BY_BFP';
+                $this->blocked_ip = $current_ip;
                 return false;
             }
         }
@@ -255,6 +256,7 @@ class FireWall extends \Cleantalk\Security\FireWall
                 unset( $fast_bad_ips[$current_ip] );
                 File::replace__variable( $fast_black_list, 'fast_bad_ips', $fast_bad_ips );
                 $this->result = 'DENY_BY_BFP';
+                $this->blocked_ip = $current_ip;
                 return false;
             } else {
                 $fast_bad_ips[$current_ip] = array(
@@ -284,6 +286,13 @@ class FireWall extends \Cleantalk\Security\FireWall
                 if( class_exists('JFactory') ) {
                     $user = \JFactory::getUser();
                     if( $user->id ) {
+                        if( empty( $_COOKIE['spbct_authorized'] ) ) {
+                            FireWall::security__update_logs( array(
+                                'event' => 'login',
+                                'page_url' => Server::get('HTTP_HOST') . Server::get('REQUEST_URI'),
+                                'user_agent' => Server::get('HTTP_USER_AGENT'),
+                            ) );
+                        }
                         return true;
                     }
                 } else {
@@ -293,6 +302,13 @@ class FireWall extends \Cleantalk\Security\FireWall
             case 'Drupal7' :
                 global $user;
                 if( isset( $user->uid ) && $user->uid != 0 ) {
+                    if( empty( $_COOKIE['spbct_authorized'] ) ) {
+                        FireWall::security__update_logs( array(
+                            'event' => 'login',
+                            'page_url' => Server::get('HTTP_HOST') . Server::get('REQUEST_URI'),
+                            'user_agent' => Server::get('HTTP_USER_AGENT'),
+                        ) );
+                    }
                     return true;
                 } else {
                     return false;
@@ -305,6 +321,13 @@ class FireWall extends \Cleantalk\Security\FireWall
                         return false;
                     }
                     else {
+                        if( empty( $_COOKIE['spbct_authorized'] ) ) {
+                            FireWall::security__update_logs( array(
+                                'event' => 'login',
+                                'page_url' => Server::get('HTTP_HOST') . Server::get('REQUEST_URI'),
+                                'user_agent' => Server::get('HTTP_USER_AGENT'),
+                            ) );
+                        }
                         return true;
                     }
                 }
@@ -312,6 +335,13 @@ class FireWall extends \Cleantalk\Security\FireWall
             case 'Bitrix' :
                 if( class_exists( 'CUser') ) {
                     if( \CUser::IsAuthorized() ) {
+                        if( empty( $_COOKIE['spbct_authorized'] ) ) {
+                            FireWall::security__update_logs( array(
+                                'event' => 'login',
+                                'page_url' => Server::get('HTTP_HOST') . Server::get('REQUEST_URI'),
+                                'user_agent' => Server::get('HTTP_USER_AGENT'),
+                            ) );
+                        }
                         return true;
                     } else {
                         return false;
@@ -351,7 +381,7 @@ class FireWall extends \Cleantalk\Security\FireWall
             ? json_encode($pattern)
             : '';
 
-        $log_path = CLEANTALK_ROOT . 'data/fw_logs/' . hash('sha256', $ip . $salt) . '.log';
+        $log_path = CLEANTALK_ROOT . 'data/fw_logs/' . hash('sha256', $ip . $salt . $result) . '.log';
 
         if ( file_exists($log_path) ) {
 
@@ -421,7 +451,7 @@ class FireWall extends \Cleantalk\Security\FireWall
         );
 
         // Inserting to the logs.
-        $log_path = CLEANTALK_ROOT . 'data/security_logs/' . hash('sha256', $auth_ip . $salt) . '.log';
+        $log_path = CLEANTALK_ROOT . 'data/security_logs/' . hash('sha256', $auth_ip . $salt . $values['event']) . '.log';
 
         $log = array(
             $values['event'],
@@ -456,22 +486,23 @@ class FireWall extends \Cleantalk\Security\FireWall
                 foreach ( $log_files as $log_file ) {
                     $log = file_get_contents($log_dir_path . DS . $log_file);
                     $log = explode(',', $log);
+
                     $data[] = array(
-                        'datetime' => 	    strval($record->datetime),
+                        'datetime' => 	    strval($log[2]),
                         'user_login' =>     null,
-                        'event' => 		    strval($record->event),
-                        'auth_ip' => 	    strpos(':', $record->auth_ip) === false ? (int)sprintf('%u', ip2long($record->auth_ip)) : (string)$record->auth_ip,
-                        'page_url' => 		strval($record->page),
+                        'event' => 		    strval($log[0]),
+                        'auth_ip' => 	    strpos(':', $log[1]) === false ? (int)sprintf('%u', ip2long($log[1])) : (string)$log[1],
+                        'page_url' => 		strval($log[3]),
                         'event_runtime' => 	null,
                         'role' => 	        null,
                     );
 
                     // Adding user agent if it's login event
-                    if(in_array(strval($record->event), array( 'login', 'login_2fa', 'login_new_device', 'logout', ))){
+                    if(in_array(strval($log[0]), array( 'login', 'login_2fa', 'login_new_device', 'logout', ))){
                         $data[] = array_merge(
                             array_pop($data),
                             array(
-                                'user_agent' => $record->user_agent,
+                                'user_agent' => $log[4],
                             )
                         );
                     }
@@ -525,7 +556,7 @@ class FireWall extends \Cleantalk\Security\FireWall
                     $log = explode( ',', $log );
 
                     $to_data = array(
-                        'datetime'        => isset( $log[2] ) ? $log[2] : 0,
+                        'datetime'        => isset( $log[2] ) ? date('Y-m-d H:i:s', $log[2]) : 0,
                         'page_url'        => isset( $log[6] ) ? $log[6] : 0,
                         'visitor_ip'      => isset( $log[1] ) ? ( Helper::ip__validate($log[1]) == 'v4' ? (int)sprintf('%u', ip2long($log[1])) : (string)$log[1] ) : 0,
                         'http_user_agent' => isset( $log[7] ) ? $log[7] : 0,
