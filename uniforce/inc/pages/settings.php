@@ -1,7 +1,6 @@
 <?php
 
 use Cleantalk\Common\Err;
-use Cleantalk\Uniforce\BFP;
 use Cleantalk\Uniforce\FireWall;
 use Cleantalk\Variables\Server;
 
