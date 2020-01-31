@@ -59,7 +59,7 @@ if ( ! defined( 'CLEANTALK_ROOT' ) ) {
                 License agreement
             </a>
             <br />
-            <a href="https://cleantalk.org/register?platform=uniforce&website=<?php echo $_SERVER['SERVER_NAME']; ?>" target="_blank">
+            <a href="https://cleantalk.org/register?platform=uniforce&website=<?php echo $_SERVER['SERVER_NAME']; ?>&product_name=security" target="_blank">
                 Don't have an account? <strong>Create here!</strong>
             </a>
         </div>
