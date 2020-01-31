@@ -444,7 +444,24 @@ function uniforce_do_save_settings() {
 
     $path_to_config = CLEANTALK_ROOT . 'config.php';
 
-    File::replace__variable( $path_to_config, 'uniforce_apikey', Post::get( 'apikey' ) );
+    global $uniforce_apikey;
+
+    // validate the new key
+    if( Post::get( 'apikey' ) !== $uniforce_apikey ) {
+        $result = API::method__notice_paid_till(
+            Post::get( 'apikey' ),
+            preg_replace( '/http[s]?:\/\//', '', Server::get( 'SERVER_NAME' ), 1 ),
+            'security'
+        );
+        if( ! empty( $result['error'] ) ){
+            Err::add('Checking key failed', $result['error']);
+        } else {
+            File::replace__variable( $path_to_config, 'uniforce_apikey', Post::get( 'apikey' ) );
+            File::replace__variable( $path_to_config, 'uniforce_account_name_ob', $result['account_name_ob'] );
+            File::replace__variable( $path_to_config, 'uniforce_user_token', $result['user_token'] );
+        }
+    }
+
     File::replace__variable( $path_to_config, 'uniforce_sfw_protection', (bool)Post::get( 'uniforce_sfw_protection' ) );
     File::replace__variable( $path_to_config, 'uniforce_waf_protection', (bool)Post::get( 'uniforce_waf_protection' ) );
     File::replace__variable( $path_to_config, 'uniforce_bfp_protection', (bool)Post::get( 'uniforce_bfp_protection' ) );
