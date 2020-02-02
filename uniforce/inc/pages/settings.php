@@ -87,7 +87,7 @@ if ( ! defined( 'CLEANTALK_ROOT' ) ) {
                     <div class="col-xs-12 col-sm-12 col-md-6 col-lg-6">
                         <h4><p class="text-center">Statistics</p></h4>
                         <hr>
-                        <p>Check detailed statistics on <a href="https://cleantalk.org/my<?php echo ! empty($uniforce_user_token) ? '?cp_mode=security&user_token='.$uniforce_user_token : ''; ?>" target="_blank">your Anti-Spam dashboard</a></p>
+                        <p>Check detailed statistics on <a href="https://cleantalk.org/my<?php echo ! empty($uniforce_user_token) ? '?cp_mode=security&user_token='.$uniforce_user_token : ''; ?>" target="_blank">your Security dashboard</a></p>
                         <p>Presumably CMS: <?php echo $uniforce_detected_cms; ?></p>
                         <p>Modified files:</p>
                         <?php foreach($uniforce_modified_files as $file){;?>
