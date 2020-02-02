@@ -52,6 +52,22 @@ class FireWall extends \Cleantalk\Security\FireWall
         return $info;
     }
 
+    static public function ip__get($ip_types = array('real', 'remote_addr', 'x_forwarded_for', 'x_real_ip', 'cloud_flare')){
+
+        $result = (array)Helper::ip__get($ip_types);
+
+        global $uniforce_apikey;
+
+        if(isset($_GET['spbct_test_ip'], $_GET['spbct_test'], $uniforce_apikey) && $_GET['spbct_test'] == md5($uniforce_apikey)){
+            $ip_type = Helper::ip__validate($_GET['spbct_test_ip']);
+            $test_ip = $ip_type == 'v6' ? Helper::ip__v6_normalize($_GET['spbct_test_ip']) : $_GET['spbct_test_ip'];
+            if($ip_type)
+                $result['test'] = $test_ip;
+        }
+
+        return $result;
+    }
+
     public function ip__test()
     {
         $fw_results = array();
