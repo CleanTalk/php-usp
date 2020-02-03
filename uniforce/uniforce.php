@@ -76,6 +76,11 @@ if ( ! empty( $uniforce_sfw_protection ) || ! empty( $uniforce_waf_protection ) 
         }
     }
 
+    // Log authorized users actions
+    if( ! empty( Cookie::get('spbct_authorized') ) ) {
+        FireWall::security__update_auth_logs( 'view' );
+    }
+
     // Spam FireWall check
     if( $uniforce_sfw_protection ) {
         $firewall->ip__test();
