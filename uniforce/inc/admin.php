@@ -157,18 +157,24 @@ function uniforce_install($files, $api_key, $cms, $exclusions ){
 	foreach ($files as $file){
 		
 		$file_content = file_get_contents( $file );
+        // Check if short PHP tags used
+        if( preg_match( "/<\?[^(php)]/", $file_content ) ) {
+            $open_php_tag = '<?';
+        } else {
+            $open_php_tag = '<?php';
+        }
 		$php_open_tags  = preg_match_all("/(<\?)/", $file_content);
 		$php_close_tags = preg_match_all("/(\?>)/", $file_content);
 		$first_php_start = strpos($file_content, '<?');
 		// Adding <?php to the start if it's not there
 		if($first_php_start !== 0)
-			File::inject__code($file, "<?php\n?>\n", 'start');
+			File::inject__code($file, "$open_php_tag\n?>\n", 'start');
 		
 		if( ! Err::check() ){
 			
 			// Adding ? > to the end if it's not there
 			if($php_open_tags <= $php_close_tags)
-				File::inject__code($file, "\n<?php\n", 'end');
+				File::inject__code($file, "\n$open_php_tag\n", 'end');
 			
 			if( ! Err::check() ){
 
@@ -310,7 +316,7 @@ function uniforce_uninstall($files = array() ){
 			File::clean__tag( $file, 'bottom_code' );
 		}
 	}
-	
+
 	return ! Err::check();
 
 }
