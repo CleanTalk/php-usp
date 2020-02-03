@@ -127,7 +127,7 @@ function uniforce_attach_js( $buffer ){
             .'<script src="/uniforce/js/ct_js_test.js"></script>'
             .'<script src="/uniforce/js/ct_ajax_catch.js"></script>';
         $buffer = preg_replace(
-            '/<\/body>\s*<\/html>\s*$/i',
+            '/<\/body>(\s|<!--.*-->)*<\/html>\s*$/i',
             $html_addition.'</body></html>',
             $buffer,
             1
