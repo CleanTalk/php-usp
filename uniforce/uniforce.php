@@ -49,11 +49,6 @@ if ( ! empty( $uniforce_sfw_protection ) || ! empty( $uniforce_waf_protection ) 
                 if( ! $bfp_result ) {
                     File::replace__variable( CLEANTALK_CONFIG_FILE, 'uniforce_bfp_trigger_count', ++$uniforce_bfp_trigger_count );
                     $firewall->update_logs( $firewall->blocked_ip, $firewall->result );
-                    FireWall::security__update_logs( array(
-                        'event' => 'auth_failed',
-                        'page_url' => Server::get('HTTP_HOST') . Server::get('REQUEST_URI'),
-                        'user_agent' => Server::get('HTTP_USER_AGENT'),
-                    ) );
                     $firewall->_die( $uniforce_account_name_ob, $firewall->result );
                 }
 
@@ -137,6 +132,9 @@ function uniforce_attach_js( $buffer ){
     if( ! empty( $uniforce_bfp_protection ) && FireWall::is_logged_in( $uniforce_detected_cms ) ) {
         setcookie( 'spbct_authorized', $spbct_checkjs_val, 0, '/' );
     } else {
+        if( ! empty( Cookie::get('spbct_authorized') ) ) {
+            FireWall::security__update_auth_logs( 'logout' );
+        }
         setcookie( 'spbct_authorized', $spbct_checkjs_val, time()-3600, '/' );
     }
 
