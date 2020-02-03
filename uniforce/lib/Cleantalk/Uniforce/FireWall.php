@@ -532,16 +532,30 @@ class FireWall extends \Cleantalk\Security\FireWall
                     $log = file_get_contents($log_dir_path . DS . $log_file);
                     $log = explode(',', $log);
 
-                    $data[] = array(
-                        'datetime' => 	    strval($log[2]),
-                        'user_login' =>     null,
-                        'event' => 		    strval($log[0]),
-                        'auth_ip' => 	    strpos(':', $log[1]) === false ? (int)sprintf('%u', ip2long($log[1])) : (string)$log[1],
-                        'page_url' => 		strval($log[3]),
-                        'event_runtime' => 	null,
-                        'role' => 	        null,
-                        'attempts' =>       strval($log[8]),
-                    );
+                    if( strval($log[8]) > 0 ) {
+                        for( $i = 0; strval($log[8]) > $i; $i++ ) {
+                            $data[] = array(
+                                'datetime' => 	    strval($log[2]),
+                                'user_login' =>     null,
+                                'event' => 		    strval($log[0]),
+                                'auth_ip' => 	    strpos(':', $log[1]) === false ? (int)sprintf('%u', ip2long($log[1])) : (string)$log[1],
+                                'page_url' => 		strval($log[3]),
+                                'event_runtime' => 	null,
+                                'role' => 	        null,
+                            );
+                        }
+                    } else {
+                        $data[] = array(
+                            'datetime' => 	    strval($log[2]),
+                            'user_login' =>     null,
+                            'event' => 		    strval($log[0]),
+                            'auth_ip' => 	    strpos(':', $log[1]) === false ? (int)sprintf('%u', ip2long($log[1])) : (string)$log[1],
+                            'page_url' => 		strval($log[3]),
+                            'event_runtime' => 	null,
+                            'role' => 	        null,
+                        );
+                    }
+
 
                     // Adding user agent if it's login event
                     if(in_array(strval($log[0]), array( 'login', 'login_2fa', 'login_new_device', 'logout', ))){
