@@ -115,7 +115,7 @@ jQuery(document).ready(function($) {
 			{
 				action: 'get_key',
 				email: field.val().trim(),
-				security: security,
+				security: uniforce_security,
 			},
 			{
 				callback: function(result, data, params, obj) {
