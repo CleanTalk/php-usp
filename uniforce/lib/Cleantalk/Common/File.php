@@ -10,7 +10,9 @@ namespace Cleantalk\Common;
  * @package Cleantalk
  */
 class File{
-	
+
+	private static $plugin = 'cleantalk-usp';
+
 	/**
 	 * Removes content from file in tag
 	 * Tags example:
@@ -181,10 +183,10 @@ class File{
 	}
 	
 	public static function tag__php__start( $tag ){
-		return "//Cleantalk/$tag/start";
+		return '//' . self::$plugin . '/$tag/start';
 	}
 	
 	public static function tag__php__end( $tag ){
-		return "//Cleantalk/$tag/end";
+		return '//' . self::$plugin . '/$tag/end';
 	}
 }
