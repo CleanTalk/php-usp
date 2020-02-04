@@ -13,7 +13,6 @@ if ( ! defined( 'CLEANTALK_ROOT' ) ) {
         </div>
     <div class="row">
         <div class="col-sm-12">
-            <p class="footer-text"><small>Please, check the extension for your CMS on our <a href="https://cleantalk.org/help/install" target="_blank" style="text-decoration: underline;">plugins page</a> before setup</small></p>
             <p class="footer-text"><small>It is highly recommended to create a backup before installation</small></p>
         </div>
     </div>
