@@ -26,8 +26,8 @@ class File{
 	 */
 	public static function clean__tag( $file_path, $tag ){
 		$pattern = '\s*' . self::tag__php__start( $tag ) . '[\S\s]*?' . self::tag__php__end( $tag );
-		$pattern = \Cleantalk\Common\Helper::convert_to_regexp( $pattern );
-		return \Cleantalk\Common\Helper::is_regexp( $pattern )
+		$pattern = Helper::convert_to_regexp( $pattern );
+		return Helper::is_regexp( $pattern )
 			? self::clean__pattern( $file_path, $pattern )
 			: Err::add( __CLASS__, __FUNCTION__, 'Pattern wrong', $pattern );
 	}
@@ -42,8 +42,8 @@ class File{
 	 */
 	public static function clean__variable( $file_path, $variable ){
 		$pattern = '\s*$' . $variable . '\s?=[\S\s]*?;';
-		$pattern = \Cleantalk\Common\Helper::convert_to_regexp( $pattern );
-		return \Cleantalk\Common\Helper::is_regexp( $pattern )
+		$pattern = Helper::convert_to_regexp( $pattern );
+		return Helper::is_regexp( $pattern )
 			? self::clean__pattern( $file_path, $pattern )
 			: Err::add( __CLASS__, __FUNCTION__, 'Pattern wrong', $pattern );
 	}
@@ -126,15 +126,7 @@ class File{
 		}else
 			return Err::add(__CLASS__, __FUNCTION__, 'File not found', $file_path); // No PHP file
 	}
-	
-	public static function inject__tag__start( $file_path, $tag ){
-		self::inject__code( $file_path, self::tag__php__start( $tag ) );
-	}
-	
-	public static function inject__tag__end( $file_path, $tag ){
-		self::inject__code( $file_path, self::tag__php__end( $tag ) );
-	}
-	
+
 	public static function inject__variable( $file_path, $variable, $value, $compact = false ){
 		$value = var_export( $value, true );
 		$value = $compact ? preg_replace( '/\s*/', '', $value ) : $value;
@@ -183,10 +175,10 @@ class File{
 	}
 	
 	public static function tag__php__start( $tag ){
-		return '//' . self::$plugin . '/$tag/start';
+		return '//' . self::$plugin . "/$tag/start";
 	}
 	
 	public static function tag__php__end( $tag ){
-		return '//' . self::$plugin . '/$tag/end';
+		return '//' . self::$plugin . "/$tag/end";
 	}
 }
