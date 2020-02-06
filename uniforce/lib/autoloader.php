@@ -1,6 +1,6 @@
 <?php
 
-spl_autoload_register( 'ct_autoloader' );
+spl_autoload_register( 'ct_usp_autoloader' );
 
 /**
  * Autoloader for \Cleantalk\* classes
@@ -9,7 +9,7 @@ spl_autoload_register( 'ct_autoloader' );
  *
  * @return void
  */
-function ct_autoloader( $class ){
+function ct_usp_autoloader( $class ){
 	
 	// Register class auto loader
 	// Custom modules

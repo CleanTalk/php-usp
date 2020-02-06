@@ -14,8 +14,8 @@ function uniforce_sfw_update(){
 		// Update SFW
 		$result = FireWall::sfw_update( $uniforce_apikey );
 		if( ! Err::check() ){
-			File::replace__variable( CLEANTALK_CONFIG_FILE, 'uniforce_sfw_last_update', time() );
-			File::replace__variable( CLEANTALK_CONFIG_FILE, 'uniforce_sfw_entries', $result );
+			File::replace__variable( CT_USP_CONFIG_FILE, 'uniforce_sfw_last_update', time() );
+			File::replace__variable( CT_USP_CONFIG_FILE, 'uniforce_sfw_entries', $result );
 		}
 	}
 	
@@ -36,8 +36,8 @@ function uniforce_fw_logs_send(){
 			Err::add( $result['error'] );
 		
 		if( ! Err::check() ) {
-            File::replace__variable( CLEANTALK_CONFIG_FILE, 'uniforce_sfw_last_logs_send', time() );
-            File::replace__variable( CLEANTALK_CONFIG_FILE, 'uniforce_waf_trigger_count', 0 );
+            File::replace__variable( CT_USP_CONFIG_FILE, 'uniforce_sfw_last_logs_send', time() );
+            File::replace__variable( CT_USP_CONFIG_FILE, 'uniforce_waf_trigger_count', 0 );
         }
 
 	}
@@ -59,8 +59,8 @@ function uniforce_security_logs_send(){
             Err::add( $result['error'] );
 
         if( ! Err::check() ) {
-            File::replace__variable( CLEANTALK_CONFIG_FILE, 'uniforce_bfp_last_logs_send', time() );
-            File::replace__variable( CLEANTALK_CONFIG_FILE, 'uniforce_bfp_trigger_count', 0 );
+            File::replace__variable( CT_USP_CONFIG_FILE, 'uniforce_bfp_last_logs_send', time() );
+            File::replace__variable( CT_USP_CONFIG_FILE, 'uniforce_bfp_trigger_count', 0 );
         }
 
     }
@@ -71,8 +71,8 @@ function uniforce_security_logs_send(){
 function uniforce_clean_black_lists() {
 
     // Remove entries older than 1 hour
-    $black_list = CLEANTALK_ROOT . 'data/bfp_blacklist.php';
-    $fast_black_list = CLEANTALK_ROOT . 'data/bfp_fast_blacklist.php';
+    $black_list = CT_USP_ROOT . 'data/bfp_blacklist.php';
+    $fast_black_list = CT_USP_ROOT . 'data/bfp_fast_blacklist.php';
 
     // Black list clean
     if ( file_exists($black_list) ) {

@@ -1,6 +1,6 @@
 <?php
 // Exit if accessed directly.
-if ( ! defined( 'CLEANTALK_ROOT' ) ) {
+if ( ! defined( 'CT_USP_ROOT' ) ) {
     header('HTTP/1.0 403 Forbidden');
     exit ();
 }
@@ -23,17 +23,3 @@ if ( ! defined( 'CLEANTALK_ROOT' ) ) {
     <link href="css/animate-custom.css" rel="stylesheet">
 
 </head>
-<body class="fade-in">
-<div class="container">
-    <div class="row">
-        <div class="col-sm-6 col-md-4 col-sm-offset-3 col-md-offset-4">
-
-            <div class="setup-box clearfix animated flipInY">
-                <div class="page-icon animated bounceInDown">
-                    <img src="img/logo.png" alt="Cleantalk logo" />
-                </div>
-                <div class="setup-logo">
-                    <h3><strong> - UniForce - </strong></h3>
-                    <h3> - Universal Security Plugin - </h3>
-                </div>
-                <hr />

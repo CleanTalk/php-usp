@@ -3,25 +3,11 @@
 use Cleantalk\Variables\Server;
 
 // Exit if accessed directly.
-if ( ! defined( 'CLEANTALK_ROOT' ) ) {
+if ( ! defined( 'CT_USP_ROOT' ) ) {
     header('HTTP/1.0 403 Forbidden');
     exit ();
 }
 ?>
-                </div>
-            </div>
-        </div>
-    <div class="row">
-        <div class="col-sm-12">
-            <p class="footer-text"><small>It is highly recommended to create a backup before installation</small></p>
-        </div>
-    </div>
-</div>
-<!-- End setup-wizard wizard box -->
-
-<footer class="container">
-
-</footer>
 
 <script src="js/jquery.min.js"></script>
 <script src="js/jquery-ui.min.js"></script>
@@ -34,6 +20,3 @@ if ( ! defined( 'CLEANTALK_ROOT' ) ) {
     var uniforce_security = document.getElementById('uniforce_security').value;
     var uniforce_ajax_url = location.href;
 </script>
-
-</body>
-</html>

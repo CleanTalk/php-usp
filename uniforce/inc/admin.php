@@ -69,7 +69,7 @@ function uniforce_do_install() {
     if( preg_match( '/^[a-z0-9]{1,20}$/', Post::get( 'key' ), $matches ) ){
 
         $api_key = $matches[0];
-        $cms     = uniforce_detect_cms( CLEANTALK_SITE_ROOT . 'index.php' );
+        $cms     = uniforce_detect_cms( CT_USP_SITE_ROOT . 'index.php' );
 
         $files_to_mod = array();
 
@@ -114,7 +114,7 @@ function uniforce_do_install() {
                     break;
                 }
 
-                $file = CLEANTALK_SITE_ROOT . trim( $file_to_mod );
+                $file = CT_USP_SITE_ROOT . trim( $file_to_mod );
                 if( file_exists($file) )
                     $tmp[] = $file;
             }
@@ -181,7 +181,7 @@ function uniforce_install($files, $api_key, $cms, $exclusions ){
 				// Addition to the top of the script
 				File::inject__code(
 					$file,
-					"\trequire_once( '" . CLEANTALK_SITE_ROOT . "uniforce/uniforce.php');",
+					"\trequire_once( '" . CT_USP_SITE_ROOT . "uniforce/uniforce.php');",
 					'(<\?php)|(<\?)',
 					'top_code'
 				);
@@ -227,7 +227,7 @@ function uniforce_install($files, $api_key, $cms, $exclusions ){
  */
 function uniforce_install_config($modified_files, $api_key, $cms, $exclusions ){
 	
-	$path_to_config = CLEANTALK_ROOT . 'config.php';
+	$path_to_config = CT_USP_ROOT . 'config.php';
 	$salt = str_pad(rand(0, getrandmax()), 6, '0').str_pad(rand(0, getrandmax()), 6, '0');
 	// Attention. Backwards order because inserting it step by step
 	
@@ -278,7 +278,7 @@ function uniforce_uninstall($files = array() ){
 		? $uniforce_modified_files
 		: $files;
 	
-	$path_to_config = CLEANTALK_ROOT . 'config.php';
+	$path_to_config = CT_USP_ROOT . 'config.php';
 	File::clean__variable( $path_to_config, 'uniforce_security' );
 	File::clean__variable( $path_to_config, 'uniforce_password' );
 	File::clean__variable( $path_to_config, 'uniforce_salt' );
@@ -302,10 +302,10 @@ function uniforce_uninstall($files = array() ){
 	File::replace__variable( $path_to_config, 'uniforce_bfp_protection', true );
 	
 	// Deleting cron tasks
-	File::replace__variable( CLEANTALK_CRON_FILE, 'uniforce_tasks', array() );
+	File::replace__variable( CT_USP_CRON_FILE, 'uniforce_tasks', array() );
 	
 	// Deleting SFW nets
-	File::clean_file_full( CLEANTALK_ROOT . 'data' . DS . 'sfw_nets.php' );
+	File::clean_file_full( CT_USP_ROOT . 'data' . DS . 'sfw_nets.php' );
 
 	// Deleting any logs
     uniforce_uninstall_logs();
@@ -327,8 +327,8 @@ function uniforce_uninstall($files = array() ){
 function uniforce_uninstall_logs() {
 
     $log_dir_paths = array();
-    $log_dir_paths[] = CLEANTALK_ROOT . 'data/security_logs';
-    $log_dir_paths[] = CLEANTALK_ROOT . 'data/fw_logs';
+    $log_dir_paths[] = CT_USP_ROOT . 'data/security_logs';
+    $log_dir_paths[] = CT_USP_ROOT . 'data/fw_logs';
 
     foreach ( $log_dir_paths as $log_dir_path ) {
 
@@ -448,7 +448,7 @@ function uniforce_do_logout() {
  */
 function uniforce_do_save_settings() {
 
-    $path_to_config = CLEANTALK_ROOT . 'config.php';
+    $path_to_config = CT_USP_ROOT . 'config.php';
 
     global $uniforce_apikey;
 

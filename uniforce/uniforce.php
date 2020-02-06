@@ -15,7 +15,7 @@ $spbct_checkjs_val = md5( $uniforce_apikey );
 global $spbct_checkjs_val;
 
 // Helper functions
-require_once( CLEANTALK_INC . 'functions.php' );
+require_once( CT_USP_INC . 'functions.php' );
 
 // Security FireWall
 if ( ! empty( $uniforce_sfw_protection ) || ! empty( $uniforce_waf_protection ) || ! empty( $uniforce_bfp_protection ) ) {
@@ -47,7 +47,7 @@ if ( ! empty( $uniforce_sfw_protection ) || ! empty( $uniforce_waf_protection ) 
                 }
 
                 if( ! $bfp_result ) {
-                    File::replace__variable( CLEANTALK_CONFIG_FILE, 'uniforce_bfp_trigger_count', ++$uniforce_bfp_trigger_count );
+                    File::replace__variable( CT_USP_CONFIG_FILE, 'uniforce_bfp_trigger_count', ++$uniforce_bfp_trigger_count );
                     $firewall->update_logs( $firewall->blocked_ip, $firewall->result );
                     $firewall->_die( $uniforce_account_name_ob, $firewall->result );
                 }
@@ -127,7 +127,7 @@ function uniforce_attach_js( $buffer ){
             .'<script src="/uniforce/js/ct_js_test.js"></script>'
             .'<script src="/uniforce/js/ct_ajax_catch.js"></script>';
         $buffer = preg_replace(
-            '/<\/body>(\s|<!--.*-->)*<\/html>\s*$/i',
+            '/<\/body>(\s|<.*>)*<\/html>\s*$/i',
             $html_addition.'</body></html>',
             $buffer,
             1

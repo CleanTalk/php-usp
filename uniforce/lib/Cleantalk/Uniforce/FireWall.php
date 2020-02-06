@@ -2,7 +2,6 @@
 
 namespace Cleantalk\Uniforce;
 
-
 use Cleantalk\Common\Err;
 use Cleantalk\Common\File;
 use Cleantalk\Variables\Get;
@@ -71,7 +70,7 @@ class FireWall extends \Cleantalk\Security\FireWall
     public function ip__test()
     {
         $fw_results = array();
-        $datafile_path = CLEANTALK_ROOT . 'data/sfw_nets.php';
+        $datafile_path = CT_USP_ROOT . 'data/sfw_nets.php';
 
         if ( file_exists($datafile_path) ) {
             require_once $datafile_path;
@@ -195,8 +194,8 @@ class FireWall extends \Cleantalk\Security\FireWall
 
         self::security__update_auth_logs( 'auth_failed' );
 
-        $black_list = CLEANTALK_ROOT . 'data/bfp_blacklist.php';
-        $fast_black_list = CLEANTALK_ROOT . 'data/bfp_fast_blacklist.php';
+        $black_list = CT_USP_ROOT . 'data/bfp_blacklist.php';
+        $fast_black_list = CT_USP_ROOT . 'data/bfp_fast_blacklist.php';
         $block_time = 3600; // 1 hour
         $allowed_count = 10;
         $allowed_interval = 900; // 15 min
@@ -396,7 +395,7 @@ class FireWall extends \Cleantalk\Security\FireWall
             ? json_encode($pattern)
             : '';
 
-        $log_path = CLEANTALK_ROOT . 'data/fw_logs/' . hash('sha256', $ip . $salt . $result) . '.log';
+        $log_path = CT_USP_ROOT . 'data/fw_logs/' . hash('sha256', $ip . $salt . $result) . '.log';
 
         if ( file_exists($log_path) ) {
 
@@ -470,7 +469,7 @@ class FireWall extends \Cleantalk\Security\FireWall
         );
 
         // Inserting to the logs.
-        $log_path = CLEANTALK_ROOT . 'data/security_logs/' . hash('sha256', $auth_ip . $salt . $values['event']) . '.log';
+        $log_path = CT_USP_ROOT . 'data/security_logs/' . hash('sha256', $auth_ip . $salt . $values['event']) . '.log';
 
         if( file_exists( $log_path ) ) {
 
@@ -517,7 +516,7 @@ class FireWall extends \Cleantalk\Security\FireWall
      */
     public static function security__logs__send( $ct_key ) {
 
-        $log_dir_path = CLEANTALK_ROOT . 'data/security_logs';
+        $log_dir_path = CT_USP_ROOT . 'data/security_logs';
 
         if( is_dir( $log_dir_path ) ) {
 
@@ -600,7 +599,7 @@ class FireWall extends \Cleantalk\Security\FireWall
      */
     public static function logs__send( $ct_key ) {
 
-        $log_dir_path = CLEANTALK_ROOT . 'data/fw_logs';
+        $log_dir_path = CT_USP_ROOT . 'data/fw_logs';
 
         if( is_dir( $log_dir_path ) ){
 
@@ -739,10 +738,10 @@ class FireWall extends \Cleantalk\Security\FireWall
                 }
             }
 
-            if ( ! is_dir(CLEANTALK_ROOT . 'data') ) mkdir(CLEANTALK_ROOT . 'data');
+            if ( ! is_dir( CT_USP_ROOT . 'data') ) mkdir( CT_USP_ROOT . 'data');
 
-            File::clean_file_full( CLEANTALK_ROOT . 'data' . DS . 'sfw_nets.php' );
-            File::inject__variable(CLEANTALK_ROOT . 'data' . DS . 'sfw_nets.php', 'sfw_nets', $nets_for_save, 'yes');
+            File::clean_file_full( CT_USP_ROOT . 'data' . DS . 'sfw_nets.php' );
+            File::inject__variable( CT_USP_ROOT . 'data' . DS . 'sfw_nets.php', 'sfw_nets', $nets_for_save, 'yes');
 
             $out = count($nets_for_save);
 
@@ -771,9 +770,9 @@ class FireWall extends \Cleantalk\Security\FireWall
             case 'DENY_BY_BFP':         $reason = 'Blocked by Brute Force Protection: Too many invalid log-ins.'; break;
         }
 
-        if( file_exists( CLEANTALK_INC . 'spbc_die_page.html' ) ){
+        if( file_exists( CT_USP_INC . 'spbc_die_page.html' ) ){
 
-            $spbc_die_page = file_get_contents(CLEANTALK_INC . 'spbc_die_page.html');
+            $spbc_die_page = file_get_contents( CT_USP_INC . 'spbc_die_page.html');
 
             $spbc_die_page = str_replace( "{TITLE}", 'Blocked: Security by CleanTalk',     $spbc_die_page );
             $spbc_die_page = str_replace( "{REMOTE_ADDRESS}", $this->blocked_ip,     $spbc_die_page );
