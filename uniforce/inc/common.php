@@ -1,4 +1,11 @@
 <?php
+/**
+ * Attaches
+ * /config.php
+ * /lib/autoloader.php
+ *
+ * Sets all main constants
+ */
 
 use Cleantalk\Uniforce\Cron;
 use Cleantalk\Common\Err;
