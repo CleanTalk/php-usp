@@ -1,0 +1,99 @@
+body{
+    font-family: 'Lato', sans-serif;
+}
+
+#layout-block{
+    padding-top: 50px;
+    padding-bottom: 25px;
+}
+    #layout-block h3{
+        text-align: center;
+        font-size:1.5em;
+        opacity: 0.9;
+        font-weight: normal;
+    }
+
+.logo{
+    text-align: center;
+    padding: 15px 0 10px;
+}
+    .logo img{
+        border:0;
+        display: inline-block;
+    }
+
+.page-icon{
+    width: 100px;
+    height:100px;
+    -webkit-border-radius: 100px;
+    -moz-border-radius: 100px;
+    border-radius: 100px;
+    text-align: center;
+    margin: -60px auto 0;
+}
+    .page-icon img{
+        vertical-align: middle;
+        -moz-transition: all .5s ease-in-out;
+        -webkit-transition: all .5s ease-in-out;
+        -o-transition: all .5s ease-in-out;
+        -ms-transition: all .5s ease-in-out;
+        transition: all .5s ease-in-out;
+        width:auto;
+        height:100%;
+        position: relative;
+        top: 0;
+    }
+
+.btn.btn-setup {
+    width: 120px;
+    display:block;
+    margin: 20px auto 20px;
+    text-transform:uppercase;
+    -webkit-transition: all .5s ease-in-out;
+    -moz-transition: all .5s ease-in-out;
+    -o-transition: all .5s ease-in-out;
+    transition: all .5s ease-in-out;
+}
+    .btn.btn-setup:hover {
+        border:1px solid #1c8ac8;
+        opacity: 0.8;
+    }
+
+input[type=text], input[type=password], input[type=email]{
+    width: auto;
+    border: 0;
+}
+
+.alert{
+    margin: 20px auto;
+    width: 70%;
+}
+
+.preloader{
+    width: 20px;
+    margin-left: 5px;
+    vertical-align: text-top;
+    display: inline;
+}
+
+.footer-text, .footer-text a{
+    text-align: center;
+}
+
+/* Mobile Portrait Size to Mobile Landscape Size (devices and browsers)
+=================================================================== */
+@media only screen and (max-width: 479px) {
+    #layout-block{
+        padding-top: 10px;
+        padding-bottom: 25px;
+    }
+}
+
+/* Tablet Portrait Size to Tablet Landscape Size (devices and browsers)
+=================================================================== */
+@media only screen and (min-width: 480px) and (max-width: 767px){
+    #layout-block{
+        margin: 0 auto;
+        width: 420px;
+    }
+}

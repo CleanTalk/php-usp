@@ -1,0 +1,46 @@
+body {
+    /*background: #FFB573;*/
+    background: #3487C9;
+    color: #444;
+}
+
+#layout-block h3 {
+    color: #444;
+}
+
+.setup-box hr{
+    margin:10px auto 20px;
+    width:70%;
+    border-top: 1px solid rgba(0, 0, 0, 0.13);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15)
+}
+
+.setup-form input{
+    border-color: #989898;
+    color:#6c6c6c;;
+    box-shadow: 0 0 0.5px rgba(0,0,0,0.5);
+}
+
+.btn.btn-setup {
+    color: #045760;
+    background: #1c8ac8;
+}
+
+.setup-links a{
+    color: #444;
+}
+
+.footer-text, .footer-text a{
+    color: #333;
+    opacity: 1;
+}
+
+.settings-box {
+    background: #F0F8FF;
+    box-shadow: 0 0 10px rgba(0,0,0,0.5);
+}
+
+.setup-box{
+    background: #F0F8FF;
+    box-shadow: 0 0 10px rgba(0,0,0,0.5);
+}

@@ -1,0 +1,33 @@
+.settings-box {
+	padding-top: 10px;
+	padding-bottom: 25px;
+	-webkit-border-radius: 3px;
+	-moz-border-radius: 3px;
+	border-radius:3px;
+}
+
+.settings-links a:first-child {
+	float: left;
+}
+.settings-links a:last-child {
+	float: right;
+}
+.settings-links:after {
+	clear: both;
+}
+
+label.checkbox {
+	width: 70%;
+	display: block;
+	margin: 0 auto;
+}
+	label.checkbox input{
+		width:14px;
+		margin: 4px 0 0;
+		padding: 0;
+		background: none;
+		border: 0;
+	}
+.footer-text, .footer-text a{
+	text-align: center;
+}

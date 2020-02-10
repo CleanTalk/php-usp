@@ -1,0 +1,44 @@
+.setup-box{
+    position: relative;
+    max-width:480px;
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    border-radius:3px;
+    padding-bottom: 20px;
+    margin-bottom: 25px;
+    margin-top: 80px;
+}
+    .setup-box .page-icon{
+        -webkit-animation-delay: .8s;
+        -moz-animation-delay: .8s;
+        -o-animation-delay: .8s;
+        animation-delay: .8s;
+    }
+    .setup-box hr{
+        margin:10px auto 20px;
+        width:70%;
+    }
+
+    .setup-form form p{
+        width:80%;
+        margin: 5px auto 10px;
+        text-align: center;
+    }
+    .setup-form input{
+        display: block;
+        margin:0 auto 15px;
+        width:70%;
+        padding: 8px;
+        border-radius:5px;
+        text-align: center;
+    }
+        .setup-form input.loading {
+            background-image: url("/uniforce/img/preloader.gif");
+            background-size: 15px 15px;
+            background-position:right 5% bottom 50%;
+            background-repeat: no-repeat;
+        }
+
+.footer-text, .footer-text a{
+    text-align: center;
+}
