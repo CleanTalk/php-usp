@@ -20,13 +20,13 @@ jQuery(document).ready(function($) {
 	$('input, textarea').placeholder();
 	
 	/*----------- For icon rotation on input box foxus -------------------*/ 	
-	$('input[name="access_key_field"]').focus(function() {
-  		$('.page-icon img').addClass('rotate-icon');
+	$('input[name="access_key_field"], input[name="login"]').focus(function() {
+  		$('.page-icon img').addClass('drop-icon');
 	});
 	
 	/*----------- For icon rotation on input box blur -------------------*/ 	
-	$('input[name="access_key_field"]').blur(function() {
-  		$('.page-icon img').removeClass('rotate-icon');
+	$('input[name="access_key_field"], input[name="login"]').blur(function() {
+  		$('.page-icon img').removeClass('drop-icon');
 	});
 
 	$('#show_more_btn').click(function(){
