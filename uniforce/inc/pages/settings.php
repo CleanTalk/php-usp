@@ -13,59 +13,25 @@ if ( ! defined( 'CT_USP_ROOT' ) ) {
 ?>
 
 <body class="fade-in">
-    <div class="container">
-        <div class="row">
-            <div class="col-sm-6 col-md-4 col-sm-offset-3 col-md-offset-4">
-
-                <div class="setup-box clearfix animated flipInY">
-                    <div class="page-icon animated bounceInDown">
-                        <img src="img/logo.png" alt="Cleantalk logo" />
-                    </div>
-                    <div class="setup-logo">
-                        <h3><strong> - UniForce - </strong></h3>
-                        <h3> - Universal Security Plugin - </h3>
-                    </div>
-                    <hr />
-
-                    <!-- Login -->
-                    <?php if( empty($_SESSION["authenticated"]) || $_SESSION["authenticated"] != 'true' ) : ?>
-
-                    <div class="setup-form">
-                        <!-- Start Error box -->
-                        <div class="alert alert-danger alert-dismissible fade in" style="display:none" role="alert">
-                            <button type="button" class="close" > &times;</button>
-                            <p id='error-msg'></p>
-                        </div>
-                        <!-- End Error box -->
-                        <?php if( ! empty( $uniforce_is_installed ) ) : ?>
-                            <form action = 'javascript:void(null);' method="post" id='login-form'>
-                                <input type="text" placeholder="Access key<?php if( isset( $uniforce_email, $uniforce_password ) ) echo ' or e-mail'; ?>" class="input-field" name="login" required/>
-
-                                <?php if( ! empty( $uniforce_password ) ) : ?>
-                                    <input type="password" placeholder="Password" class="input-field" name="password"/>
-                                <?php endif; ?>
-                                <input type="hidden" id="uniforce_security" name="security" value="<?php echo $uniforce_security ?>">
-                                <button type="submit" name="action" value="login" class="btn btn-setup" id="btn-login">Login</button>
-                                <p>Don't know your access key? Get it <a href="https://cleantalk.org/my" target="_blank">here</a>.</p>
-                            </form>
-                        <?php else : ?>
-                            <h4 class="text-center">Please, <?php echo '<a href="' . Server::get( 'HOST_NAME' ) . '/uniforce/index.php">setup</a>'; ?> plugin first!</h4>
-                        <?php endif; ?>
-                    </div>
-
-                    <!-- Settings -->
-                    <?php else : ?>
-
-                </div>
-            </div>
-        </div>
-        <div class="row">
+    <div class="container" id="layout-block">
+        <div class="row" style="margin-top: 80px">
             <div class="col-sm-12 settings-box">
+                <div class="clearfix"></div>
+
+                <!-- Uninstall Logout buttons -->
                 <div class="settings-links">
                     <a href="#" class="text-danger" id='btn-uninstall' >Uninstall</a>
                     <a href="#" id='btn-logout'>Log out </a>
                 </div>
-                <div class="clearfix"></div>
+
+                <!-- Icon and title -->
+                <div class="page-icon animated bounceInDown">
+                    <img src="img/logo.png" alt="Cleantalk logo" />
+                </div>
+                <div class="logo">
+                    <h3> - Universal Security Plugin - </h3>
+                </div>
+
                 <div>
                     <!-- Start Error box -->
                     <div class="alert alert-danger alert-dismissible fade in" style="<?php if( ! Err::check() ) echo 'display:none'; ?>" role="alert">
@@ -80,25 +46,26 @@ if ( ! defined( 'CT_USP_ROOT' ) ) {
                                 <hr>
                                 <div class="col-sm-12">
                                     <div class="form-group row">
-                                        <input class="form-control" type="text" placeholder="Access key" id="auth_key" name = "apikey" value =<?php if (isset($uniforce_apikey)) echo $uniforce_apikey; ?>>
+                                        <label for="auth_key">Access key</label>
+                                        <input class="form-control pull-right" type="text" placeholder="Access key" id="auth_key" name = "apikey" value =<?php if (isset($uniforce_apikey)) echo $uniforce_apikey; ?>>
                                         <p>Account registered for email: <?php echo !empty($uniforce_account_name_ob) ? $uniforce_account_name_ob : 'unkonown';  ?></p>
                                     </div>
                                     <div class="form-group row">
                                         <label for="uniforce_sfw_protection">Enable Security FireWall</label>
-                                        <input type="checkbox" class="checkbox style-2 pull-right" id="uniforce_sfw_protection" name="uniforce_sfw_protection" <?php if (!empty($uniforce_sfw_protection)) echo "checked"; ?>>
+                                        <input type="checkbox" class="checkbox pull-right" id="uniforce_sfw_protection" name="uniforce_sfw_protection" <?php if (!empty($uniforce_sfw_protection)) echo "checked"; ?>>
                                     </div>
                                     <div class="form-group row">
                                         <label for="uniforce_waf_protection">Enable WebApplication FireWall</label>
-                                        <input type="checkbox" class="checkbox style-2 pull-right" id="uniforce_waf_protection" name="uniforce_waf_protection" <?php if (!empty($uniforce_waf_protection)) echo "checked"; ?>>
+                                        <input type="checkbox" class="checkbox pull-right" id="uniforce_waf_protection" name="uniforce_waf_protection" <?php if (!empty($uniforce_waf_protection)) echo "checked"; ?>>
                                     </div>
                                     <div class="form-group row">
                                         <label for="uniforce_bfp_protection">Enable BruteForce protection</label>
-                                        <input type="checkbox" class="checkbox style-2 pull-right" id="uniforce_bfp_protection" name="uniforce_bfp_protection" <?php if (!empty($uniforce_bfp_protection)) echo "checked"; ?>>
+                                        <input type="checkbox" class="checkbox pull-right" id="uniforce_bfp_protection" name="uniforce_bfp_protection" <?php if (!empty($uniforce_bfp_protection)) echo "checked"; ?>>
 
                                     </div>
                                     <div class="form-group row">
                                         <label for="uniforce_bfp_protection_url">Admin page URI</label>
-                                        <input type="text" class="checkbox style-2 pull-right" id="uniforce_bfp_protection_url" name="uniforce_bfp_protection_url" value="<?php echo $uniforce_cms_admin_page; ?>" <?php if (empty($uniforce_bfp_protection)) echo "disabled"; ?>>
+                                        <input type="text" class="form-control pull-right" id="uniforce_bfp_protection_url" name="uniforce_bfp_protection_url" value="<?php echo $uniforce_cms_admin_page; ?>" <?php if (empty($uniforce_bfp_protection)) echo "disabled"; ?>>
                                     </div>
                                 </div>
                             </div>
@@ -116,21 +83,12 @@ if ( ! defined( 'CT_USP_ROOT' ) ) {
                         </div>
                         <input type="hidden" id="uniforce_security" name="security" value="<?php echo $uniforce_security ?>">
                         <input type="hidden" name="action" value="save_settings">
-                        <div class="wrapper wrapper__center">
+                        <div class="text-center">
                             <button type="submit" class="btn btn-setup mt-sm-2" id='btn-save-settings' style="display: inline">Save</button>
                             <img class="preloader" src="img/preloader.gif" style="display: none;">
                         </div>
                     </form>
-
-                    <!-- End Admin area box -->
-                    <?php endif; ?>
-
                 </div>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-sm-12">
-                <p class="footer-text"><small>Some Footer text</small></p>
             </div>
         </div>
     </div>

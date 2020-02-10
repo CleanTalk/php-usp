@@ -1,12 +1,11 @@
 <?php
 
-use Cleantalk\Variables\Server;
-
 // Exit if accessed directly.
 if ( ! defined( 'CT_USP_ROOT' ) ) {
     header('HTTP/1.0 403 Forbidden');
     exit ();
 }
+
 ?>
 
 <script src="js/jquery.min.js"></script>
