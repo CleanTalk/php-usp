@@ -64,11 +64,9 @@ class File{
 			$file_content = file_get_contents( $file_path );
 			
 			if( $file_content ){
-				
 				// Cleaning up
-				$new_content = preg_replace( '/' . $pattern . '/', '', $file_content );
+				$new_content = preg_replace( '/' . $pattern . '/', "\n", $file_content );
 				$result = $new_content !== null ? true : false;
-				
 				if($result){
 					if( file_put_contents( $file_path, $new_content ) ){
 						return true;
