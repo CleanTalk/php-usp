@@ -31,3 +31,77 @@ label.checkbox {
 .footer-text, .footer-text a{
 	text-align: center;
 }
+
+/* Settings API */
+.ctusp_tab_navigation{
+	border-bottom: 1px solid #ccc;
+}
+	.ctusp_tab_navigation-title{
+		display: inline-block;
+		margin: 10px 0 0 .5em;
+		padding: 5px 10px;
+		height: 31px;
+		border: 1px solid #ccc;
+		border-bottom: none;
+		font-size: 14px;
+		line-height: 24px;
+		background: #e5e5e5;
+		color: #555;
+		cursor: pointer;
+	}
+		.ctusp_tab_navigation-title--active{
+			position: relative;
+			top: 1px;
+			background: #f1f1f1;
+			color: #000;
+		}
+
+.ctusp_tab{
+	display: none;
+	margin: 15px 0;
+}
+	.ctusp_tab--active {
+		display: block;
+	}
+
+.ctusp_group{
+	position: relative;
+	min-width: 255px;
+	margin: 10px auto;
+	padding: 0 10px 10px 10px;
+	border: 1px solid #e5e5e5;
+	box-shadow: 0 1px 1px rgba(0,0,0,.04);
+	-webkit-box-shadow: 0 1px 1px rgba(0,0,0,.04);
+	background: #fdfdfd;
+}
+	.ctusp_group-title{
+		text-align: left !important;
+		margin: 0 0 10px;
+		padding: 10px;
+		border-bottom: 1px solid #eee;
+	}
+
+.ctusp_field{
+	margin: 0 5px 15px;
+}
+	.ctusp_field input[type=checkbox]{
+		cursor: pointer;
+		display: inline-block;
+		vertical-align: middle;
+		margin: 0 5px 3px 0;
+	}
+	.ctusp_field input[type=text]{
+		padding: 6px 12px;
+		border-radius: 4px;
+		border: 1px #999 solid;
+	}
+		.ctusp_field input[type=text]:focus{
+			box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(102, 175, 233, 0.6);
+		}
+	.ctusp_field-title{
+		margin-bottom: 0;
+	}
+	.ctusp_field-description{
+		font-size: 10pt;
+		color: #666;
+	}
