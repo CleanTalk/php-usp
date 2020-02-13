@@ -2,13 +2,14 @@
 
 use Cleantalk\Common\Err;
 use Cleantalk\Uniforce\FireWall;
-use Cleantalk\Variables\Server;
 
 // Exit if accessed directly.
 if ( ! defined( 'CT_USP_ROOT' ) ) {
     header('HTTP/1.0 403 Forbidden');
     exit ();
 }
+
+require_once CT_USP_INC . 'settings.php';
 
 ?>
 
@@ -41,47 +42,71 @@ if ( ! defined( 'CT_USP_ROOT' ) ) {
                     <!-- End Error box -->
                     <form action="javascript:void(null);" method="POST" class="form-horizontal" role="form">
                         <div class="row">
-                            <div class="col-xs-12 col-sm-12 col-md-6 col-lg-6">
-                                <h4 class="text-center">Settings</h4>
-                                <hr>
-                                <div class="col-sm-12">
-                                    <div class="form-group row">
-                                        <label for="auth_key">Access key</label>
-                                        <input class="form-control pull-right" type="text" placeholder="Access key" id="auth_key" name = "apikey" value =<?php if (isset($uniforce_apikey)) echo $uniforce_apikey; ?>>
-                                        <p>Account registered for email: <?php echo !empty($uniforce_account_name_ob) ? $uniforce_account_name_ob : 'unkonown';  ?></p>
-                                    </div>
-                                    <div class="form-group row">
-                                        <label for="uniforce_sfw_protection">Enable Security FireWall</label>
-                                        <input type="checkbox" class="checkbox pull-right" id="uniforce_sfw_protection" name="uniforce_sfw_protection" <?php if (!empty($uniforce_sfw_protection)) echo "checked"; ?>>
-                                    </div>
-                                    <div class="form-group row">
-                                        <label for="uniforce_waf_protection">Enable WebApplication FireWall</label>
-                                        <input type="checkbox" class="checkbox pull-right" id="uniforce_waf_protection" name="uniforce_waf_protection" <?php if (!empty($uniforce_waf_protection)) echo "checked"; ?>>
-                                    </div>
-                                    <div class="form-group row">
-                                        <label for="uniforce_bfp_protection">Enable BruteForce protection</label>
-                                        <input type="checkbox" class="checkbox pull-right" id="uniforce_bfp_protection" name="uniforce_bfp_protection" <?php if (!empty($uniforce_bfp_protection)) echo "checked"; ?>>
+                            <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
 
-                                    </div>
-                                    <div class="form-group row">
-                                        <label for="uniforce_bfp_protection_url">Admin page URI</label>
-                                        <input type="text" class="form-control pull-right" id="uniforce_bfp_protection_url" name="uniforce_bfp_protection_url" value="<?php echo $uniforce_cms_admin_page; ?>" <?php if (empty($uniforce_bfp_protection)) echo "disabled"; ?>>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-xs-12 col-sm-12 col-md-6 col-lg-6">
-                                <h4><p class="text-center">Statistics</p></h4>
-                                <hr>
-                                <p>Check detailed statistics on <a href="https://cleantalk.org/my<?php echo ! empty($uniforce_user_token) ? '?cp_mode=security&user_token='.$uniforce_user_token : ''; ?>" target="_blank">your Security dashboard</a></p>
-                                <p>Presumably CMS: <?php echo $uniforce_detected_cms; ?></p>
-                                <p>Modified files:</p>
-                                <?php foreach($uniforce_modified_files as $file){;?>
-                                    <p>&nbsp; - <?php echo $file; ?></p>
-                                <?php } ?>
-                                <p><?php echo FireWall::get_module_statistics(); ?></p>
+                                <?php
+
+                                $settings = new \Cleantalk\Layout\Settings();
+
+                                // Tab summary
+                                $settings
+	                                ->add_tab('summary')
+	                                    ->setActive()
+                                        ->add_group('your_security_dashboard')
+                                            ->add_plain('dashboard')
+                                                ->setHtml('<p class="text-center">Check detailed statistics on <a href="https://cleantalk.org/my<?php echo ! empty($uniforce_user_token) ? \'?cp_mode=security&user_token=\'.$uniforce_user_token : \'\'; ?>" target="_blank">your Security dashboard</a></p>')
+                                        ->getParent(2)
+                                        ->add_group('statistics')
+                                            ->add_plain('stat')
+                                                ->setCallback('usp_settings__show_fw_statistics')
+                                        ->getParent(2)
+                                            ->add_group('detected_cms')
+                                                ->add_plain('detected_cms')
+                                                    ->setCallback('ctusp_settings__show_cms')
+                                        ->getParent(2)
+                                        ->add_group('modified_files')
+                                            ->add_plain('modified_files')
+                                                ->setCallback('ctusp_settings__show_modified_files');
+
+                                    // Settings
+                                    $settings
+	                                    ->add_tab( 'settings' )
+                                            ->add_group('access_key')
+                                                ->add_field('key')
+                                                    ->setInput_type('text')
+                                                    ->setTitle('')
+                                                    ->setHtml_after('</p>Account registered for email: ' . $usp->data->account_name_ob . '</p>')
+                                            ->getParent( 2)
+                                            ->add_group( 'firewall')
+        	                                    ->add_field( 'fw' )
+                                                    ->setTitle('Security Firewall')
+                                                    ->setDescription('Firewall filters requests from malicious IP addresses.')
+                                                ->getParent()
+                                                ->add_field('waf')
+                                                    ->setTitle('Web Application Firewall')
+                                                    ->setDescription('Catches dangerous stuff like: XSS, MySQL-injections and malicious uploaded files.')
+                                            ->getParent(2)
+                                            ->add_group('miscellaneous')
+                                                ->add_field( 'bfp_enable')
+                                                    ->setTitle('Bruteforce protection')
+                                                    ->setDescription('Bruteforce protection for login forms.')
+                                            ->getParent()
+                                                ->add_field('bfp_admin_page_uri')
+                                                    ->setInput_type('text')
+	                                                ->setTitle('Admin page URI');
+
+                                    // Scanner
+                                    $settings
+                                         ->add_tab( 'scanner' )
+                                            ->add_group( 'common')
+                                                ->setTitle('');
+
+                                    $settings->draw();
+
+                                ?>
                             </div>
                         </div>
-                        <input type="hidden" id="uniforce_security" name="security" value="<?php echo $uniforce_security ?>">
+                        <input type="hidden" id="uniforce_security" name="security" value="<?php echo $usp->data->security_key ?>">
                         <input type="hidden" name="action" value="save_settings">
                         <div class="text-center">
                             <button type="submit" class="btn btn-setup mt-sm-2" id='btn-save-settings' style="display: inline">Save</button>

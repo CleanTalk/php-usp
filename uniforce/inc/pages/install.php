@@ -8,6 +8,8 @@ if ( ! defined( 'CT_USP_ROOT' ) ) {
     exit ();
 }
 
+$usp = \Cleantalk\Common\State::getInstance();
+
 ?>
 
 <body class="fade-in">
@@ -65,7 +67,6 @@ if ( ! defined( 'CT_USP_ROOT' ) ) {
                             </p>
                             <input type="text" class="input-field" name="addition_scripts" />
                         </div>
-                        <input type="hidden" id="uniforce_security" name="security" value="<?php echo md5( Server::get( 'SERVER_NAME' ) ) ?>">
                         <button type="submit" class="btn btn-setup" disabled>Install</button>
                     </form>
 
@@ -74,7 +75,7 @@ if ( ! defined( 'CT_USP_ROOT' ) ) {
                             License agreement
                         </a>
                         <br />
-                        <a href="https://cleantalk.org/register?platform=uniforce&website=<?php echo $_SERVER['SERVER_NAME']; ?>&product_name=security" target="_blank">
+                        <a href="https://cleantalk.org/register?platform=uniforce&website=<?php echo Server::get( 'SERVER_NAME' ); ?>&product_name=security" target="_blank">
                             Don't have an account? <strong>Create here!</strong>
                         </a>
                     </div>

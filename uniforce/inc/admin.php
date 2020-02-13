@@ -3,6 +3,7 @@
 use Cleantalk\Common\API;
 use Cleantalk\Common\Err;
 use Cleantalk\Common\File;
+use Cleantalk\Common\State;
 use Cleantalk\Uniforce\Cron;
 use Cleantalk\Uniforce\FireWall;
 use Cleantalk\Variables\Post;
@@ -13,7 +14,7 @@ use Cleantalk\Variables\Server;
  *
  * AJAX handler (returns json result)
  */
-function uniforce_key_validate() {
+function usp_key_validate() {
 
     $result = API::method__notice_paid_till(
         Post::get( 'key' ),
@@ -35,7 +36,7 @@ function uniforce_key_validate() {
  *
  * AJAX handler (returns json result)
  */
-function uniforce_get_key() {
+function usp_get_key() {
 
     $result = API::method__get_api_key(
         'security',
@@ -63,13 +64,13 @@ function uniforce_get_key() {
  *
  * AJAX handler (returns json result)
  */
-function uniforce_do_install() {
+function usp_do_install() {
 
     // Parsing key
     if( preg_match( '/^[a-z0-9]{1,20}$/', Post::get( 'key' ), $matches ) ){
 
         $api_key = $matches[0];
-        $cms     = uniforce_detect_cms( CT_USP_SITE_ROOT . 'index.php' );
+        $cms     = usp_detect_cms( CT_USP_SITE_ROOT . 'index.php' );
 
         $files_to_mod = array();
 
@@ -128,7 +129,7 @@ function uniforce_do_install() {
             // Determine file to install Cleantalk script
             $exclusions = array();
 
-            uniforce_install( $files_to_mod, $api_key, $cms, $exclusions );
+            usp_install( $files_to_mod, $api_key, $cms, $exclusions );
 
         }else
             Err::add( 'All files for script paths are unavailable' );
@@ -152,7 +153,7 @@ function uniforce_do_install() {
  * @param $cms
  * @param $exclusions
  */
-function uniforce_install($files, $api_key, $cms, $exclusions ){
+function usp_install($files, $api_key, $cms, $exclusions ){
 	
 	foreach ($files as $file){
 		
@@ -174,7 +175,7 @@ function uniforce_install($files, $api_key, $cms, $exclusions ){
 			
 			// Adding ? > to the end if it's not there
 			if($php_open_tags <= $php_close_tags)
-				File::inject__code($file, "\n$open_php_tag\n", 'end');
+				File::inject__code($file, "\n$open_php_tag\n" . PHP_EOL, 'end');
 			
 			if( ! Err::check() ){
 
@@ -191,7 +192,7 @@ function uniforce_install($files, $api_key, $cms, $exclusions ){
 					// Addition to index.php Bottom (JavaScript test)
 					File::inject__code(
 						$file,
-						"\tob_end_flush();\n"
+						"\tnob_end_flush();\n"
 						."\tif(isset(\$_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower(\$_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest'){\n"
 						."\t\tdie();\n"
 						."\t}",
@@ -203,18 +204,14 @@ function uniforce_install($files, $api_key, $cms, $exclusions ){
 			}
 		}
 	}
-	
-	// Clean config
-	if( ! Err::check() )
-        uniforce_uninstall();
-	
+
 	// Install settings in cofig if everything is ok
 	if( ! Err::check() )
-        uniforce_install_config( $files, $api_key, $cms, $exclusions );
+        usp_install_config( $files, $api_key, $cms, $exclusions );
 	
 	// Set cron tasks
 	if( ! Err::check() )
-        uniforce_install_cron();
+        usp_install_cron();
 }
 
 /**
@@ -225,36 +222,39 @@ function uniforce_install($files, $api_key, $cms, $exclusions ){
  * @param $cms
  * @param $exclusions
  */
-function uniforce_install_config($modified_files, $api_key, $cms, $exclusions ){
-	
-	$path_to_config = CT_USP_ROOT . 'config.php';
-	$salt = str_pad(rand(0, getrandmax()), 6, '0').str_pad(rand(0, getrandmax()), 6, '0');
-	// Attention. Backwards order because inserting it step by step
-	
+function usp_install_config($modified_files, $api_key, $cms, $exclusions ){
+
+	$usp = State::getInstance();
+
 	if( Post::get( 'admin_password' ) )
-		File::inject__variable( $path_to_config, 'uniforce_password', hash( 'sha256', trim( Post::get( 'admin_password' ) ) ) );
+		$usp->data->password = hash( 'sha256', trim( Post::get( 'admin_password' ) ) );
+
 	if( Post::get( 'email' ) )
-		File::inject__variable( $path_to_config, 'uniforce_email', trim( Post::get( 'email' ) ) );
+		$usp->data->email = trim( Post::get( 'email' ) );
+
 	if( Post::get( 'user_token' ) )
-		File::inject__variable( $path_to_config, 'uniforce_user_token', trim( Post::get( 'user_token' ) ) );
+		$usp->data->user_token = trim( Post::get( 'user_token' ) );
+
 	if( Post::get( 'account_name_ob' ) )
-		File::inject__variable( $path_to_config, 'uniforce_account_name_ob', trim( Post::get( 'account_name_ob' ) ) );
-	File::inject__variable( $path_to_config, 'uniforce_salt', $salt );
-	File::inject__variable( $path_to_config, 'uniforce_security', hash( 'sha256', '~(o_O)~' . $salt ) );
-	File::inject__variable( $path_to_config, 'uniforce_modified_files', $modified_files, true );
-	if( $exclusions )
-		File::inject__variable( $path_to_config, 'uniforce_exclusions', $exclusions, true );
-	File::inject__variable( $path_to_config, 'uniforce_apikey', $api_key );
-	File::inject__variable( $path_to_config, 'uniforce_detected_cms', $cms['name'] );
-    File::inject__variable( $path_to_config, 'uniforce_cms_admin_page', $cms['admin_page'] );
-	File::inject__variable( $path_to_config, 'uniforce_is_installed', true );
+		$usp->data->account_name_ob =  trim( Post::get( 'account_name_ob' ) );
+
+	$usp->data->security_key = hash( 'sha256', '~(o_O)~' . $usp->$api_key . $usp->data->salt );
+	$usp->data->modified_files = $modified_files;
+	$usp->data->detected_cms = $cms['name'];
+	$usp->data->is_installed  = true;
+
+    $usp->settings->bfp_admin_page =  $cms['admin_page'];
+	$usp->settings->key  = $api_key;
+
+	$usp->data->save();
+	$usp->settings->save();
 
 }
 
 /**
  * Modify cron
  */
-function uniforce_install_cron(){
+function usp_install_cron(){
 
 	Cron::addTask( 'sfw_update', 'uniforce_sfw_update', 86400, time() + 60 );
 	Cron::addTask( 'security_send_logs', 'uniforce_security_send_logs', 3600 );
@@ -266,56 +266,34 @@ function uniforce_install_cron(){
 /**
  *  Uninstall
  *
- * @param array $files
  * @return bool
  */
-function uniforce_uninstall($files = array() ){
+function usp_uninstall(){
 	
-	global $uniforce_modified_files;
-	
-	// Clean files from config.php
-	$files = empty($files) && isset($uniforce_modified_files)
-		? $uniforce_modified_files
-		: $files;
-	
-	$path_to_config = CT_USP_ROOT . 'config.php';
-	File::clean__variable( $path_to_config, 'uniforce_security' );
-	File::clean__variable( $path_to_config, 'uniforce_password' );
-	File::clean__variable( $path_to_config, 'uniforce_salt' );
-	File::clean__variable( $path_to_config, 'uniforce_apikey' );
-	File::clean__variable( $path_to_config, 'uniforce_email' );
-	File::clean__variable( $path_to_config, 'uniforce_user_token' );
-	File::clean__variable( $path_to_config, 'uniforce_account_name_ob' );
-	File::clean__variable( $path_to_config, 'uniforce_detected_cms' );
-    File::clean__variable( $path_to_config, 'uniforce_cms_admin_page' );
-	File::clean__variable( $path_to_config, 'uniforce_admin_password' );
-	File::clean__variable( $path_to_config, 'uniforce_modified_files' );
-	File::clean__variable( $path_to_config, 'uniforce_exclusions' );
-	File::clean__variable( $path_to_config, 'uniforce_is_installed' );
-	
-	// Restore deafult settings
-	File::replace__variable( $path_to_config, 'uniforce_sfw_last_update', 0 );
-	File::replace__variable( $path_to_config, 'uniforce_sfw_last_logs_send', 0 );
-	File::replace__variable( $path_to_config, 'uniforce_sfw_entries', 0 );
-	File::replace__variable( $path_to_config, 'uniforce_sfw_protection', true );
-	File::replace__variable( $path_to_config, 'uniforce_waf_protection', true );
-	File::replace__variable( $path_to_config, 'uniforce_bfp_protection', true );
-	
+	$usp = State::getInstance();
+
+//	error_log( var_export( $usp->data, true ) );
+	error_log( var_export( $usp->data->modified_files, true ) );
+
+	foreach ( $usp->data->modified_files as $file ){
+		error_log( var_export( $file, true ) );
+		File::clean__tag( $file, 'top_code' );
+		File::clean__tag( $file, 'bottom_code' );
+	}
+
+	// Deleting options and their files
+	$usp->deleteOption( 'data' );
+	$usp->deleteOption( 'settings' );
+	$usp->deleteOption( 'remote_calls' );
+
 	// Deleting cron tasks
 	File::replace__variable( CT_USP_CRON_FILE, 'uniforce_tasks', array() );
-	
+
 	// Deleting SFW nets
 	File::clean_file_full( CT_USP_ROOT . 'data' . DS . 'sfw_nets.php' );
 
 	// Deleting any logs
-    uniforce_uninstall_logs();
-	
-	if(isset($files)){
-		foreach ( $files as $file ){
-			File::clean__tag( $file, 'top_code' );
-			File::clean__tag( $file, 'bottom_code' );
-		}
-	}
+    usp_uninstall_logs();
 
 	return ! Err::check();
 
@@ -324,9 +302,8 @@ function uniforce_uninstall($files = array() ){
 /**
  * Unlink any logs files from the system
  */
-function uniforce_uninstall_logs() {
+function usp_uninstall_logs() {
 
-    $log_dir_paths = array();
     $log_dir_paths[] = CT_USP_ROOT . 'data/security_logs';
     $log_dir_paths[] = CT_USP_ROOT . 'data/fw_logs';
 
@@ -350,7 +327,7 @@ function uniforce_uninstall_logs() {
  * @param string $out
  * @return array
  */
-function uniforce_detect_cms($path_to_index, $out = array( 'name' => 'Unknown', 'admin_page' => '' ) ){
+function usp_detect_cms($path_to_index, $out = array( 'name' => 'Unknown', 'admin_page' => '' ) ){
 	
 	if( is_file($path_to_index) ){
 	
@@ -402,7 +379,7 @@ function uniforce_detect_cms($path_to_index, $out = array( 'name' => 'Unknown', 
  * @param $password
  * @param $email
  */
-function uniforce_do_login($apikey, $password, $email ) {
+function usp_do_login($apikey, $password, $email ) {
 
     // Simple brute force protection
     sleep(2);
@@ -410,14 +387,15 @@ function uniforce_do_login($apikey, $password, $email ) {
     session_start();
 
     // If password is set in config
-    if(isset($password)){
-        if( ( Post::get( 'login' ) == $apikey || ( isset( $email ) && Post::get( 'login' ) == $email ) ) && hash( 'sha256', trim( Post::get( 'password' ) ) ) == $password ){
+    if( $password ){
+
+        if( ( Post::get( 'login' ) == $apikey || Post::get( 'login' ) === $email ) && hash( 'sha256', trim( Post::get( 'password' ) ) ) == $password )
             $_SESSION['authenticated'] = 'true';
-        }else
+        else
             Err::add('Incorrect login or password');
 
-    // No password is set. Check only login.
-    }elseif( ( Post::get( 'login' ) == $apikey ) ){
+    // No password is set. Check only login (access key).
+    }elseif( Post::get( 'login' ) == $apikey ){
         $_SESSION['authenticated'] = 'true';
 
     // No match
@@ -433,8 +411,7 @@ function uniforce_do_login($apikey, $password, $email ) {
  * Logout handler
  * AJAX handler (returns json result)
  */
-function uniforce_do_logout() {
-
+function usp_do_logout() {
     session_start();
     session_destroy();
     unset($_SESSION['authenticated']);
@@ -446,55 +423,47 @@ function uniforce_do_logout() {
  * Save settings handler
  * AJAX handler (returns json result)
  */
-function uniforce_do_save_settings() {
+function usp_do_save_settings() {
 
     $path_to_config = CT_USP_ROOT . 'config.php';
 
-    global $uniforce_apikey;
+	$usp = State::getInstance();
+
+	$usp->settings->key = Post::get( 'apikey' );
 
     // validate the new key
-    if( Post::get( 'apikey' ) !== $uniforce_apikey ) {
-        $result = API::method__notice_paid_till(
-            Post::get( 'apikey' ),
-            preg_replace( '/http[s]?:\/\//', '', Server::get( 'SERVER_NAME' ), 1 ),
-            'security'
-        );
-        if( ! empty( $result['error'] ) ){
-            Err::add('Checking key failed', $result['error']);
-        } else {
-            File::replace__variable( $path_to_config, 'uniforce_apikey', Post::get( 'apikey' ) );
-            File::replace__variable( $path_to_config, 'uniforce_account_name_ob', $result['account_name_ob'] );
-            File::replace__variable( $path_to_config, 'uniforce_user_token', $result['user_token'] );
-        }
-    }
+	usp_check_account_status();
 
-    File::replace__variable( $path_to_config, 'uniforce_sfw_protection', (bool)Post::get( 'uniforce_sfw_protection' ) );
-    File::replace__variable( $path_to_config, 'uniforce_waf_protection', (bool)Post::get( 'uniforce_waf_protection' ) );
-    File::replace__variable( $path_to_config, 'uniforce_bfp_protection', (bool)Post::get( 'uniforce_bfp_protection' ) );
-    File::replace__variable( $path_to_config, 'uniforce_cms_admin_page', Post::get( 'uniforce_bfp_protection_url' ) );
+	$usp->settings->fw             = (bool) Post::get( 'uniforce_sfw_protection' );
+	$usp->settings->waf            = (bool) Post::get( 'uniforce_waf_protection' );
+	$usp->settings->bfp            = (bool) Post::get( 'uniforce_bfp_protection' );
+	$usp->settings->bfp_admin_page = Post::get( 'uniforce_bfp_protection_url' );
 
     // FireWall actions
-    if( Post::get( 'uniforce_sfw_protection' ) || Post::get( 'uniforce_waf_protection' ) && Post::get( 'apikey' ) ){
-        if( Post::get( 'uniforce_sfw_protection' ) || Post::get( 'uniforce_waf_protection' ) ) {
+    if( ( $usp->settings->fw || $usp->settings->waf ) && $usp->settings->key ){
 
             // Update SFW
             $result = FireWall::sfw_update( Post::get( 'apikey' ) );
             if( ! Err::check() ){
-                File::replace__variable( $path_to_config, 'uniforce_sfw_last_update', time() );
-                File::replace__variable( $path_to_config, 'uniforce_sfw_entries', $result );
+                $usp->data->stat->fw->last_update = time();
+                $usp->data->stat->fw->entries = $result;
             }
 
             // Send FW logs
             $result = FireWall::logs__send( Post::get( 'apikey' ) );
             if( empty( $result['error'] ) && ! Err::check() ) {
-                File::replace__variable( $path_to_config, 'uniforce_sfw_last_logs_send', time() );
+                $usp->data->stat->fw->logs_sent_time = time();
+                $usp->data->stat->fw->logs_sent_amount = $result['rows'];
             }
 
-        } else {
-            // @ToDO replace variables to default, remove Cron tasks, clean data files
-        }
-
+    // Cleaning up Firewall data
+    } else {
+	    File::clean_file_full( CT_USP_ROOT . 'data' . DS . 'sfw_nets.php' );
+	    Cron::removeTask( 'sfw_update' );
+	    Cron::removeTask( 'fw_send_logs' );
+	    usp_uninstall_logs();
     }
+
 
     // BFP actions
     if( Post::get( 'uniforce_bfp_protection' ) && Post::get( 'apikey' ) ){
@@ -503,31 +472,91 @@ function uniforce_do_save_settings() {
             // Send BFP logs
             $result = FireWall::security__logs__send( Post::get( 'apikey' ) );
             if( empty( $result['error'] ) && ! Err::check() ) {
-                File::replace__variable( $path_to_config, 'uniforce_bfp_last_logs_send', time() );
-                File::replace__variable( $path_to_config, 'uniforce_bfp_trigger_count', 0 );
+                $usp->data->stat->bf->logs_sent_time = $result['rows'];
+                $usp->data->stat->bf->logs_sent_amount = time();
+                $usp->data->stat->bf->count = 0;
             }
 
+        // Cleaning up Bruteforce protection data
         } else {
-            // @ToDO replace variables to default, remove Cron tasks, clean data files
+	        usp_uninstall_logs();
+	        Cron::removeTask( 'fw_send_logs' );
+	        Cron::removeTask( 'fw_send_logs' );
         }
 
     }
+
+    $usp->data->save();
+    $usp->settings->save();
 
     Err::check() or die(json_encode(array('success' => true)));
     die(Err::check_and_output( 'as_json' ));
 
 }
 
+function usp_check_account_status( $key = null ){
+
+	$usp = State::getInstance();
+
+	$key = $key ? $key : $usp->settings->key;
+
+	// validate the new key
+	$result = API::method__notice_paid_till(
+		Post::get( 'apikey' ),
+		preg_replace( '/http[s]?:\/\//', '', Server::get( 'SERVER_NAME' ), 1 ),
+		'security'
+	);
+	if( ! empty( $result['error'] ) ){
+		Err::add('Checking key failed', $result['error']);
+		$usp->settings->key = Post::get( 'apikey' );
+		$usp->data->notice_show     = 0;
+		$usp->data->notice_renew    = 0;
+		$usp->data->notice_trial    = 0;
+		$usp->data->notice_review   = 0;
+		$usp->data->user_token      = '';
+		$usp->data->spam_count      = 0;
+		$usp->data->moderate_ip     = 0;
+		$usp->data->moderate        = 0;
+		$usp->data->service_id      = 0;
+		$usp->data->license_trial   = 0;
+		$usp->data->account_name_ob = '';
+		$usp->data->ip_license      = 0;
+		$usp->data->valid           = 0;
+		// $usp->data->notice_were_updated = $result[''];
+	} else {
+		$usp->settings->key = Post::get( 'apikey' );
+		$usp->data->notice_show     = isset( $result['show_notice'] ) ? $result['show_notice'] : 0;
+		$usp->data->notice_renew    = isset( $result['renew'] ) ? $result['renew'] : 0;
+		$usp->data->notice_trial    = isset( $result['trial'] ) ? $result['trial'] : 0;
+		$usp->data->notice_review   = isset( $result['show_review'] ) ? $result['show_review'] : 0;
+		$usp->data->user_token      = isset( $result['user_token'] ) ? $result['user_token'] : '';
+		$usp->data->spam_count      = isset( $result['spam_count'] ) ? $result['spam_count'] : 0;
+		$usp->data->moderate_ip     = isset( $result['moderate_ip'] ) ? $result['moderate_ip'] : 0;
+		$usp->data->moderate        = isset( $result['moderate'] ) ? $result['moderate'] : 0;
+		$usp->data->service_id      = isset( $result['service_id'] ) ? $result['service_id'] : 0;
+		$usp->data->license_trial   = isset( $result['license_trial'] ) ? $result['license_trial'] : 0;
+		$usp->data->account_name_ob = isset( $result['account_name_ob'] ) ? $result['account_name_ob'] : '';
+		$usp->data->ip_license      = isset( $result['ip_license'] ) ? $result['ip_license'] : 0;
+		$usp->data->valid           = isset( $result['valid'] ) ? $result['valid'] : 0;
+		// $usp->data->notice_were_updated = $result[''];
+	}
+
+	$usp->data->save();
+	$usp->settings->save();
+
+	return $usp->valid;
+}
+
 /**
  * Uninstall handler
  * AJAX handler (returns json result)
  */
-function uniforce_do_uninstall() {
+function usp_do_uninstall() {
 
         session_start();
         session_destroy();
         unset($_SESSION['authenticated']);
-        uniforce_uninstall();
+        usp_uninstall();
 
         Err::check() or die(json_encode(array('success' => true)));
 

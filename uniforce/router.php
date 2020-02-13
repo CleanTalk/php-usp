@@ -10,7 +10,7 @@ require_once 'inc' . DIRECTORY_SEPARATOR . 'actions.php'; // Actions
 // URL ROUTING
 switch (true){
 	// Installation
-	case empty( $uniforce_is_installed ):
+	case empty( \Cleantalk\Common\State::getInstance()->data->is_installed ):
 		$page = 'install';
 		break;
 	// Login
@@ -26,8 +26,8 @@ switch (true){
 // Common script for all pages
 require_once CT_USP_VIEW . 'header.php';
 
-// Page content
-require_once CT_USP_VIEW . $page . '.php';
+	// Page content
+	require_once CT_USP_VIEW . $page . '.php';
 
 // Footer
 require_once CT_USP_VIEW . 'footer.php';

@@ -1,5 +1,6 @@
 <?php
 
+use Cleantalk\Common\State;
 use Cleantalk\Variables\Server;
 
 // Exit if accessed directly.
@@ -27,26 +28,26 @@ if ( ! defined( 'CT_USP_ROOT' ) ) {
 
 				<!-- Login form -->
                 <div class="setup-form">
+
                     <!-- Start Error box -->
                     <div class="alert alert-danger alert-dismissible fade in" style="display:none" role="alert">
                         <button type="button" class="close" > &times;</button>
                         <p id='error-msg'></p>
                     </div>
                     <!-- End Error box -->
-                    <?php if( ! empty( $uniforce_is_installed ) ) : ?>
-                        <form action = 'javascript:void();' method="post" id='login-form'>
-                            <input type="text" placeholder="Access key<?php if( isset( $uniforce_email, $uniforce_password ) ) echo ' or e-mail'; ?>" class="input-field" name="login" required/>
 
-                            <?php if( ! empty( $uniforce_password ) ) : ?>
-                                <input type="password" placeholder="Password" class="input-field" name="password"/>
-                            <?php endif; ?>
-                            <input type="hidden" id="uniforce_security" name="security" value="<?php echo $uniforce_security ?>">
-                            <button type="submit" name="action" value="login" class="btn btn-setup" id="btn-login">Login</button>
-                            <p>Don't know your access key? Get it <a href="https://cleantalk.org/my" target="_blank">here</a>.</p>
-                        </form>
-                    <?php else : ?>
-                        <h4 class="text-center">Please, <?php echo '<a href="' . Server::get( 'HOST_NAME' ) . '/uniforce/index.php">setup</a>'; ?> plugin first!</h4>
-                    <?php endif; ?>
+                    <form action = 'javascript:void();' method="post" id='login-form'>
+
+                        <input type="text" placeholder="Access key<?php if( State::getInstance()->email && State::getInstance()->password ) echo ' or e-mail'; ?>" class="input-field" name="login" required/>
+
+                        <?php if( State::getInstance()->password ) : ?>
+                            <input type="password" placeholder="Password" class="input-field" name="password"/>
+                        <?php endif; ?>
+                        <button type="submit" name="action" value="login" class="btn btn-setup" id="btn-login">Login</button>
+                        <p>Don't know your access key? Get it <a href="https://cleantalk.org/my" target="_blank">here</a>.</p>
+
+                    </form>
+
                 </div>
 			</div>
 		</div>
