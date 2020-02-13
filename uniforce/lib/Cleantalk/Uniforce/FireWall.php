@@ -4,6 +4,8 @@ namespace Cleantalk\Uniforce;
 
 use Cleantalk\Common\Err;
 use Cleantalk\Common\File;
+use Cleantalk\Common\State;
+use Cleantalk\Variables\Cookie;
 use Cleantalk\Variables\Get;
 use Cleantalk\Variables\Server;
 
@@ -20,44 +22,11 @@ class FireWall extends \Cleantalk\Security\FireWall
 
     }
 
-    public static function get_module_statistics()
-    {
-        global $uniforce_sfw_protection,
-               $uniforce_waf_protection,
-               $uniforce_bfp_protection,
-               $uniforce_sfw_last_update,
-               $uniforce_sfw_entries,
-               $uniforce_sfw_last_logs_send,
-               $uniforce_waf_trigger_count,
-               $uniforce_sfw_trigger_count,
-               $uniforce_bfp_trigger_count,
-               $uniforce_bfp_last_logs_send;
-
-        $info = '';
-        if( (! empty( $uniforce_sfw_protection ) && $uniforce_sfw_protection) || (! empty( $uniforce_waf_protection ) && $uniforce_waf_protection) ) {
-            $sfw_updated_time = $uniforce_sfw_last_update ? date('M d Y H:i:s', $uniforce_sfw_last_update) : 'never.';
-            $sfw_send_logs_time = $uniforce_sfw_last_logs_send ? date('M d Y H:i:s', $uniforce_sfw_last_logs_send) : 'never.';
-            $info .= 'Security FireWall was updated: ' . $sfw_updated_time . '<br>';
-            $info .= 'Security FireWall contains: ' . $uniforce_sfw_entries . ' entires.<br>';
-            $info .= 'Security FireWall logs were sent: ' . $sfw_send_logs_time . '<br>';
-            $info .= '<br>';
-        }
-        if( ! empty( $uniforce_bfp_protection ) && $uniforce_bfp_protection ) {
-            $bfp_send_logs_time = $uniforce_bfp_last_logs_send ? date('M d Y H:i:s', $uniforce_bfp_last_logs_send) : 'never.';
-            $info .= 'BruteForce Protection was triggered: ' . $uniforce_bfp_trigger_count . '<br>';
-            $info .= 'BruteForce Protection logs were sent: ' . $bfp_send_logs_time . '<br>';
-            $info .= '<br>';
-        }
-        return $info;
-    }
-
     static public function ip__get($ip_types = array('real', 'remote_addr', 'x_forwarded_for', 'x_real_ip', 'cloud_flare')){
 
         $result = (array)Helper::ip__get($ip_types);
 
-        global $uniforce_apikey;
-
-        if(isset($_GET['spbct_test_ip'], $_GET['spbct_test'], $uniforce_apikey) && $_GET['spbct_test'] == md5($uniforce_apikey)){
+	    if ( Get::is_set( 'spbct_test_ip', 'spbct_test' ) && Get::get( 'spbct_test' ) == md5( State::getInstance()->key ) ) {
             $ip_type = Helper::ip__validate($_GET['spbct_test_ip']);
             $test_ip = $ip_type == 'v6' ? Helper::ip__v6_normalize($_GET['spbct_test_ip']) : $_GET['spbct_test_ip'];
             if($ip_type)
@@ -186,9 +155,7 @@ class FireWall extends \Cleantalk\Security\FireWall
      */
     public function bfp_check()
     {
-        global $spbct_checkjs_val;
-
-        if( isset( $_COOKIE['spbct_authorized'] ) && $_COOKIE['spbct_authorized'] == $spbct_checkjs_val ) {
+	    if ( Cookie::get( 'spbct_authorized' ) == State::getInstance()->check_js ) {
             return true;
         }
 
@@ -677,11 +644,11 @@ class FireWall extends \Cleantalk\Security\FireWall
             return array( 'error' => 'NO_LOGS_TO_SEND' );
     }
 
-    public static function sfw_update($uniforce_apikey, $file_url = null, $immediate = false)
+	public static function sfw_update( $api_key, $file_url = null, $immediate = false )
     {
 
         //TODO unzip file and remote calls
-        $result = API::method__security_firewall_data($uniforce_apikey);
+	    $result = API::method__security_firewall_data( $api_key );
 
         if (empty($result['error'])) {
 
