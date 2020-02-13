@@ -425,8 +425,6 @@ function usp_do_logout() {
  */
 function usp_do_save_settings() {
 
-    $path_to_config = CT_USP_ROOT . 'config.php';
-
 	$usp = State::getInstance();
 
 	$usp->settings->key = Post::get( 'apikey' );

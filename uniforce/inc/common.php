@@ -26,11 +26,9 @@ define( 'CT_USP_VIEW', CT_USP_INC . 'pages' . DS );
 define( 'CT_USP_DATA', CT_USP_ROOT . 'data' . DS );
 
 // Files
-define( 'CT_USP_CONFIG_FILE', CT_USP_ROOT . 'config.php' );
 define( 'CT_USP_CRON_FILE', CT_USP_ROOT . 'data' . DS . 'cron_data.php' );
 
 require_once CT_USP_LIB . 'autoloader.php';
-require_once CT_USP_ROOT . 'config.php';
 
 // URI
 define( 'CT_USP_URI',      preg_replace( '/^(.*\/)(.*?.php)?/', '$1',  Server::get('REQUEST_URI') ) );
