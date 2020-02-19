@@ -10,7 +10,7 @@ class Cron extends \Cleantalk\Common\Cron
 {
 
     // Option name with cron data
-    const CRON_FILE = CT_USP_ROOT . 'data' . DS . 'cron_data.php';
+    const CRON_FILE = CT_USP_CRON_FILE;
 
     public static function getTasks(){
         require self::CRON_FILE;
