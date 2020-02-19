@@ -18,7 +18,17 @@ switch (true){
 		$page = 'login';
         break;
     // Settings
-    case Session::get('authenticated') === 'true':
+    case Cookie::get('authenticated') === 'true':
+	    $additional_js = array(
+	    	'scanner-plugin',
+	    	'scanner',
+		    'table',
+	    );
+	    $additional_css = array(
+		    'settings-scanner',
+	        'settings-table',
+		    'jquery-ui.min'
+	    );
 	    $page = 'settings';
         break;
 }

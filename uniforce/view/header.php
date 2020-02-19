@@ -26,7 +26,17 @@
         <!-- Color Scheme -->
         <link href="css/color-scheme.css" rel="stylesheet">
 
+        <!-- Icons -->
+        <link href="css/icons.css" rel="stylesheet">
+
         <!-- Custom page style -->
         <link href="css/<?php echo $page ?>.css" rel="stylesheet">
+        <?php
+            if( isset($additional_css) ){
+	            foreach ($additional_css as $style){
+	                echo '<link href="css/' . $style . '.css" rel="stylesheet">';
+                }
+            }
+        ?>
 
     </head>
