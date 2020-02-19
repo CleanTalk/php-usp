@@ -463,7 +463,7 @@ class API{
 	 *
 	 * @param string $api_key
 	 * @param string $file_path  Path to the file
-	 * @param array  $file       File itself
+	 * @param string  $file       File itself
 	 * @param string $file_md5   MD5 hash of file
 	 * @param array  $weak_spots List of weak spots found in file
 	 * @param bool   $do_check
