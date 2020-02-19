@@ -210,6 +210,8 @@ function usp_install($files, $api_key, $cms, $exclusions ){
 	// Set cron tasks
 	if( ! Err::check() )
         usp_install_cron();
+
+	usp_check_account_status( $api_key );
 }
 
 /**
@@ -236,7 +238,7 @@ function usp_install_config($modified_files, $api_key, $cms, $exclusions ){
 	if( Post::get( 'account_name_ob' ) )
 		$usp->data->account_name_ob =  trim( Post::get( 'account_name_ob' ) );
 
-	$usp->data->security_key = hash( 'sha256', '~(o_O)~' . $usp->$api_key . $usp->data->salt );
+	$usp->data->security_key = hash( 'sha256', '~(o_O)~' . $usp->key . $usp->data->salt );
 	$usp->data->modified_files = $modified_files;
 	$usp->data->detected_cms = $cms['name'];
 	$usp->data->is_installed  = true;
@@ -258,6 +260,7 @@ function usp_install_cron(){
 	Cron::addTask( 'security_send_logs', 'uniforce_security_send_logs', 3600 );
     Cron::addTask( 'fw_send_logs', 'uniforce_fw_send_logs', 3600 );
     Cron::addTask( 'clean_black_lists', 'uniforce_clean_black_lists', 86400 );
+    Cron::addTask( 'update_signatures', 'usp_scanner__get_signatures', 86400 );
 
 }
 
@@ -270,11 +273,7 @@ function usp_uninstall(){
 	
 	$usp = State::getInstance();
 
-//	error_log( var_export( $usp->data, true ) );
-	error_log( var_export( $usp->data->modified_files, true ) );
-
 	foreach ( $usp->data->modified_files as $file ){
-		error_log( var_export( $file, true ) );
 		File::clean__tag( $file, 'top_code' );
 		File::clean__tag( $file, 'bottom_code' );
 	}
