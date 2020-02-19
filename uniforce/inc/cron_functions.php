@@ -143,27 +143,7 @@ function usp_scanner__launch(){
 
 function usp_scanner__get_signatures() {
 
-	$usp = State::getInstance();
+	$out = \Cleantalk\Scanner\Controller::action__scanner__scan_signatures();
 
-	if ( true || $usp->settings->scanner_signature_analysis ) {
-
-		$result = \Cleantalk\Scanner\Scanner::get_hashes__signature($usp->data->stat->scanner->signature_last_update);
-
-		if(empty($result['error'])){
-
-			$signatures = new \Cleantalk\Common\Storage( 'signatures', $result );
-			$signatures->save();
-
-			$usp->data->stat->scanner->signature_last_update = time();
-			$usp->data->stat->scanner->signature_entries = count( $result );
-
-		}elseif($result['error'] === 'UP_TO_DATE'){
-			$out = array(
-				'success' => 'UP_TO_DATE',
-			);
-		}else
-			$out = $result;
-
-		return empty($out) ? true : $out;
-	}
+	return empty($result['error']) ? $out : true;
 }

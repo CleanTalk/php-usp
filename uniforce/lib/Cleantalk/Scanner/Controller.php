@@ -44,6 +44,38 @@ class Controller {
 			: false;
 	}
 
+	public static function action__scanner__get_signatures() {
+
+		$usp = State::getInstance();
+
+		$out = array(
+			'success' => true,
+		);
+
+		if ( $usp->settings->scanner_signature_analysis ) {
+
+			$result = \Cleantalk\Scanner\Scanner::get_hashes__signature($usp->data->stat->scanner->signature_last_update);
+
+			if(empty($result['error'])){
+
+				$signatures = new \Cleantalk\Common\Storage( 'signatures', $result );
+				$signatures->save();
+
+				$usp->data->stat->scanner->signature_last_update = time();
+				$usp->data->stat->scanner->signature_entries = count( $result );
+
+			}elseif($result['error'] === 'UP_TO_DATE'){
+				$out['success'] = 'UP_TO_DATE';
+			}else
+				$out['updated'] = count($result);
+		}else
+			Err::add('Signatures scan is disabled');
+
+		return Err::check()
+			? Err::check_and_output()
+			: $out;
+	}
+
 	public static function action__scanner__controller(){
 
 		$usp = State::getInstance();
