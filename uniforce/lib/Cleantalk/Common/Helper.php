@@ -491,9 +491,9 @@ class Helper{
 				),
 				$opts
 			);
-			
+
 			foreach($presets as $preset){
-				
+
 				switch($preset){
 					
 					// Do not follow redirects
@@ -533,7 +533,7 @@ class Helper{
 						break;
 				}
 			}
-			
+
 			curl_setopt_array($ch, $opts);
 			$result = curl_exec($ch);
 			
@@ -741,7 +741,16 @@ class Helper{
 	static public function is_regexp($regexp){
 		return @preg_match('/' . $regexp . '/', null) !== false;
 	}
-	
+
+	/**
+	 * Determs is the system is windows
+	 *
+	 * @return bool
+	 */
+	static public function is_windows() {
+		return strpos( strtolower( php_uname( 's' ) ), 'windows' ) !== false ? true : false;
+	}
+
 	static public function convert_to_regexp( $string ){
 		$string = preg_replace( '/\$/', '\\\\$', $string );
 		$string = preg_replace( '/\//', '\/', $string );
