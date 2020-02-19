@@ -80,14 +80,11 @@ class Tab extends Element {
 
 	protected function draw_element() {
 
-		$out = '<div class="ctusp_tab ctusp_tab---' . $this->getName() . ' ' . ($this->active ? 'ctusp_tab--active' : '') . '">';
+		echo '<div class="ctusp_tab ctusp_tab---' . $this->getName() . ($this->active ? ' ctusp_tab--active' : '') . '">';
 
-			$out .= $this->draw_children();
+			$this->draw_children();
 
-		$out .= '</div>';
-
-		return $out;
-
+		echo '</div>';
 	}
 
 	/**

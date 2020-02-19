@@ -35,33 +35,34 @@ class Settings {
 		return $tab;
 	}
 
-	public function draw( $out = '' ) {
+	public function draw() {
+
+		ob_start();
+
 		if($this->children){
 			foreach ($this->children as $child){
 				if($child->type === 'tab' && !$this->tab_headers_output){
 
-					$out .= $this->draw_tab_headers();
+					$this->draw_tab_headers();
 					$this->tab_headers_output = true;
 
 				}
 
-				$out .= $child->draw();
+				$child->draw();
 			}
 		}
 
-		echo $out;
+		ob_get_flush();
 	}
 
 	public function draw_tab_headers( $out = '' ) {
 		if($this->tab_headers){
-			$out .= '<div class="ctusp_tab_navigation">';
+			echo '<div class="ctusp_tab_navigation">';
 				foreach ($this->tab_headers as $tab_header){
 					$out .= $tab_header->draw();
 				}
-			$out .= '</div>';
+			echo '</div>';
 		}
-
-		return $out;
 	}
 
 }

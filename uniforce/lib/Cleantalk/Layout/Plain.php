@@ -35,7 +35,7 @@ class Plain extends Element {
 	}
 
 	protected function draw_element() {
-		return $this->html;
+		echo $this->html;
 	}
 
 }

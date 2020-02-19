@@ -86,59 +86,56 @@ class Field extends Element {
 
 	public function draw_element() {
 
-		$out = '<div class="' . $this->def_class . ($this->class ? ' ' . $this->class : '') . ($this->parent_field ? ' ctusp_field--sub' : '') . '">';
+		echo '<div class="'
+		     . $this->def_class
+		     . ' ' . $this->def_class . '---' . $this->getName()
+		     . ($this->class ? ' ' . $this->class : '')
+		     . ($this->parent_field ? ' ctusp_field--sub' : '')
+		     . '">';
 
 			$draw_function = 'draw_element__' . $this->input_type;
-			$out .= $this->$draw_function();
+			echo $this->$draw_function();
 
-		$out .= '</div>';
-
-		return $out;
+		echo '</div>';
 	}
 
 	public function draw_element__text() {
 
-		$out = '';
-
 		$name = $this->getName();
 
 		if($this->title_first)
-			$out .= '<label for="ctusp_field---' . $name . '" class="ctusp_field-title ctusp_field-title--' . $this->input_type . '">' . $this->title . '</label>&nbsp;';
+			echo '<label for="ctusp_field---' . $name . '" class="ctusp_field-title ctusp_field-title--' . $this->input_type . '">' . $this->title . '</label>&nbsp;';
 
-		$out .= '<input type="text" id="ctusp_field---'. $name .'" name="ctusp_setting---'. $name .'" '
+		echo '<input type="text" id="ctusp_field---'. $name .'" name="'. $name .'" '
              . 'class="' . ($this->class ? $this->class : ''). '" '
 		     .'value="'.($this->state->settings->$name ? $this->state->settings->$name : '').'" '
 		     .( $this->parent_field && !$this->state->settings->{$this->parent_field} ? ' disabled="disabled"' : '')
-		     .(!$this->child_fields ? '' : ' onchange="spbcSettingsDependencies([\''.implode("','",$this->child_fields).'\'])"')
+		     .($this->child_fields ? ' onchange="spbcSettingsDependencies([\''.implode("','",$this->child_fields).'\'])"' : '')
 		     .' />';
 
 		if(!$this->title_first)
-			$out .= '&nbsp;<label for="ctusp_field---' . $name . '" class="ctusp_field-title ctusp_field-title--' . $this->input_type . '">' . $this->title . '</label>';
+			echo '&nbsp;<label for="ctusp_field---' . $name . '" class="ctusp_field-title ctusp_field-title--' . $this->input_type . '">' . $this->title . '</label>';
 
-		$out .= $this->description
+		echo $this->description
 			?'<div class="ctusp_field-description">'. $this->description .'</div>'
 			: '';
-
-		return $out;
 	}
 
 	public function draw_element__checkbox() {
 
 		$name = $this->getName();
 
-		$out = '<input type="checkbox" id="ctusp_field---' . $this->getName() . '" name="ctusp_setting---[' . $this->getName() . ']" value="1" '
+		echo '<input type="checkbox" id="ctusp_field---' . $this->getName() . '" name="' . $name . '" value="1" '
 		     .($this->state->settings->$name == '1' ? ' checked' : '')
-		       .( $this->parent_field && !$this->state->settings->{$this->parent_field} ? ' disabled="disabled"' : '')
-		     .($this->child_fields ? '' : ' onchange="spbcSettingsDependencies([\''.implode("','",$this->child_fields).'\'])"')
+	         .($this->parent_field && !$this->state->settings->{$this->parent_field} ? ' disabled="disabled"' : '')
+		     .($this->child_fields ? ' onchange="spbcSettingsDependencies([\''.implode("','",$this->child_fields).'\'])"' : '')
 		     .' />';
-		$out .= isset($this->title)
+		echo isset($this->title)
 			? '<label for="ctusp_setting---'.$this->getName().'" class="ctusp_field-title ctusp_field-title--'.$this->input_type.'">'.$this->title.'</label>'
 			: '';
-		$out .= $this->description
+		echo $this->description
 			?'<div class="ctusp_field-description">'. $this->description .'</div>'
 			: '';
-
-		return $out;
 	}
 
 }

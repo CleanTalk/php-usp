@@ -52,14 +52,15 @@ class Group extends Element {
 
 	public function draw_element() {
 
-		$out = '<div class="ctusp_group">'
-		     .($this->title ? '<h3 class="ctusp_group-title">'. $this->title .'</h3>' : '');
+		echo '<div class="ctusp_group'
+		     . ' ' . 'ctusp_group' . '---' . $this->getName()
+		     . '">';
 
-			$out .= $this->draw_children();
+			echo $this->title ? '<h3 class="ctusp_group-title">'. $this->title .'</h3>' : '';
 
-		$out .= '</div>';
+			echo $this->draw_children();
 
-		return $out;
+		echo '</div>';
 	}
 
 }

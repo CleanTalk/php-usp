@@ -33,30 +33,27 @@ class Element extends Settings {
 		return $this;
 	}
 
-	public function draw( $out = '' ) {
+	public function draw() {
 
-		$out .= $this->js_before();
-		$out .= $this->html_before();
+		echo $this->js_before();
+		echo $this->html_before();
 
 		// Custom output for concrete element
-		$out .= $this->callback
+		$this->callback
 			? call_user_func( $this->callback )
 			: $this->draw_element();
 
-		$out .= $this->html_after();
-		$out .= $this->js_after();
-
-		return $out;
+		echo $this->html_after();
+		echo $this->js_after();
 
 	}
 
-	public function draw_children( $out = '' ){
+	public function draw_children(){
 		if($this->children){
 			foreach ($this->children as $child){
-				$out .= $child->draw();
+				$child->draw();
 			}
 		}
-		return $out;
 	}
 
 	/**

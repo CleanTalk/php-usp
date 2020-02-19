@@ -46,7 +46,7 @@ class TabHeader extends Element {
 	}
 
 	protected function draw_element() {
-		return '<h2 class="ctusp_tab_navigation-title ctusp_tab_navigation-title---'. $this->getName() .' '. ($this->active ? 'ctusp_tab_navigation-title--active' : '') . '">'
+		echo '<h2 class="ctusp_tab_navigation-title ctusp_tab_navigation-title---'. $this->getName() .' '. ($this->active ? 'ctusp_tab_navigation-title--active' : '') . '">'
 		       . '<i class="'. ( $this->icon ? $this->icon : 'icon-search' ) .'"></i>'
 		       . $this->title
 		       . '</h2>';
