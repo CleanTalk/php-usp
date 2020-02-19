@@ -3,12 +3,16 @@
 use Cleantalk\Common\RemoteCalls;
 
 require_once 'inc' . DIRECTORY_SEPARATOR . 'common.php';  // Common stuff
+
+// Accept remote calls
+RemoteCalls::check() && RemoteCalls::perform();
+
 require_once 'inc' . DIRECTORY_SEPARATOR . 'actions.php'; // Actions
 
 // URL ROUTING
 switch (true){
 	// Installation
-	case empty( \Cleantalk\Common\State::getInstance()->data->is_installed ):
+	case \Cleantalk\Common\State::getInstance()->data->is_installed === false:
 		$page = 'install';
 		break;
 	// Login
