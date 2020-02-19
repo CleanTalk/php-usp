@@ -48,7 +48,7 @@ if ( $usp->settings->fw || $usp->settings->waf || $usp->settings->bfp ) {
                 }
 
                 if( ! $bfp_result ) {
-	                ++$usp->data->stat->bf->counter;
+	                ++$usp->data->stat->bfp->counter;
 	                $usp->data->save();
                     $firewall->update_logs( $firewall->blocked_ip, $firewall->result );
                     $firewall->_die( $usp->data->account_name_ob, $firewall->result );
@@ -122,7 +122,7 @@ function uniforce_attach_js( $buffer ){
         && preg_match('/^\s*(<!doctype|<html)[\s\S]*html>\s*$/i', $buffer) == 1 // Only for HTML documents
     ){
         $html_addition =
-            '<script>var spbct_checkjs_val = "' . State::getInstance()->check_js . '";</script>'
+            '<script>var spbct_checkjs_val = "' . md5( State::getInstance()->key ) . '";</script>'
             .'<script src="/uniforce/js/ct_js_test.js"></script>'
             .'<script src="/uniforce/js/ct_ajax_catch.js"></script>';
         $buffer = preg_replace(
@@ -134,12 +134,12 @@ function uniforce_attach_js( $buffer ){
     }
 
     if( State::getInstance()->settings->bfp && FireWall::is_logged_in( State::getInstance()->detected_cms ) ) {
-        setcookie( 'spbct_authorized', State::getInstance()->check_js, 0, '/' );
+        setcookie( 'spbct_authorized', md5( State::getInstance()->key ), 0, '/' );
     } else {
         if( ! empty( Cookie::get('spbct_authorized') ) ) {
             FireWall::security__update_auth_logs( 'logout' );
         }
-        setcookie( 'spbct_authorized', State::getInstance()->check_js, time()-3600, '/' );
+        setcookie( 'spbct_authorized', md5( State::getInstance()->key ), time()-3600, '/' );
     }
 
     return $buffer;
