@@ -279,9 +279,11 @@ function usp_uninstall(){
 	}
 
 	// Deleting options and their files
-	$usp->deleteOption( 'data' );
-	$usp->deleteOption( 'settings' );
-	$usp->deleteOption( 'remote_calls' );
+	$usp->delete( 'data' );
+	$usp->delete( 'settings' );
+	$usp->delete( 'remote_calls' );
+	$usp->delete( 'scan_result' );
+	$usp->delete( 'signatures' );
 
 	// Deleting cron tasks
 	File::replace__variable( CT_USP_CRON_FILE, 'uniforce_tasks', array() );
@@ -381,8 +383,6 @@ function usp_do_login($apikey, $password, $email ) {
     // Simple brute force protection
     sleep(2);
 
-    session_start();
-
     // If password is set in config
     if( $password ){
 
@@ -423,28 +423,35 @@ function usp_do_save_settings() {
 
 	$usp = State::getInstance();
 
-	$usp->settings->key = Post::get( 'apikey' );
+	// Set missing settings.
+	$settings =array();
+	foreach($usp->default_settings as $setting => $value){
+		$settings[$setting] = Post::get( $setting ) !== ''
+			? Post::get( $setting )
+			: $value;
+		settype($settings[$setting], gettype($value));
+	} unset($setting, $value);
+
+	// Set values
+	foreach ( $settings as $setting => $value) {
+		$usp->settings->$setting = $value;
+	} unset($setting, $value);
 
     // validate the new key
-	usp_check_account_status();
-
-	$usp->settings->fw             = (bool) Post::get( 'uniforce_sfw_protection' );
-	$usp->settings->waf            = (bool) Post::get( 'uniforce_waf_protection' );
-	$usp->settings->bfp            = (bool) Post::get( 'uniforce_bfp_protection' );
-	$usp->settings->bfp_admin_page = Post::get( 'uniforce_bfp_protection_url' );
+	$usp->data->key_is_ok = usp_check_account_status();
 
     // FireWall actions
     if( ( $usp->settings->fw || $usp->settings->waf ) && $usp->settings->key ){
 
             // Update SFW
-            $result = FireWall::sfw_update( Post::get( 'apikey' ) );
+            $result = FireWall::sfw_update( $usp->settings->key );
             if( ! Err::check() ){
                 $usp->data->stat->fw->last_update = time();
                 $usp->data->stat->fw->entries = $result;
             }
 
             // Send FW logs
-            $result = FireWall::logs__send( Post::get( 'apikey' ) );
+            $result = FireWall::logs__send( $usp->settings->key );
             if( empty( $result['error'] ) && ! Err::check() ) {
                 $usp->data->stat->fw->logs_sent_time = time();
                 $usp->data->stat->fw->logs_sent_amount = $result['rows'];
@@ -460,15 +467,15 @@ function usp_do_save_settings() {
 
 
     // BFP actions
-    if( Post::get( 'uniforce_bfp_protection' ) && Post::get( 'apikey' ) ){
-        if( Post::get( 'uniforce_bfp_protection' ) ) {
+    if( $usp->settings->bfp && $usp->settings->key ){
+        if( $usp->settings->bfp ) {
 
             // Send BFP logs
-            $result = FireWall::security__logs__send( Post::get( 'apikey' ) );
+            $result = FireWall::security__logs__send( $usp->settings->key );
             if( empty( $result['error'] ) && ! Err::check() ) {
-                $usp->data->stat->bf->logs_sent_time = $result['rows'];
-                $usp->data->stat->bf->logs_sent_amount = time();
-                $usp->data->stat->bf->count = 0;
+                $usp->data->stat->bfp->logs_sent_time = $result['rows'];
+                $usp->data->stat->bfp->logs_sent_amount = time();
+                $usp->data->stat->bfp->count = 0;
             }
 
         // Cleaning up Bruteforce protection data
@@ -496,13 +503,12 @@ function usp_check_account_status( $key = null ){
 
 	// validate the new key
 	$result = API::method__notice_paid_till(
-		Post::get( 'apikey' ),
+		$key,
 		preg_replace( '/http[s]?:\/\//', '', Server::get( 'SERVER_NAME' ), 1 ),
 		'security'
 	);
 	if( ! empty( $result['error'] ) ){
 		Err::add('Checking key failed', $result['error']);
-		$usp->settings->key = Post::get( 'apikey' );
 		$usp->data->notice_show     = 0;
 		$usp->data->notice_renew    = 0;
 		$usp->data->notice_trial    = 0;
@@ -518,7 +524,6 @@ function usp_check_account_status( $key = null ){
 		$usp->data->valid           = 0;
 		// $usp->data->notice_were_updated = $result[''];
 	} else {
-		$usp->settings->key = Post::get( 'apikey' );
 		$usp->data->notice_show     = isset( $result['show_notice'] ) ? $result['show_notice'] : 0;
 		$usp->data->notice_renew    = isset( $result['renew'] ) ? $result['renew'] : 0;
 		$usp->data->notice_trial    = isset( $result['trial'] ) ? $result['trial'] : 0;
