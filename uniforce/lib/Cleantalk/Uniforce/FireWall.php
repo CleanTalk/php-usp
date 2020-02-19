@@ -155,7 +155,7 @@ class FireWall extends \Cleantalk\Security\FireWall
      */
     public function bfp_check()
     {
-	    if ( Cookie::get( 'spbct_authorized' ) == State::getInstance()->check_js ) {
+	    if ( Cookie::get( 'spbct_authorized' ) === md5( State::getInstance()->key ) ) {
             return true;
         }
 
