@@ -22,7 +22,6 @@ function usp_key_validate() {
         'security'
     );
 
-    // $result['error'] = 'some';
     if( ! empty( $result['error'] ) ){
         $result['error'] = 'Checking key failed: ' . $result['error'];
     }
@@ -53,7 +52,6 @@ function usp_get_key() {
     if( ! empty( $result['error'] ) ){
         $result['error'] = 'Getting key error: ' . $result['error'];
     }
-
 
     die( json_encode( $result ) );
 
