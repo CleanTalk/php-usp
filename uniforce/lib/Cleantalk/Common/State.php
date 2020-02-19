@@ -19,13 +19,12 @@ namespace Cleantalk\Common;
  * @property Storage settings
  * @property Storage data
  * @property Storage remote_calls
- * @property Storage errors
+ * @property Storage scan_result
  *
  */
-class State {
+class State extends \Cleantalk\Common\Storage{
 
 	use \Cleantalk\Templates\FluidInterface;
-	use \Cleantalk\Templates\Storage;
 	use \Cleantalk\Templates\Singleton;
 
 	public static $instance;
@@ -39,7 +38,7 @@ class State {
 		'block_timer__5_fails' => 10,
 
 		// Access Key
-		'key' => null,
+		'key' => '',
 
 		// Firewall
 		'fw' => 1,
@@ -92,15 +91,18 @@ class State {
 				'logs_sent_amount' => 0,
 				'entries' => 0,
 				'last_update' => 0,
+				'count' => 0,
 			),
-			'bf' => array(
+			'bfp' => array(
 				'logs_sent_time' => 0,
 				'logs_sent_amount' => 0,
+				'count' => 0,
 			),
 			'scanner' => array(
-				'signature_last_update'	=> 0,
 				'last_scan' => 0,
-				'last_backup' => 0,
+				'last_scan_amount' => 0,
+				'signature_last_update'	=> 0,
+				'signature_entries'	=> 0,
 			),
 			'php_logs' => array(
 				'last_sent' => 0,
@@ -137,25 +139,25 @@ class State {
 	);
 
 	public $def_remote_calls = array(
-		
+
 	// Common
 		'close_renew_banner'       => array('last_call' => 0,),
 		'update_plugin'            => array('last_call' => 0,),
 		'update_security_firewall' => array('last_call' => 0, 'cooldown' => 3),
 		'drop_security_firewall'   => array('last_call' => 0,),
 		'update_settings'          => array('last_call' => 0,),
-		
+
 	// Inner
 		'download__quarantine_file' => array('last_call' => 0, 'cooldown' => 3),
-		
+
 	// Backups
 		'backup_signatures_files' => array('last_call' => 0,),
 		'rollback_repair'         => array('last_call' => 0,),
-		
+
 	// Scanner
 		'scanner_signatures_update'        => array('last_call' => 0,),
 		'scanner_clear_hashes'             => array('last_call' => 0,),
-		
+
 		'scanner__controller'              => array('last_call' => 0, 'cooldown' => 3),
 		'scanner__get_remote_hashes'       => array('last_call' => 0,),
 		'scanner__count_hashes_plug'       => array('last_call' => 0,),
@@ -171,16 +173,20 @@ class State {
 		'scanner__links_count'             => array('last_call' => 0,),
 		'scanner__links_scan'              => array('last_call' => 0,),
 		'scanner__frontend_scan'           => array('last_call' => 0,),
+		'scanner__send_results'            => array('last_call' => 0,),
 	);
 
 	public function __construct( ...$options )
 	{
+		// Default options to get
+		$options = $options ? $options : array( 'settings', 'data' );
+
 		if( self::$instance )
 			return self::$instance;
 
 		foreach($options as $option_name){
 
-			$option = $this->getOption( $option_name );
+			$option = $this->get( $option_name );
 
 			// Default options
 			if ( $option_name === 'settings' ) {
@@ -190,8 +196,13 @@ class State {
 			// Default data
 			if($option_name === 'data'){
 				$option = is_array( $option ) ? array_merge( $this->default_data, $option ) : $this->default_data;
+
+				// Generate during construction if unset
 				if(empty($option['salt']))
 					$option['salt'] = str_pad(rand(0, getrandmax()), 6, '0').str_pad(rand(0, getrandmax()), 6, '0');
+				if(empty($option['security_key']))
+					$option['security_key'] = md5( isset($_SERVER['SERVER_NAME']) ? $_SERVER['SERVER_NAME'] : '' );
+
 			}
 			
 			// Default errors
@@ -203,7 +214,7 @@ class State {
 			if ( $option_name === 'remote_calls' ) {
 				$option = is_array( $option ) ? array_merge( $this->def_remote_calls, $option ) : $this->def_remote_calls;
 			}
-			
+
 			$this->$option_name = $this->convertToStorage( $option_name, $option );
 		}
 
@@ -212,36 +223,22 @@ class State {
 	}
 
 	/**
-	 * Get option from file
-	 * If file doesn't exist returns empty array
-	 * If variable in the file doesn't exist returns empty array
+	 * Magic. Handles unexisting properties.
+	 * Returns certain options. From the top level of State.
+	 * for ->key returns settings->key
+	 *      for ->* returns data->* if it's set
+	 *          for every other occurrences pass call to Storage->__get()
 	 *
-	 * @param $option_name
+	 * @param $name
 	 *
-	 * @return array
+	 * @return mixed|null
 	 */
-	private function getOption($option_name)
-	{
-		$filename = CT_USP_DATA . $option_name . '.php';
-		if ( file_exists( $filename ) ){
-			require_once $filename;
-		}
-		return isset($$option_name) ? $$option_name : array();
-	}
-
-	/**
-	 * Unset the option in the State class
-	 * Deletes file with the option if exists
-	 *
-	 * @param $option_name
-	 */
-	public function deleteOption( $option_name )
-	{
-		if ( isset( $this->$option_name ) )
-			unset($this->$option_name);
-
-		$filename = CT_USP_DATA . $option_name . '.php';
-		if ( file_exists( $filename ) )
-			unlink( $filename );
+	public function __get( $name ) {
+		return $name === 'key'
+			? $this->settings->key
+			: ( isset( $this->data->$name )
+				? $this->data->$name
+				: parent::__get( $name )
+			);
 	}
 }
