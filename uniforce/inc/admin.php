@@ -390,13 +390,13 @@ function usp_do_login($apikey, $password, $email ) {
     if( $password ){
 
         if( ( Post::get( 'login' ) == $apikey || Post::get( 'login' ) === $email ) && hash( 'sha256', trim( Post::get( 'password' ) ) ) == $password )
-            $_SESSION['authenticated'] = 'true';
+            setcookie('authentificated', State::getInstance()->data->security_key, 0, '/', null, false, true);
         else
             Err::add('Incorrect login or password');
 
     // No password is set. Check only login (access key).
     }elseif( Post::get( 'login' ) == $apikey ){
-        $_SESSION['authenticated'] = 'true';
+	    setcookie('authentificated', State::getInstance()->data->security_key, 0, '/', null, false, true);
 
     // No match
     }else
@@ -412,11 +412,10 @@ function usp_do_login($apikey, $password, $email ) {
  * AJAX handler (returns json result)
  */
 function usp_do_logout() {
-    session_start();
-    session_destroy();
-    unset($_SESSION['authenticated']);
-    die( json_encode( array( 'success' => true ) ) );
 
+	setcookie('authentificated', 0, time()-86400, '/', null, false, true);
+
+    die( json_encode( array( 'success' => true ) ) );
 }
 
 /**
@@ -551,13 +550,10 @@ function usp_check_account_status( $key = null ){
  */
 function usp_do_uninstall() {
 
-        session_start();
-        session_destroy();
-        unset($_SESSION['authenticated']);
-        usp_uninstall();
+	setcookie('authentificated', 0, time()-86400, '/', null, false, true);
 
-        Err::check() or die(json_encode(array('success' => true)));
+    usp_uninstall();
 
-        die(Err::check_and_output( 'as_json' ));
-
+    Err::check() or die(json_encode(array('success' => true)));
+    die(Err::check_and_output( 'as_json' ));
 }

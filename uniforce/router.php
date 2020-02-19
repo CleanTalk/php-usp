@@ -1,8 +1,6 @@
 <?php
 
-session_start();
-
-use Cleantalk\Variables\Session;
+use Cleantalk\Common\RemoteCalls;
 
 require_once 'inc' . DIRECTORY_SEPARATOR . 'common.php';  // Common stuff
 require_once 'inc' . DIRECTORY_SEPARATOR . 'actions.php'; // Actions
@@ -14,11 +12,11 @@ switch (true){
 		$page = 'install';
 		break;
 	// Login
-	case Session::get('authenticated') !== 'true':
+	case \Cleantalk\Variables\Cookie::get('authenticated') !== 'true':
 		$page = 'login';
         break;
     // Settings
-    case Cookie::get('authenticated') === 'true':
+    case \Cleantalk\Variables\Cookie::get('authenticated') === 'true':
 	    $additional_js = array(
 	    	'scanner-plugin',
 	    	'scanner',
