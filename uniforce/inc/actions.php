@@ -56,6 +56,19 @@ if( Post::is_set('action', 'security') ) {
 				usp_do_uninstall();
 				break;
 
+			case 'spbc_tbl-action--row':
+				call_user_func( '\Cleantalk\Layout\ListTable::ajax__row_action_handler' );
+				break;
+
+			case 'spbc_tbl-pagination':
+				call_user_func( '\Cleantalk\Layout\ListTable::ajax__pagination_handler' );
+				break;
+
+			case 'spbc_scanner_file_view':
+				require_once CT_USP_INC . 'scanner.php';
+				call_user_func( 'spbc_scanner_file_view' );
+				break;
+
 			default:
 				die(Err::add('Unknown action')->get_last( 'as_json' ));
 				break;
