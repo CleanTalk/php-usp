@@ -76,7 +76,7 @@ function get_key(){
 
     let field = $('input[name="access_key_field"]');
 
-    ct_AJAX(
+    usp_AJAX(
         {
             action: 'get_key',
             email: field.val().trim(),
@@ -100,7 +100,7 @@ function get_key(){
 }
 
 function key_validate( value, field ){
-    ct_AJAX(
+    usp_AJAX(
         {
             action: 'key_validate',
             key: value,
@@ -136,7 +136,7 @@ function key_validate( value, field ){
 }
 
 function install(){
-    ct_AJAX(
+    usp_AJAX(
         {
             action: 'install',
             key: $('input[name="access_key_field"]').val().trim(),

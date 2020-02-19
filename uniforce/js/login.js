@@ -10,7 +10,7 @@ function login() {
     var password = $('input[name="password"]').length
         ? $('input[name="password"]').val().trim()
         : null;
-    ct_AJAX(
+    usp_AJAX(
         {
             action: 'login',
             login: login.val().trim(),

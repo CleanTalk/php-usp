@@ -20,7 +20,7 @@ jQuery(document).ready(function($) {
 	});
 });
 
-function ct_AJAX(data, params, obj){
+function usp_AJAX(data, params, obj){
 
 	// Default params
 	var button        = params.button        || null;
@@ -28,7 +28,7 @@ function ct_AJAX(data, params, obj){
 	var spinner       = params.spinner       || null;
 	var progressbar   = params.progressbar   || null;
 	var callback      = params.callback      || null;
-	var error_handler = params.error_handler || ct_AJAX__error_handler;
+	var error_handler = params.error_handler || usp_AJAX__error_handler;
 	var notJson       = params.notJson       || null;
 	var timeout       = params.timeout       || 15000;
 	obj               = obj                  || null;
@@ -82,7 +82,7 @@ function ct_AJAX(data, params, obj){
 	});
 }
 
-function ct_AJAX__error_handler(result, data, params, obj){
+function usp_AJAX__error_handler(result, data, params, obj){
 	jQuery('.alert-danger').show(300);
 	jQuery('#error-msg').text(result.error);
 	console.log(data);
