@@ -27,7 +27,7 @@ if ( ! defined( 'CT_USP_ROOT' ) ) {
                 <hr />
 
 				<!-- Login form -->
-                <div class="setup-form">
+                <div class="setup-form" style="text-align: center;">
 
                     <!-- Start Error box -->
                     <div class="alert alert-danger alert-dismissible fade in" style="display:none" role="alert">

@@ -44,3 +44,8 @@ body {
     background: #F0F8FF;
     box-shadow: 0 0 10px rgba(0,0,0,0.5);
 }
+
+.--red        {color: red;  }
+.--orange        {color: orange;  }
+.--orange1        {color: #d54a0e;  }
+.--green      {color: green;}

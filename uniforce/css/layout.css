@@ -1,3 +1,21 @@
+/* Mobile Portrait Size to Mobile Landscape Size (devices and browsers)
+=================================================================== */
+@media only screen and (max-width: 479px) {
+    #layout-block{
+        padding-top: 10px;
+        padding-bottom: 25px;
+    }
+}
+
+/* Tablet Portrait Size to Tablet Landscape Size (devices and browsers)
+=================================================================== */
+@media only screen and (min-width: 480px) and (max-width: 767px){
+    #layout-block{
+        margin: 0 auto;
+        width: 420px;
+    }
+}
+
 body{
     font-family: 'Lato', sans-serif;
 }
@@ -44,11 +62,10 @@ body{
         top: 0;
     }
 
+/* Buttons */
 .btn.btn-setup {
-    width: 120px;
-    display:block;
-    margin: 20px auto 20px;
-    text-transform:uppercase;
+    display: inline-block;
+    margin: 0 auto; padding: 3px 10px;
     -webkit-transition: all .5s ease-in-out;
     -moz-transition: all .5s ease-in-out;
     -o-transition: all .5s ease-in-out;
@@ -69,35 +86,23 @@ input[type=text], input[type=password], input[type=email]{
     width: 70%;
 }
 
+/* Preloaders */
 .preloader{
     width: 20px;
     margin-left: 5px;
     vertical-align: text-top;
-    display: inline;
+    display: none;
 }
+    .preloader--button {
+        height: 15px;
+        margin-left: 5px;
+        vertical-align: text-top;
+        display: none;
+    }
 
 .footer-text, .footer-text a{
     text-align: center;
 }
 
-/* Mobile Portrait Size to Mobile Landscape Size (devices and browsers)
-=================================================================== */
-@media only screen and (max-width: 479px) {
-    #layout-block{
-        padding-top: 10px;
-        padding-bottom: 25px;
-    }
-}
-
-/* Tablet Portrait Size to Tablet Landscape Size (devices and browsers)
-=================================================================== */
-@media only screen and (min-width: 480px) and (max-width: 767px){
-    #layout-block{
-        margin: 0 auto;
-        width: 420px;
-    }
-}
-
-.width100{
-    width: 100% !important;
-}
+.width100{width: 100% !important;}
+.--hide{display: none;}

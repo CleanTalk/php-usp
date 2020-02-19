@@ -26,7 +26,7 @@ $usp = \Cleantalk\Common\State::getInstance();
                 </div>
                 <hr />
 
-                <div class="setup-form">
+                <div class="setup-form" style="text-align: center;">
 
                     <!-- Start Success Box -->
                     <div class="alert alert-success alert-dismissible fade in" style="display:none; word-wrap: break-word;" role="alert">
