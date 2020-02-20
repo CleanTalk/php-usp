@@ -16,11 +16,11 @@ switch (true){
 		$page = 'install';
 		break;
 	// Login
-	case \Cleantalk\Variables\Cookie::get('authenticated') !== 'true':
+	case \Cleantalk\Variables\Cookie::get('authentificated') !== \Cleantalk\Common\State::getInstance()->data->security_key:
 		$page = 'login';
         break;
     // Settings
-    case \Cleantalk\Variables\Cookie::get('authenticated') === 'true':
+    case \Cleantalk\Variables\Cookie::get('authentificated') === \Cleantalk\Common\State::getInstance()->data->security_key:
 	    $additional_js = array(
 	    	'scanner-plugin',
 	    	'scanner',
