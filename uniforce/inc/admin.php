@@ -85,6 +85,11 @@ function usp_do_install() {
             $files_to_mod[] = 'bitrix/admin/index.php';
         }
 
+        // OPENCART ONLY: Add admin/index.php to files for modification if exists
+        if( $cms['name'] == 'OpenCart' ) {
+            $files_to_mod[] = 'admin/index.php';
+        }
+
         //Additional scripts to modify
         if( Post::get( 'addition_scripts' ) ){
             // Merging
@@ -363,6 +368,13 @@ function usp_detect_cms($path_to_index, $out = array( 'name' => 'Unknown', 'admi
         // Bitrix
         if(preg_match('/(bitrix.*?)/', $index_file))
             $out = array( 'name' => 'Bitrix', 'admin_page' => '/bitrix/admin' );
+        // OpenCart
+        if(
+            file_exists( CT_USP_SITE_ROOT . '/system/modification.xml' ) &&
+            preg_match( '/(OpenCart.*?)/', file_get_contents( CT_USP_SITE_ROOT . 'system/modification.xml' ) )
+        ) {
+            $out = array( 'name' => 'OpenCart', 'admin_page' => '/admin' );
+        }
 
 	}
 	
