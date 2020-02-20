@@ -10,10 +10,10 @@ use Cleantalk\Variables\Server;
 // Config
 require_once 'inc' . DIRECTORY_SEPARATOR . 'common.php';
 
+$usp = State::getInstance();
+
 if( ! $usp->key )
     return;
-
-$usp = State::getInstance();
 
 // Helper functions
 require_once( CT_USP_INC . 'functions.php' );
