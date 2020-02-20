@@ -173,7 +173,7 @@ usp_localize_script( 'usp',
                                                 ->setTitle('Bruteforce protection')
                                                 ->setDescription('Bruteforce protection for login forms.')
                                         ->getParent()
-                                            ->add_field('bfp_admin_page_uri')
+                                            ->add_field('bfp_admin_page')
                                                 ->setInput_type('text')
                                                 ->setTitle('Admin page URI')
 	                                    ->getParent( 2)
