@@ -319,8 +319,12 @@ class FireWall extends \Cleantalk\Security\FireWall
                     }
                 }
                 break;
+            case 'OpenCart' :
+                // @ToDo we have to find a way to detect admin logging in
+                return true;
+                break;
             default :
-                // @ToDo implement universal logic for coockies checking
+                // @ToDo implement universal logic for cookies checking
                 return true;
                 break;
         }
