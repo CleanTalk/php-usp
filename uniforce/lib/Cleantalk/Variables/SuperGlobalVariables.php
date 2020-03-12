@@ -22,7 +22,22 @@ class SuperGlobalVariables{
 	 * @var array Contains saved variables
 	 */
 	public $variables = [];
-	
+
+	/**
+	 * Check if set of variables is exists
+	 *
+	 * @param mixed ...$names Names of global variables
+	 *
+	 * @return bool
+	 */
+	public static function is_set( ...$names ){
+		$result = true;
+		foreach ( $names as $name ){
+			$result = $result && static::getInstance()->get_variable( $name ) !== '';
+		}
+		return $result;
+	}
+
 	/**
 	 * Gets variable from ${_SOMETHING}
 	 *

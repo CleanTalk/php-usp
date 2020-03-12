@@ -3,7 +3,8 @@
 namespace Cleantalk\Security;
 
 use Cleantalk\Variables\Server;
-use Cleantalk\Common\Helper as SpbcHelper;
+use Cleantalk\Common\Helper;
+use Cleantalk\Common\API;
 
 /**
  * CleanTalk Security Firewall class
@@ -115,13 +116,13 @@ class FireWall
 	
 	static public function ip__get($ip_types = array('real', 'remote_addr', 'x_forwarded_for', 'x_real_ip', 'cloud_flare')){
 		
-		$result = (array)SpbcHelper::ip__get($ip_types);
+		$result = (array)Helper::ip__get($ip_types);
 		
 		global $spbc;
 		
 		if(isset($_GET['spbct_test_ip'], $_GET['spbct_test'], $spbc->settings['spbc_key']) && $_GET['spbct_test'] == md5($spbc->settings['spbc_key'])){
-			$ip_type = SpbcHelper::ip__validate($_GET['spbct_test_ip']);
-			$test_ip = $ip_type == 'v6' ? SpbcHelper::ip__v6_normalize($_GET['spbct_test_ip']) : $_GET['spbct_test_ip'];
+			$ip_type = Helper::ip__validate($_GET['spbct_test_ip']);
+			$test_ip = $ip_type == 'v6' ? Helper::ip__v6_normalize($_GET['spbct_test_ip']) : $_GET['spbct_test_ip'];
 			if($ip_type)
 				$result['test'] = $test_ip;
 		}
@@ -137,7 +138,7 @@ class FireWall
 		
 		foreach($this->ip_array as $ip_origin => $current_ip){
 			
-			$ip_type = SpbcHelper::ip__validate($current_ip);
+			$ip_type = Helper::ip__validate($current_ip);
 			
 			if($ip_type && $ip_type == 'v4'){
 				
@@ -226,7 +227,7 @@ class FireWall
 	
 	public function tc__update_logs( $ip = array() ){
 		$ip = !empty( $ip ) ? $ip : $this->ip_array;
-		$interval_time = SpbcHelper::time__get_interval_start( $this->store_interval );
+		$interval_time = Helper::time__get_interval_start( $this->store_interval );
 		foreach($this->ip_array as $ip_origin => $current_ip){
 			$id = md5( $current_ip . $interval_time );
 			$this->db->query(
@@ -246,7 +247,7 @@ class FireWall
 	
 	public function tc__clear_table(){
 		if( rand( 0, 1000 ) < $this->chance_to_clean ){
-			$interval_start = SpbcHelper::time__get_interval_start( $this->tc_period );
+			$interval_start = Helper::time__get_interval_start( $this->tc_period );
 			$this->db->query(
 				'DELETE
 				FROM ' . SPBC_TBL_TC_LOG . '
@@ -433,9 +434,9 @@ class FireWall
 		$spbc_die_page = file_get_contents(SPBC_PLUGIN_DIR . 'inc/spbc_die_page.html');
 		
 		$spbc_die_page = str_replace( "{TITLE}", __('Blocked: Security by CleanTalk', 'security-malware-firewall'),     $spbc_die_page );
-		$spbc_die_page = str_replace( "{REMOTE_ADDRESS}", $this->blocked_ip,     $spbc_die_page );
-		$spbc_die_page = str_replace( "{SERVICE_ID}",     $service_id,           $spbc_die_page );
-		$spbc_die_page = str_replace( "{HOST}",           $_SERVER['HTTP_HOST'], $spbc_die_page );
+		$spbc_die_page = str_replace( "{REMOTE_ADDRESS}", $this->blocked_ip,        $spbc_die_page );
+		$spbc_die_page = str_replace( "{SERVICE_ID}",     $service_id,              $spbc_die_page );
+		$spbc_die_page = str_replace( "{HOST}",           Server::get('HTTP_HOST'), $spbc_die_page );
 		$spbc_die_page = str_replace( "{TEST_TITLE}",     (!empty($_GET['spbct_test']) ? __('This is the testing page for Security FireWall', 'security-malware-firewall') : ''), $spbc_die_page );
 		$spbc_die_page = str_replace( "{REASON}",         $reason, $spbc_die_page );
 		$spbc_die_page = str_replace( "{GENERATED_TIMESTAMP}",    time(), $spbc_die_page );
@@ -474,7 +475,7 @@ class FireWall
 						sleep(5); // Wait till file will be created
 						
 						// Asynchronously call
-						return SpbcHelper::http__request(
+						return Helper::http__request(
 							get_option('siteurl'), 
 							array(
 								'spbc_remote_call_token'  => md5($spbc_key),
@@ -495,11 +496,11 @@ class FireWall
 		// Check for remote file
 		if($file_url){
 			
-			if( SpbcHelper::http__request__get_response_code($file_url) === 200){ // Check if it's there
+			if( Helper::http__request__get_response_code($file_url) === 200){ // Check if it's there
 				
-				$gz_data = SpbcHelper::http__request__get_content($file_url);
+				$gz_data = Helper::http__request__get_content($file_url);
 				
-				if(SpbcHelper::get_mime_type($gz_data)){
+				if(Helper::get_mime_type($gz_data)){
 					
 					if(function_exists('gzdecode')) {
 	
@@ -507,7 +508,7 @@ class FireWall
 	
 						if($data !== false){
 	
-							$lines = SpbcHelper::buffer__parse__csv($data);
+							$lines = Helper::buffer__parse__csv($data);
 	
 						}else
 							return array('error' => 'COULDNT_UNPACK');
@@ -544,7 +545,7 @@ class FireWall
 								// IPv6
 							} else {
 								$ip = substr( $ip, 1, - 1 ); // Cut ""
-								$ip = SpbcHelper::ip__v6_normalize( $ip ); // Normalize
+								$ip = Helper::ip__v6_normalize( $ip ); // Normalize
 								$ip = explode( ':', $ip );
 
 								$ip_1 = hexdec( $ip[0] . $ip[1] );
@@ -569,11 +570,11 @@ class FireWall
 					};
 
 					//Exclusion for servers IP (SERVER_ADDR)
-					if ( ! empty( $_SERVER['HTTP_HOST'] ) ) {
-						$exclusions[] = SpbcHelper::dns__resolve( $_SERVER['HTTP_HOST'] );
+					if ( Server::get('HTTP_HOST') ) {
+						$exclusions[] = Helper::dns__resolve( Server::get('HTTP_HOST') );
 						$exclusions[] = '127.0.0.1';
 						foreach ( $exclusions as $exclusion ) {
-							if ( SpbcHelper::ip__validate( $exclusion ) && sprintf( '%u', ip2long( $exclusion ) ) ) {
+							if ( Helper::ip__validate( $exclusion ) && sprintf( '%u', ip2long( $exclusion ) ) ) {
 								$query .= '(0, 0, 0, ' . sprintf( '%u', ip2long( $exclusion ) ) . ', 0, 0, 0, ' . sprintf( '%u', 4294967295 << ( 32 - 32 ) ) . ', 2, 0, 0),';
 								$query .= '(0, 0, 0, ' . sprintf( '%u', ip2long( $exclusion ) ) . ', 0, 0, 0, ' . sprintf( '%u', 4294967295 << ( 32 - 32 ) ) . ', 2, 0, 0),';
 							}
@@ -654,7 +655,7 @@ class FireWall
 				$to_data = array(
 					'datetime'        => date('Y-m-d H:i:s', $value['entry_timestamp']),
 					'page_url'        => $value['page_url'],
-					'visitor_ip'      => SpbcHelper::ip__validate($value['ip_entry']) == 'v4' ? (int)sprintf('%u', ip2long($value['ip_entry'])) : (string)$value['ip_entry'],
+					'visitor_ip'      => Helper::ip__validate($value['ip_entry']) == 'v4' ? (int)sprintf('%u', ip2long($value['ip_entry'])) : (string)$value['ip_entry'],
 					'http_user_agent' => $value['http_user_agent'],
 					'request_method'  => $value['request_method'],
 					'x_forwarded_for' => $value['x_forwarded_for'],

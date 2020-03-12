@@ -44,13 +44,14 @@ class Err{
 		self::getInstance()->errors[] = implode(': ', func_get_args());
 		return self::$instance;
 	}
-	
-	public function prepend( $string ){
+
+	public function append( $string ){
 		$this->errors[ count( $this->errors ) - 1 ] = $string . ': ' . end( self::getInstance()->errors );
 	}
 	
-	public function append( $string ){
-		$this->string = $string . ': ' . $this->string;
+	public static function prepend( $string ){
+		$str = array_pop( self::$instance->errors );
+		array_push( self::$instance->errors, $string . ': ' . $str );
 	}
 	
 	public static function get_last( $output_style = 'bool' ){

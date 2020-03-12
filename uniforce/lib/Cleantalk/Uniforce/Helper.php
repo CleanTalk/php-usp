@@ -46,36 +46,12 @@ class Helper extends \Cleantalk\Common\Helper {
         // Set APBCT User-Agent and passing data to parent method
         $opts = self::array_merge__save_numeric_keys(
             array(
-                CURLOPT_USERAGENT => 'SPBCT-wordpress/' . (defined('SPBC_VERSION') ? SPBC_VERSION : 'unknown') . '; ' . Server::get('SERVER_NAME'),
+                CURLOPT_USERAGENT => 'SPBCT-uni/' . (defined('SPBC_VERSION') ? SPBC_VERSION : 'unknown') . '; ' . Server::get('SERVER_NAME'),
             ),
             $opts
         );
 
         return parent::http__request($url, $data, $presets, $opts);
-    }
-
-    /**
-     * Wrapper for http_request
-     * Requesting HTTP response code for $url
-     *
-     * @param string $url
-     *
-     * @return array|mixed|string
-     */
-    static public function http__request__get_response_code( $url ){
-        return self::http__request( $url, array(), 'get_code');
-    }
-
-    /**
-     * Wrapper for http_request
-     * Requesting data via HTTP request with GET method
-     *
-     * @param string $url
-     *
-     * @return array|mixed|string
-     */
-    static public function http__request__get_content( $url ){
-        return self::http__request( $url, array(), 'get dont_split_to_array');
     }
 
     /**
@@ -133,6 +109,12 @@ class Helper extends \Cleantalk\Common\Helper {
         }
         return $buffer;
     }
+
+	static function buffer__parse__in_lines( $buffer ){
+		$buffer = explode( "\n", $buffer );
+		$buffer = self::buffer__trim_and_clear_from_empty_lines( $buffer );
+		return $buffer;
+	}
 
     static function buffer__parse__csv( $buffer ){
         $buffer = explode( "\n", $buffer );

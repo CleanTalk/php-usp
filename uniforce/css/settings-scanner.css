@@ -1,0 +1,21 @@
+.spbc_progressbar_counter{
+    position: absolute;
+    height: 22px;
+    width: 100%;
+    left: 0;
+    top: 0;
+    text-align: center;
+}
+    .spbc_progressbar_counter span{
+        vertical-align: sub;
+        line-height: 22px;
+        font-weight: 600;
+        font-size: 18px;
+    }
+    .ui-progressbar-value{ background-image: url(../img/pbar-ani.gif) !important; }
+
+.spbc_view_file_row_wrapper { line-height: 19px; }
+.spbc_view_file_row_wrapper:nth-child(odd) { background: #ccc; }
+.spbc_view_file_row_wrapper:nth-child(even) { background: #ddd; }
+.spbc_view_file_row_num { display: inline-block; width: 30px; margin: 0 0 0 5px; border-right: 1px solid black; }
+.spbc_view_file_row { display: inline; margin: 0 0 0 5px; }

@@ -1,43 +1,43 @@
 <?php
 
+use Cleantalk\Common\State;
 use Cleantalk\Uniforce\FireWall;
 use Cleantalk\Common\Err;
 use Cleantalk\Common\File;
+use Cleantalk\Uniforce\Helper;
 
-function uniforce_sfw_update(){
+function uniforce_sfw_update( $immediate = false ){
 	
-	global $uniforce_apikey, $uniforce_sfw_protection;
+	$usp = State::getInstance();
 	
 	// SFW actions
-	if( ! empty( $uniforce_apikey ) && ! empty( $uniforce_sfw_protection ) ){
+	if( $usp->key && $usp->settings->fw ){
 
 		// Update SFW
-		$result = FireWall::sfw_update( $uniforce_apikey );
-		if( ! Err::check() ){
-			File::replace__variable( CLEANTALK_CONFIG_FILE, 'uniforce_sfw_last_update', time() );
-			File::replace__variable( CLEANTALK_CONFIG_FILE, 'uniforce_sfw_entries', $result );
-		}
+		$usp->data->stat->fw->entries = 0;
+		$usp->data->save();
+		FireWall::action__fw__update( $usp->key );
 	}
 	
 	return ! Err::check() ? true : false;
 }
 
 function uniforce_fw_logs_send(){
-	
-	global $uniforce_apikey, $uniforce_sfw_protection;
+
+	$usp = State::getInstance();
 	
 	// SFW actions
-	if( ! empty( $uniforce_apikey ) && ! empty( $uniforce_sfw_protection ) ){
+	if( $usp->key && $usp->settings->fw ){
 
 		// Send SFW logs
-		$result = FireWall::logs__send( $uniforce_apikey );
+		$result = FireWall::logs__send( $usp->key );
 		
 		if( ! empty( $result['error'] ) )
 			Err::add( $result['error'] );
 		
 		if( ! Err::check() ) {
-            File::replace__variable( CLEANTALK_CONFIG_FILE, 'uniforce_sfw_last_logs_send', time() );
-            File::replace__variable( CLEANTALK_CONFIG_FILE, 'uniforce_waf_trigger_count', 0 );
+			$usp->data->stat->fw->logs_sent_time = time();
+			$usp->data->stat->fw->count = 0;
         }
 
 	}
@@ -47,20 +47,20 @@ function uniforce_fw_logs_send(){
 
 function uniforce_security_logs_send(){
 
-    global $uniforce_apikey, $uniforce_bfp_protection;
+	$usp = State::getInstance();
 
     // SFW actions
-    if( ! empty( $uniforce_apikey ) && ! empty( $uniforce_bfp_protection ) ){
+    if( $usp->key && $usp->settings->bfp ){
 
         // Send SFW logs
-        $result = FireWall::security__logs__send( $uniforce_apikey );
+        $result = FireWall::security__logs__send( $usp->key );
 
         if( ! empty( $result['error'] ) )
             Err::add( $result['error'] );
 
         if( ! Err::check() ) {
-            File::replace__variable( CLEANTALK_CONFIG_FILE, 'uniforce_bfp_last_logs_send', time() );
-            File::replace__variable( CLEANTALK_CONFIG_FILE, 'uniforce_bfp_trigger_count', 0 );
+	        $usp->data->stat->bfp->logs_sent_time = time();
+	        $usp->data->stat->bfp->count = $result;
         }
 
     }
@@ -71,8 +71,8 @@ function uniforce_security_logs_send(){
 function uniforce_clean_black_lists() {
 
     // Remove entries older than 1 hour
-    $black_list = CLEANTALK_ROOT . 'data/bfp_blacklist.php';
-    $fast_black_list = CLEANTALK_ROOT . 'data/bfp_fast_blacklist.php';
+    $black_list = CT_USP_ROOT . 'data/bfp_blacklist.php';
+    $fast_black_list = CT_USP_ROOT . 'data/bfp_fast_blacklist.php';
 
     // Black list clean
     if ( file_exists($black_list) ) {
@@ -112,4 +112,36 @@ function uniforce_clean_black_lists() {
         }
     }
 
+}
+
+/**
+ * Function for cron
+ * That launches background scanning
+ *
+ * @return bool
+ */
+function usp_scanner__launch(){
+
+	$usp = State::getInstance();
+
+	if ( $usp->scanner_status === false || ! $usp->settings->scanner_auto_start )
+		return true;
+
+	return Helper::http__request(
+		CT_USP_AJAX_URI,
+		array(
+			'plugin_name' => 'security',
+			'spbc_remote_call_token' => md5($usp->settings->key),
+			'spbc_remote_call_action' => 'scanner__controller',
+			'state'                   => 'get_hashes'
+		),
+		'get async'
+	);
+}
+
+function usp_scanner__get_signatures() {
+
+	$out = \Cleantalk\Scanner\Controller::action__scanner__scan_signatures();
+
+	return empty($result['error']) ? $out : true;
 }

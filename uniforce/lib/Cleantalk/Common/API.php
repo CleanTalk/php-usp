@@ -20,7 +20,9 @@ class API{
 	/* Default params  */
 	const URL = 'https://api.cleantalk.org';
 	const DEFAULT_AGENT = 'cleantalk-api-321';
-	
+
+	static $instance;
+
 	/**
 	 * Wrapper for 2s_blacklists_db API method.
 	 * Gets data for SpamFireWall.
@@ -372,14 +374,17 @@ class API{
 	 *
 	 * @return array|bool|mixed
 	 */
-	static public function method__security_firewall_data_file($api_key, $do_check = true)
+	static public function method__security_firewall_data_file($api_key, $out = null, $do_check = true)
 	{
 		
 		$request = array(
 			'auth_key'    => $api_key,
 			'method_name' => 'security_firewall_data_file',
 		);
-		
+
+		if( $out )
+			$request['out'] = $out;
+
 		$result = static::send_request($request);
 		$result = $do_check ? static::check_response($result, 'security_firewall_data_file') : $result;
 		
@@ -463,7 +468,7 @@ class API{
 	 *
 	 * @param string $api_key
 	 * @param string $file_path  Path to the file
-	 * @param array  $file       File itself
+	 * @param string  $file       File itself
 	 * @param string $file_md5   MD5 hash of file
 	 * @param array  $weak_spots List of weak spots found in file
 	 * @param bool   $do_check
