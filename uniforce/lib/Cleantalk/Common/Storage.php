@@ -9,8 +9,12 @@ class Storage extends \ArrayObject {
 	 * @var array
 	 */
 	public $storage_name;
+	public $directory = CT_USP_DATA;
 
-	public function __construct( $name, $data ) {
+	public function __construct( $name, $data = array(), $directory = null ) {
+
+		$this->directory = $directory ? $directory : $this->directory;
+		$data = $data === null ? $this->get( $name ) : $data; // Get data from directory if it's unset
 		parent::__construct( $data, \ArrayObject::STD_PROP_LIST|\ArrayObject::ARRAY_AS_PROPS );
 		$this->storage_name = $name;
 	}
@@ -63,12 +67,14 @@ class Storage extends \ArrayObject {
 	 */
 	protected function get($option_name)
 	{
-		$filename = CT_USP_DATA . $option_name . '.php';
+		$filename = $this->directory . $option_name . '.php';
 		if ( file_exists( $filename ) ){
 			require $filename;
 		}
 		return isset($$option_name) ? $$option_name : array();
 	}
+
+
 
 	/**
 	 * Saves option to file as array
@@ -76,10 +82,10 @@ class Storage extends \ArrayObject {
 	 */
 	public function save()
 	{
-		$filename = CT_USP_DATA . $this->storage_name . '.php';
+		$filename = $this->directory . $this->storage_name . '.php';
 		file_put_contents( $filename , "<?php\n");
 		\Cleantalk\Common\File::inject__variable(
-			CT_USP_DATA . $this->storage_name . '.php',
+			$this->directory . $this->storage_name . '.php',
 			$this->storage_name,
 			$this->convertToArray()
 		);
@@ -93,14 +99,33 @@ class Storage extends \ArrayObject {
 	 */
 	public function delete( $option_name = '' )
 	{
-		$option_name = $option_name ? $option_name : $this->storage_name;
+		// Try to delete option with passed name
+		if($option_name){
+			if ( isset( $this->$option_name ) )
+				unset($this->$option_name);
 
-		if ( isset( $this->$option_name ) )
-			unset($this->$option_name);
+		// Delete this storage if no arguments passed
+		}else{
+			$option_name = $this->storage_name;
+		}
 
-		$filename = CT_USP_DATA . $option_name . '.php';
-		if ( file_exists( $filename ) )
+		// Delete file with option
+		$filename = $this->directory . $option_name . '.php';
+		if ( file_exists( $filename ) ){
 			unlink( $filename );
+		}
+	}
+
+	/**
+	 * Check if the storage is not empty
+	 *
+	 * @return bool
+	 */
+	public function is_empty(){
+		foreach ( $this as $this1 ) {
+			return ! isset( $this1 );
+		}
+		return true;
 	}
 
 	/**

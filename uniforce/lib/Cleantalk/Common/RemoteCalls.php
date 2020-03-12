@@ -48,7 +48,7 @@ class RemoteCalls
 						}
 
 					// Common actions
-					}else if(method_exists('RemoteCalls', $action)){
+					}else if(method_exists('\Cleantalk\Common\RemoteCalls', $action)){
 
 						sleep( (int) Get::get('delay') ); // Delay before perform action;
 						$out = RemoteCalls::$action();
@@ -77,8 +77,10 @@ class RemoteCalls
 		die('OK');
 	}
 
-	static function action__update_security_firewall() {
-		$result = spbc_security_firewall_update(true);
+	static function action__fw__update() {
+		$result = \Cleantalk\Uniforce\FireWall::action__fw__update(
+			State::getInstance()->key
+		);
 		die(empty($result['error']) ? 'OK' : 'FAIL '.json_encode(array('error' => $result['error'])));
 	}
 }

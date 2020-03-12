@@ -19,7 +19,9 @@ use Cleantalk\Variables\Server;
 class Helper{
 	
 	use \Cleantalk\Templates\Singleton;
-	
+
+	static $instance;
+
 	/**
 	 * Default user agent for HTTP requests
 	 */
@@ -307,16 +309,19 @@ class Helper{
 	static public function ip__v6_normalize($ip)
 	{
 		$ip = trim($ip);
+
 		// Searching for ::ffff:xx.xx.xx.xx patterns and turn it to IPv6
 		if(preg_match('/^::ffff:([0-9]{1,3}\.?){4}$/', $ip)){
 			$ip = dechex(sprintf("%u", ip2long(substr($ip, 7))));
 			$ip = '0:0:0:0:0:0:' . (strlen($ip) > 4 ? substr('abcde', 0, -4) : '0') . ':' . substr($ip, -4, 4);
-			// Normalizing hextets number
+
+		// Normalizing hextets number
 		}elseif(strpos($ip, '::') !== false){
 			$ip = str_replace('::', str_repeat(':0', 8 - substr_count($ip, ':')) . ':', $ip);
 			$ip = strpos($ip, ':') === 0 ? '0' . $ip : $ip;
 			$ip = strpos(strrev($ip), ':') === 0 ? $ip . '0' : $ip;
 		}
+
 		// Simplifyng hextets
 		if(preg_match('/:0(?=[a-z0-9]+)/', $ip)){
 			$ip = preg_replace('/:0(?=[a-z0-9]+)/', ':', strtolower($ip));
@@ -590,7 +595,62 @@ class Helper{
 		
 		return $out;
 	}
-	
+
+	/**
+	 * Wrapper for http_request
+	 * Requesting data via HTTP request with GET method
+	 *
+	 * @param string $url
+	 *
+	 * @return array|mixed|string
+	 */
+	static public function http__request__get_content( $url ){
+		return static::http__request( $url, array(), 'get dont_split_to_array');
+	}
+
+	/**
+	 * Wrapper for http_request
+	 * Requesting HTTP response code for $url
+	 *
+	 * @param string $url
+	 *
+	 * @return array|mixed|string
+	 */
+	static public function http__request__get_response_code( $url ){
+		return static::http__request( $url, array(), 'get_code');
+	}
+
+	/**
+	 * Wrapper for http_request
+	 * Requesting HTTP response code for $url
+	 *
+	 * @param string $url
+	 *
+	 * @return array|mixed|string
+	 */
+	static public function get_data_from_remote_gz( $url ){
+
+		$data = false;
+		$res = static::http__request( $url, array(), 'get_code' );
+		if ( $res === 200 ) { // Check if it's there
+			$result = static::http__request__get_content( $url );
+			if ( empty( $result['error'] ) ){
+				if(function_exists('gzdecode')) {
+					$data = gzdecode( $result );
+					if ( $data !== false ){
+						return $data;
+					}else
+						Err::add( 'Can not unpack datafile');
+				}else
+					Err::add( 'Function gzdecode not exists. Please update your PHP at least to version 5.4', $result['error'] );
+			}else
+				Err::add( 'Getting datafile', $result['error'] );
+		}else
+			Err::add( 'Bad HTTP response from file location' );
+
+		return $data;
+	}
+
 	/**
 	 * Merging arrays without reseting numeric keys
 	 *
@@ -755,5 +815,21 @@ class Helper{
 		$string = preg_replace( '/\$/', '\\\\$', $string );
 		$string = preg_replace( '/\//', '\/', $string );
 		return $string;
+	}
+
+	static public function buffer__csv__pop_line( &$csv ){
+		$pos = strpos( $csv, "\n" );
+		$line = substr( $csv, 0, $pos );
+		$csv = substr_replace( $csv, '', 0, $pos + 1 );
+		return $line;
+	}
+
+	static public function buffer__csv__pop_line_to_array( &$csv, $map = array() ){
+		$pos = strpos( $csv, "\n" );
+		$line = explode( ',', substr( $csv, 0, $pos ) );
+		if( $map )
+			$line = array_combine( $map, $line );
+		$csv = substr_replace( $csv, '', 0, $pos + 1 );
+		return $line;
 	}
 }

@@ -17,7 +17,9 @@ namespace Cleantalk\Common;
 class DB
 {
 	use \Cleantalk\Templates\Singleton;
-	
+
+	static $instance;
+
 	/**
 	 * @var string Query string
 	 */
