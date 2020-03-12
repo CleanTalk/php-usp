@@ -13,6 +13,12 @@ class Cron extends \Cleantalk\Common\Cron
     const CRON_FILE = CT_USP_CRON_FILE;
 
     public static function getTasks(){
+    	if( ! file_exists( self::CRON_FILE ) ){
+    		file_put_contents(
+    			self::CRON_FILE,
+			    "<?php\n\$uniforce_tasks = array ();"
+		    );
+	    }
         require self::CRON_FILE;
         return $uniforce_tasks;
     }
