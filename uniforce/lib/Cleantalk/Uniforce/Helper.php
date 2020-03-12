@@ -55,30 +55,6 @@ class Helper extends \Cleantalk\Common\Helper {
     }
 
     /**
-     * Wrapper for http_request
-     * Requesting HTTP response code for $url
-     *
-     * @param string $url
-     *
-     * @return array|mixed|string
-     */
-    static public function http__request__get_response_code( $url ){
-        return self::http__request( $url, array(), 'get_code');
-    }
-
-    /**
-     * Wrapper for http_request
-     * Requesting data via HTTP request with GET method
-     *
-     * @param string $url
-     *
-     * @return array|mixed|string
-     */
-    static public function http__request__get_content( $url ){
-        return self::http__request( $url, array(), 'get dont_split_to_array');
-    }
-
-    /**
      * Escapes MySQL params
      *
      * @param string|int $param
@@ -133,6 +109,12 @@ class Helper extends \Cleantalk\Common\Helper {
         }
         return $buffer;
     }
+
+	static function buffer__parse__in_lines( $buffer ){
+		$buffer = explode( "\n", $buffer );
+		$buffer = self::buffer__trim_and_clear_from_empty_lines( $buffer );
+		return $buffer;
+	}
 
     static function buffer__parse__csv( $buffer ){
         $buffer = explode( "\n", $buffer );
