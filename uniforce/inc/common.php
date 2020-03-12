@@ -27,13 +27,11 @@ require_once CT_USP_LIB . 'autoloader.php';
 require_once( CT_USP_INC . 'functions.php' );
 
 // URI
-define( 'CT_USP_URI',      preg_replace( '/^(.*\/)(.*?.php)?/', '$1',  Server::get('REQUEST_URI') ) );
-define( 'CT_USP_AJAX_URI', preg_replace( '/^(.*\/)(.*?.php)?/', '$1router.php',  Server::get('REQUEST_URI') ) );
+define( 'CT_USP_URI',      'http://' . Server::get('HTTP_HOST') . preg_replace( '/^(\/.*?\/).*/', '$1', parse_url( Server::get('REQUEST_URI'), PHP_URL_PATH ) ) );
+define( 'CT_USP_AJAX_URI', parse_url( Server::get('REQUEST_URI') )['path'] );
 
 // Load settings, data and remote calls data
 new \Cleantalk\Common\State( 'settings', 'data', 'remote_calls' );
-
-
 
 // Create empty error object
 Cleantalk\Common\Err::getInstance();
