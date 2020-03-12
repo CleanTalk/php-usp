@@ -46,7 +46,7 @@ class Helper extends \Cleantalk\Common\Helper {
         // Set APBCT User-Agent and passing data to parent method
         $opts = self::array_merge__save_numeric_keys(
             array(
-                CURLOPT_USERAGENT => 'SPBCT-wordpress/' . (defined('SPBC_VERSION') ? SPBC_VERSION : 'unknown') . '; ' . Server::get('SERVER_NAME'),
+                CURLOPT_USERAGENT => 'SPBCT-uni/' . (defined('SPBC_VERSION') ? SPBC_VERSION : 'unknown') . '; ' . Server::get('SERVER_NAME'),
             ),
             $opts
         );
