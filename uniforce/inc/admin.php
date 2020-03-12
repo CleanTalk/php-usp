@@ -6,6 +6,7 @@ use Cleantalk\Common\File;
 use Cleantalk\Common\State;
 use Cleantalk\Uniforce\Cron;
 use Cleantalk\Uniforce\FireWall;
+use Cleantalk\Uniforce\Helper;
 use Cleantalk\Variables\Post;
 use Cleantalk\Variables\Server;
 
