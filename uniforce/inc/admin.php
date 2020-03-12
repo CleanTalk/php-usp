@@ -284,6 +284,15 @@ function usp_uninstall(){
 		File::clean__tag( $file, 'bottom_code' );
 	}
 
+	// Deleting FW data
+	if( file_exists( CT_USP_DATA . 'fw_nets' ) )
+		unlink( CT_USP_DATA . 'fw_nets' );
+	if( file_exists( CT_USP_DATA . 'fw_nets_net_b_tree' ) )
+		unlink( CT_USP_DATA . 'fw_nets_net_b_tree' );
+	State::getInstance()->data->stat->fw->entries = 0;
+	State::getInstance()->stat->fw->last_update = 0;
+	State::getInstance()->data->save();
+
 	// Deleting options and their files
 	$usp->delete( 'data' );
 	$usp->delete( 'settings' );
@@ -294,11 +303,10 @@ function usp_uninstall(){
 	// Deleting cron tasks
 	File::replace__variable( CT_USP_CRON_FILE, 'uniforce_tasks', array() );
 
-	// Deleting SFW nets
-	File::clean_file_full( CT_USP_ROOT . 'data' . DS . 'sfw_nets.php' );
-
 	// Deleting any logs
     usp_uninstall_logs();
+
+	setcookie('authentificated', 0, time()-86400, '/', null, false, true);
 
 	return ! Err::check();
 
@@ -320,9 +328,7 @@ function usp_uninstall_logs() {
                 unlink( $log_dir_path . DS . $log_file );
             }
         }
-
     }
-
 }
 
 /**
@@ -456,23 +462,38 @@ function usp_do_save_settings() {
     // FireWall actions
     if( ( $usp->settings->fw || $usp->settings->waf ) && $usp->settings->key ){
 
-            // Update SFW
-            $result = FireWall::sfw_update( $usp->settings->key );
-            if( ! Err::check() ){
-                $usp->data->stat->fw->last_update = time();
-                $usp->data->stat->fw->entries = $result;
-            }
+        // Update SFW
+        $usp->data->stat->fw->entries = 0;
+	    $usp->data->stat->fw->last_update = 0;
+	    $usp->data->save();
+	    Helper::http__request(
+		    Server::get('HTTP_HOST') . CT_USP_AJAX_URI,
+		    array(
+			    'spbc_remote_call_token'  => md5( $usp->settings->key ),
+			    'spbc_remote_call_action' => 'fw__update',
+			    'plugin_name'             => 'security',
+			    'file_urls'               => '',
+		    ),
+		    'get async'
+	    );
 
-            // Send FW logs
-            $result = FireWall::logs__send( $usp->settings->key );
-            if( empty( $result['error'] ) && ! Err::check() ) {
-                $usp->data->stat->fw->logs_sent_time = time();
-                $usp->data->stat->fw->logs_sent_amount = $result['rows'];
-            }
+        // Send FW logs
+        $result = FireWall::logs__send( $usp->settings->key );
+        if( empty( $result['error'] ) && ! Err::check() ) {
+            $usp->data->stat->fw->logs_sent_time = time();
+            $usp->data->stat->fw->logs_sent_amount = $result['rows'];
+        }
 
     // Cleaning up Firewall data
     } else {
-	    File::clean_file_full( CT_USP_ROOT . 'data' . DS . 'sfw_nets.php' );
+	    // Deleting FW data
+	    if( file_exists( CT_USP_DATA . 'fw_nets' ) )
+	        unlink( CT_USP_DATA . 'fw_nets' );
+	    if( file_exists( CT_USP_DATA . 'fw_nets_net_b_tree' ) )
+	        unlink( CT_USP_DATA . 'fw_nets_net_b_tree' );
+	    State::getInstance()->data->stat->fw->entries = 0;
+	    State::getInstance()->data->stat->fw->last_update = 0;
+	    State::getInstance()->data->save();
 	    Cron::removeTask( 'sfw_update' );
 	    Cron::removeTask( 'fw_send_logs' );
 	    usp_uninstall_logs();
