@@ -6,7 +6,7 @@ use Cleantalk\Common\Err;
 use Cleantalk\Common\File;
 use Cleantalk\Uniforce\Helper;
 
-function uniforce_sfw_update(){
+function uniforce_sfw_update( $immediate = false ){
 	
 	$usp = State::getInstance();
 	
@@ -14,11 +14,9 @@ function uniforce_sfw_update(){
 	if( $usp->key && $usp->settings->fw ){
 
 		// Update SFW
-		$result = FireWall::sfw_update( $usp->key );
-		if( ! Err::check() ){
-			$usp->data->stat->fw->last_update = time();
-			$usp->data->stat->fw->entries = $result;
-		}
+		$usp->data->stat->fw->entries = 0;
+		$usp->data->save();
+		FireWall::action__fw__update( $usp->key );
 	}
 	
 	return ! Err::check() ? true : false;
