@@ -3,9 +3,7 @@
 namespace Cleantalk\Templates;
 
 trait Singleton{
-	
-	static $instance;
-	
+
 	public function __construct(){}
 	public function __wakeup(){}
 	public function __clone(){}
