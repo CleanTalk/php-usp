@@ -285,13 +285,8 @@ function usp_uninstall(){
 	}
 
 	// Deleting FW data
-	if( file_exists( CT_USP_DATA . 'fw_nets' ) )
-		unlink( CT_USP_DATA . 'fw_nets' );
-	if( file_exists( CT_USP_DATA . 'fw_nets_net_b_tree' ) )
-		unlink( CT_USP_DATA . 'fw_nets_net_b_tree' );
-	State::getInstance()->data->stat->fw->entries = 0;
-	State::getInstance()->stat->fw->last_update = 0;
-	State::getInstance()->data->save();
+	$db = new \Cleantalk\File\FileStorage( 'fw_nets' );
+	$db->delete();
 
 	// Deleting options and their files
 	$usp->delete( 'data' );
@@ -463,9 +458,6 @@ function usp_do_save_settings() {
     if( ( $usp->settings->fw || $usp->settings->waf ) && $usp->settings->key ){
 
         // Update SFW
-        $usp->data->stat->fw->entries = 0;
-	    $usp->data->stat->fw->last_update = 0;
-	    $usp->data->save();
 	    Helper::http__request(
 		    Server::get('HTTP_HOST') . CT_USP_AJAX_URI,
 		    array(
@@ -487,11 +479,8 @@ function usp_do_save_settings() {
     // Cleaning up Firewall data
     } else {
 	    // Deleting FW data
-	    if( file_exists( CT_USP_DATA . 'fw_nets' ) )
-	        unlink( CT_USP_DATA . 'fw_nets' );
-	    if( file_exists( CT_USP_DATA . 'fw_nets_net_b_tree' ) )
-	        unlink( CT_USP_DATA . 'fw_nets_net_b_tree' );
-	    State::getInstance()->data->stat->fw->entries = 0;
+	    $db = new \Cleantalk\File\FileStorage( 'fw_nets' );
+	    $db->delete();
 	    State::getInstance()->data->stat->fw->last_update = 0;
 	    State::getInstance()->data->save();
 	    Cron::removeTask( 'sfw_update' );
