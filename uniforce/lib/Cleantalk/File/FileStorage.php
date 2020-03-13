@@ -225,32 +225,33 @@ class FileStorage {
 		}
 	}
 
+	/**
+	 * @param $data
+	 *
+	 * @return bool|float|int
+	 */
 	public function insert( $data ) {
 
 		$this->insert__actions_with_data( $data );
 
-		if ( ! Err::check() ) {
-			fseek( $this->stream, 0, SEEK_END );
-			$res = fwrite( $this->stream, $data );
-			if ( ! $res ) {
-				$err = error_get_last();
-				Err::add( $err['message'] );
-			} else {
-				$inserted = $res / ( $this->meta->line_length );
-				$this->meta->rows += $inserted;
-				$this->meta->save();
-				return $inserted;
-			}
+		fseek( $this->stream, 0, SEEK_END );
+		$res = fwrite( $this->stream, $data );
+		if ( ! $res ) {
+			$err = error_get_last();
+			Err::add( $err['message'] );
+			return false;
+		} else {
+			$inserted = $res / ( $this->meta->line_length );
+			$this->meta->rows += $inserted;
+			$this->meta->save();
+			return $inserted;
 		}
-
-		return false;
 	}
 
 	public function delete() {
 
 		// Clear file
-		fclose( $this->stream );
-		$this->stream = fopen( $this->data_file, 'w+b' );
+		ftruncate( $this->stream, 0 );
 
 		// Clear indexes and data about indexes
 		foreach ( $this->meta->indexes as $column_name => &$column ){
@@ -270,7 +271,6 @@ class FileStorage {
 
 		// Null additional data
 		$this->meta->rows = 0;
-
 		$this->meta->save();
 	}
 
@@ -474,42 +474,57 @@ class FileStorage {
 		$indexes      = array_keys( $this->meta->indexes );
 
 		$number = 0;
+		$data_raw = '';
+		$result = true;
 		foreach ( $data as &$datum ) {
 
-			$this->insert__create_index( ++$number, $datum, $indexes, $columns_name );
-			$this->insert__convert_data_to_storage_format( $datum, $columns_name );
-
+			if(
+				$this->insert__check_data_format( $datum ) &&
+				$this->insert__create_index( ++$number, $datum, $indexes, $columns_name ) &&
+				$this->insert__convert_data_to_storage_format( $datum, $columns_name )
+			){
+				$data_raw .= $datum . "\n";
+			}else{
+				$number--;
+			}
 		}
 
-		if ( ! Err::check() ) {
-			$data = implode( "\n", $data ) . "\n";
-		}
+		$data = $data_raw;
+	}
 
+	private function insert__check_data_format( &$data ) {
+		if ( count( $data ) === $this->meta->cols_num ){
+			return true;
+		}else{
+			Err::add( 'Cols number does not match. Given ' . count( $data ) . ', needed: ' . $this->meta->cols_num );
+			return false;
+		}
 	}
 
 	private function insert__convert_data_to_storage_format( &$data, $columns_name ) {
-		if ( count( $data ) === $this->meta->cols_num ) {
-			$tmp = '';
-			foreach ( $data as $name => $col ) {
-				$tmp .= str_pad(
-					substr(
-						$col,
-						0,
-						$this->meta->cols[ $columns_name [ $name ] ]['length']
-					),
-					$this->meta->cols[ $columns_name [ $name ] ]['length'],
-					"\x00",
-					STR_PAD_LEFT
-				);
-			}
-			$data = $tmp;
-		} else {
-			Err::add( 'Cols number does not match. Gived ' . count( $data ) . ', nedded: ' . $this->meta->cols_num );
+
+		$tmp = '';
+		foreach ( $data as $name => $col ) {
+			$tmp .= str_pad(
+				substr(
+					$col,
+					0,
+					$this->meta->cols[ $columns_name [ $name ] ]['length']
+				),
+				$this->meta->cols[ $columns_name [ $name ] ]['length'],
+				"\x00",
+				STR_PAD_LEFT
+			);
 		}
+		$data = $tmp;
+
+		return true;
 	}
 
 	private function insert__create_index( $number, $data, $indexes, $columns_name ) {
+
 		foreach ( $indexes as $index ){
+
 			switch ( $this->meta->indexes[ $index ]['type'] ){
 				case 'hash':
 					$result = $this->index__create__hash( $data[ $index ], $number, $data[ array_search( $index, $columns_name ) ]  );
@@ -525,13 +540,21 @@ class FileStorage {
 					break;
 			}
 
-			if( $result === true ){
+			if( is_int( $result ) && $result > 0 ){
+				$this->meta->indexes[ $index ]['status'] = 'ready';
+				$out = true;
+			}elseif( $result === true ){
 				Err::add('Insertion', 'Duplicate key for column "' . $index . '": ' . $data[ array_search( $index, $columns_name ) ] );
-			}
-			if( $result === false )
+				$out = false;
+			}elseif( $result === false ){
 				Err::add('Insertion', 'No index added for column "' . $index . '": ' . array_search( $index, $columns_name ) );
+				$out = false;
+			}else{
+				$out = false;
+			}
 
-			$this->meta->indexes[ $index ]['status'] = is_int( $result ) && $result > 0 ? 'ready' : false;
+			return $out;
+
 		}
 	}
 
@@ -545,6 +568,6 @@ class FileStorage {
 	}
 
 	private function index__create__b_tree( $index, $number, $key ) {
-		return $res = $this->indexes[ $index ]->insert( $key, $this->meta->rows + $number );
+		return $this->indexes[ $index ]->insert( $key, $this->meta->rows + $number );
 	}
 }
