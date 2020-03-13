@@ -5,6 +5,7 @@ use Cleantalk\Uniforce\FireWall;
 use Cleantalk\Common\Err;
 use Cleantalk\Common\File;
 use Cleantalk\Uniforce\Helper;
+use Cleantalk\Variables\Server;
 
 function uniforce_sfw_update( $immediate = false ){
 	
@@ -14,11 +15,18 @@ function uniforce_sfw_update( $immediate = false ){
 	if( $usp->key && $usp->settings->fw ){
 
 		// Update SFW
-		$usp->data->stat->fw->entries = 0;
-		$usp->data->save();
-		FireWall::action__fw__update( $usp->key );
+		Helper::http__request(
+			Server::get('HTTP_HOST') . CT_USP_AJAX_URI,
+			array(
+				'spbc_remote_call_token'  => md5( $usp->settings->key ),
+				'spbc_remote_call_action' => 'fw__update',
+				'plugin_name'             => 'security',
+				'file_urls'               => '',
+			),
+			'get async'
+		);
 	}
-	
+
 	return ! Err::check() ? true : false;
 }
 
@@ -141,7 +149,7 @@ function usp_scanner__launch(){
 
 function usp_scanner__get_signatures() {
 
-	$out = \Cleantalk\Scanner\Controller::action__scanner__scan_signatures();
+	$out = \Cleantalk\Scanner\Controller::action__scanner__get_signatures();
 
 	return empty($result['error']) ? $out : true;
 }
