@@ -625,10 +625,18 @@ class FireWall extends \Cleantalk\Security\FireWall
 			    $data = Helper::get_data_from_remote_gz( $file_url );
 
 			    if( ! Err::check() ){
+
 			        $file_urls = Helper::buffer__parse__in_lines( $data );
+
 				    // Clean current database
 				    $db = new \Cleantalk\File\FileStorage( 'fw_nets' );
 				    $db->delete();
+
+				    // Clean statistics
+				    State::getInstance()->data->stat->fw->entries = 0;
+				    State::getInstance()->data->stat->fw->last_update = 0;
+				    State::getInstance()->data->save();
+
 			    }else
 				    Err::prepend( 'Updating FW' );
 		    }else
@@ -664,11 +672,15 @@ class FireWall extends \Cleantalk\Security\FireWall
 
 					}
 
-				$inserted = $db->insert( $nets_for_save );
+					$inserted = $db->insert( $nets_for_save );
 
-				State::getInstance()->data->stat->fw->entries += $inserted;
-				State::getInstance()->data->save();
-
+					if ( ! Err::check() ){
+						State::getInstance()->data->stat->fw->entries += $inserted;
+						State::getInstance()->data->save();
+					}else{
+						Err::prepend('Updating FW');
+						error_log( var_export( Err::get_all('string'), true ) );
+					}
 				}
 
 			}else
