@@ -204,7 +204,11 @@ function usp_scanner__display__count__files(){
 }
 
 function usp_scanner__display__get_data__files( $offset = 0, $limit = 20, $order_by = '', $direction = 'DESC' ) {
-	return State::getInstance()->scan_result->array_values();
+	return array_slice(
+		State::getInstance()->scan_result->array_values(),
+		$offset,
+		$limit
+	);
 }
 
 function spbc_scanner__display__prepare_data__files( &$table ){

@@ -112,7 +112,7 @@ class ListTable
 	public function get_data(){
 		
 		global $wpdb;
-		
+
 		// Getting total of items
 		// by using given function
 		if($this->func_data_total && function_exists($this->func_data_total)){
@@ -459,6 +459,8 @@ class ListTable
 
 	public static function ajax__pagination_handler()
 	{
+	    require_once CT_USP_INC . 'scanner.php';
+
 		$page = intval($_POST['page']);
 		$args = self::stripslashes__array($_POST['args']);
 		$args['pagination']['page'] = $page;
