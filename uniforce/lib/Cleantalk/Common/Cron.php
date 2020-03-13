@@ -12,14 +12,19 @@ class Cron
 	public $tasks = array(); // Array with tasks
 	public $tasks_to_run = array(); // Array with tasks which should be run now
 	public $tasks_completed = array(); // Result of executed tasks
-	
+
 	// Currently selected task
 	public  $task;
 	protected $handler;
 	protected $period;
 	protected $next_call;
 	protected $params;
-	
+	protected $executed;
+	protected $last_executed;
+
+	// Time to execute task
+	const TIME_FOR_EXECUTION = 60 * 30;
+
 	// Option name with cron data
 	const CRON_OPTION_NAME = 'spbc_cron';
 	
@@ -63,6 +68,8 @@ class Cron
 		$tasks[$task] = array(
 			'handler' => $handler,
 			'next_call' => $first_call,
+			'executed' => 0,
+			'last_executed' => 0,
 			'period' => $period,
 			'params' => $params,
 		);
@@ -92,16 +99,28 @@ class Cron
 	// Getting tasks which should be run. Putting tasks that should be run to $this->tasks_to_run
 	public function checkTasks()
 	{
-		if(empty($this->tasks))
+		if( empty( $this->tasks ) ){
 			return true;
-		
-		foreach($this->tasks as $task => $task_data){
-			
-			if($task_data['next_call'] <= time())
+		}
+
+		foreach( $this->tasks as $task => &$task_data ){
+
+			// Drop execution time
+			if( $task_data['executed'] == 1 && time() - $task_data['last_executed'] > self::TIME_FOR_EXECUTION){
+				$task_data['executed'] = 0;
+			}
+
+			// Select tasks to run
+			if( $task_data['next_call'] <= time() && $task_data['executed'] == 0 ){
+				$task_data['last_executed'] = time();
+				$task_data['executed'] = 1;
 				$this->tasks_to_run[] = $task;
-			
-		}unset($task, $task_data);
-		
+			}
+
+		}
+
+		static::saveTasks( $this->tasks );
+
 		return $this->tasks_to_run;
 	}
 	
@@ -119,9 +138,16 @@ class Cron
 				
 				$result = call_user_func_array($this->handler, isset($this->params) ? $this->params : array());
 				
-				if(empty($result['error'])){
+				if(empty($result['error']) || ! Err::check() ){
 					$this->tasks_completed[$task] = true;
 				}else{
+					if( ! empty( $result['error'] ) ){
+						$error = $result['error'];
+					}
+					if( Err::check() ){
+						$error = Err::get_last('string')['error'];
+					}
+
 					$this->tasks_completed[$task] = false;
 				}
 				
