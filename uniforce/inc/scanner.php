@@ -236,7 +236,7 @@ function spbc_scanner__display__prepare_data__files( &$table ){
 				'perms'    => $row->perms,
 				'mtime'    => date('M d Y H:i:s', $row->mtime),
 				'path'     => strlen($root.$row->path) >= 40
-					? '<div class="spbcShortText">...' . $row->path . '</div><div class="spbcFullText --hide">' . $root . $row->path . '</div>'
+					? '<div class="spbcShortText">...' . substr($row->path, -40) . '</div><div class="spbcFullText --hide">' . $root . $row->path . '</div>'
 					: $root . $row->path,
 				'actions' => $row->actions,
 			);
