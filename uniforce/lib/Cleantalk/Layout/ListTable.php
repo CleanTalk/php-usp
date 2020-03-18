@@ -112,7 +112,7 @@ class ListTable
 	public function get_data(){
 		
 		global $wpdb;
-		
+
 		// Getting total of items
 		// by using given function
 		if($this->func_data_total && function_exists($this->func_data_total)){
@@ -249,7 +249,7 @@ class ListTable
 				}
 				echo '</select>';
 				echo '<button type="button" name="bulk_perform" class="tbl-button tbl-bulk_actions--apply">'.__('Apply').'</button>';
-				echo '<img class="tbl-preloader--small" src="' . CT_USP_ROOT . '/img/preloader_tiny.gif" />';
+				echo '<img class="tbl-preloader--small" src="' . CT_USP_URI . '/img/preloader_tiny.gif" />';
 			echo '</div>';
 		}
 	}
@@ -271,7 +271,7 @@ class ListTable
 				echo '<button type="button" class="tbl-button tbl-pagination--button tbl-pagination--go">'.__('Go').'</button>';
 				echo '<button type="button" class="tbl-button tbl-pagination--button tbl-pagination--next"><i class="icon-fast-fw"></i></button>';
 				echo '<button type="button" class="tbl-button tbl-pagination--button tbl-pagination--end"><i class="icon-to-end"></i></button>';
-				echo '<img class="tbl-preloader--small" src="' . CT_USP_ROOT . '/img/preloader_tiny.gif" />';
+				echo '<img class="tbl-preloader--small" src="' . CT_USP_URI . '/img/preloader_tiny.gif" />';
 			echo '</div>';
 		}
 	}
@@ -459,6 +459,8 @@ class ListTable
 
 	public static function ajax__pagination_handler()
 	{
+	    require_once CT_USP_INC . 'scanner.php';
+
 		$page = intval($_POST['page']);
 		$args = self::stripslashes__array($_POST['args']);
 		$args['pagination']['page'] = $page;

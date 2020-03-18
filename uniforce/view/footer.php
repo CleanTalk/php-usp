@@ -23,6 +23,6 @@ if( isset($additional_js) ){
 }
 ?>
 <script type='text/javascript'>
-    var uniforce_security = "<?php echo \Cleantalk\Common\State::getInstance()->data->security_key; ?>";
+    var uniforce_security = "<?php echo $page !== 'login' ? \Cleantalk\Common\State::getInstance()->data->security_key : 'login' ?>";
     var uniforce_ajax_url = "<?php echo CT_USP_AJAX_URI; ?>";
 </script>

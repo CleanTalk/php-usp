@@ -30,7 +30,7 @@ function usp_AJAX(data, params, obj){
 	var callback      = params.callback      || null;
 	var error_handler = params.error_handler || usp_AJAX__error_handler;
 	var notJson       = params.notJson       || null;
-	var timeout       = params.timeout       || 15000;
+	var timeout       = params.timeout       || 30000;
 	obj               = obj                  || null;
 
 	// Button and spinner

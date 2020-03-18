@@ -2,6 +2,9 @@
 
 namespace Cleantalk\Common;
 
+/**
+ * @method array_values()
+ */
 class Storage extends \ArrayObject {
 
 	/**

@@ -36,14 +36,6 @@ if( Post::is_set('action', 'security') ) {
 
 		switch( Post::get( 'action' ) ) {
 
-			case 'login':
-				usp_do_login(
-					State::getInstance()->settings->key,
-					State::getInstance()->data->password,
-					State::getInstance()->data->email
-				);
-				break;
-
 			case 'logout':
 				usp_do_logout();
 				break;
@@ -73,6 +65,16 @@ if( Post::is_set('action', 'security') ) {
 				die(Err::add('Unknown action')->get_last( 'as_json' ));
 				break;
 
+		}
+	}elseif ( Post::get( 'security' ) === 'login'){
+
+		if ( Post::get( 'action' ) === 'login' ) {
+			require_once CT_USP_ROOT . 'uniforce.php';
+			usp_do_login(
+				State::getInstance()->settings->key,
+				State::getInstance()->data->password,
+				State::getInstance()->data->email
+			);
 		}
 
 	} else {

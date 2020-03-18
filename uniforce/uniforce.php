@@ -5,6 +5,7 @@ use Cleantalk\Common\State;
 use Cleantalk\Uniforce\FireWall;
 use Cleantalk\Variables\Cookie;
 use Cleantalk\Variables\Get;
+use Cleantalk\Variables\Post;
 use Cleantalk\Variables\Server;
 
 // Config
@@ -34,7 +35,9 @@ if ( $usp->settings->fw || $usp->settings->waf || $usp->settings->bfp ) {
     // BruteForce protection.
     if( $usp->settings->bfp ) {
         // @ToDo If the login form is on front page?!?!?
-        if( $usp->settings->bfp_admin_page && stripos( Server::get('REQUEST_URI'), $usp->settings->bfp_admin_page ) !== false ) {
+        if( ($usp->settings->bfp_admin_page && Server::has_string('REQUEST_URI', $usp->settings->bfp_admin_page ) ) ||
+            ( defined( 'USP_DASHBOARD' ) && Post::get( 'login' ) )
+        ) {
 
             // Catching buffer and doing protection
             ob_start( 'uniforce_attach_js' );
@@ -83,7 +86,7 @@ if ( $usp->settings->fw || $usp->settings->waf || $usp->settings->bfp ) {
     }
 
     // Spam FireWall check
-    if( $usp->key ) {
+    if( $usp->key && $usp->data->stats->fw->entries ) {
         $firewall->ip__test();
     }
     // WebApplication FireWall check
@@ -119,7 +122,7 @@ function uniforce_attach_js( $buffer ){
 
     if(
         !(isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') // No ajax
-        && preg_match('/^\s*(<!doctype|<html)[\s\S]*html>\s*$/i', $buffer) == 1 // Only for HTML documents
+        && preg_match('/^\s*(<!doctype|<!DOCTYPE|<html)/i', $buffer) == 1 // Only for HTML documents
     ){
         $html_addition =
             '<script>var spbct_checkjs_val = "' . md5( State::getInstance()->key ) . '";</script>'

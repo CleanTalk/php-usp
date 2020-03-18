@@ -34,10 +34,14 @@ form.tbl-root{
                 font-weight: 400;
                 text-align: left;
                 padding: 8px 10px;
+                width: 100%;
             }
 tbody{
     /*border: 1px solid black;*/
 }
+    tr:nth-child(2n){
+        background-color: #ccd0d4;
+    }
     tr:nth-child(2n+1){
         background-color: #f9f9f9;
     }
@@ -46,6 +50,7 @@ tbody{
         vertical-align: top;
         padding: 8px 10px;
     }
+    tbody tr td{ position: relative;}
 
 tfoot{
     border: 1px solid #ccd0d4;
@@ -112,3 +117,13 @@ tr:hover .row-actions span.tbl-row_action--approve{color: #0a0;}
 .tbl-pagination--total{vertical-align: text-bottom; margin: 0 5px;}
 .tbl-pagination--curr_page{width: 36px; padding: 3px 5px; font-size: 13px; text-align: center;}
 .tbl-pagination--button{margin: 0 5px;}
+
+.spbcFullText{
+    display: none;
+    position: absolute;
+    top: 0;
+    background: rgba(220, 220, 220, 0.9);
+    padding: 7px;
+    border: 1px solid rgb(51, 51, 51);
+    border-radius: 5px;
+}
