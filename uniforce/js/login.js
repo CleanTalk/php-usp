@@ -14,6 +14,7 @@ function login() {
         {
             action: 'login',
             login: login.val().trim(),
+            spbct_login_form: 1,
             password: password,
         },
         {

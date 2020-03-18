@@ -5,6 +5,7 @@ use Cleantalk\Common\State;
 use Cleantalk\Uniforce\FireWall;
 use Cleantalk\Variables\Cookie;
 use Cleantalk\Variables\Get;
+use Cleantalk\Variables\Post;
 use Cleantalk\Variables\Server;
 
 // Config
@@ -34,7 +35,9 @@ if ( $usp->settings->fw || $usp->settings->waf || $usp->settings->bfp ) {
     // BruteForce protection.
     if( $usp->settings->bfp ) {
         // @ToDo If the login form is on front page?!?!?
-        if( $usp->settings->bfp_admin_page && stripos( Server::get('REQUEST_URI'), $usp->settings->bfp_admin_page ) !== false ) {
+        if( ($usp->settings->bfp_admin_page && Server::has_string('REQUEST_URI', $usp->settings->bfp_admin_page ) ) ||
+            ( defined( 'USP_DASHBOARD' ) && Post::get( 'login' ) )
+        ) {
 
             // Catching buffer and doing protection
             ob_start( 'uniforce_attach_js' );

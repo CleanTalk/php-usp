@@ -228,6 +228,8 @@ class FireWall extends \Cleantalk\Security\FireWall
 
     public static function is_logged_in( $cms ) {
 
+    	$cms = defined( 'USP_DASHBOARD' ) ? 'UniForce' : $cms;
+
         switch ( $cms ) {
             case 'Joomla' :
                 if( class_exists('JFactory') ) {
@@ -283,6 +285,14 @@ class FireWall extends \Cleantalk\Security\FireWall
                 // @ToDo we have to find a way to detect admin logging in
                 return true;
                 break;
+	        case 'UniForce':
+	        	if( Cookie::get( 'authentificated' ) === State::getInstance()->data->security_key ){
+			        if( empty( $_COOKIE['spbct_authorized'] ) ) {
+				        self::security__update_auth_logs( 'login' );
+			        }
+			        return true;
+		        }else
+		            return false;
             default :
                 // @ToDo implement universal logic for cookies checking
                 return true;
