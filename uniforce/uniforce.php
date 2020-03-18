@@ -122,7 +122,7 @@ function uniforce_attach_js( $buffer ){
 
     if(
         !(isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') // No ajax
-        && preg_match('/^\s*(<!doctype|<html)[\s\S]*html>\s*$/i', $buffer) == 1 // Only for HTML documents
+        && preg_match('/^\s*(<!doctype|<!DOCTYPE|<html)/i', $buffer) == 1 // Only for HTML documents
     ){
         $html_addition =
             '<script>var spbct_checkjs_val = "' . md5( State::getInstance()->key ) . '";</script>'
