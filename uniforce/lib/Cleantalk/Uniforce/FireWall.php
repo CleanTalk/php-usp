@@ -55,7 +55,7 @@ class FireWall extends \Cleantalk\Security\FireWall
                 $found_network['found'] = false;
                 for ( $needles = array(), $m = 16; $m <= 32; $m ++ ) {
                     $mask      = sprintf( '%u', ip2long( long2ip( - 1 << ( 32 - (int) $m ) ) ) );
-                    $needles[] = bindec( decbin( decbin( $mask ) ) & decbin( $current_ip_v4 ) );
+                    $needles[] = bindec( decbin( $mask ) & decbin( $current_ip_v4 ) );
                 }
 
                 $needles = array_unique( $needles );
