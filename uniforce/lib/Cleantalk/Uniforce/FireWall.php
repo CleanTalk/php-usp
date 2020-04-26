@@ -119,8 +119,6 @@ class FireWall extends \Cleantalk\Security\FireWall
             return true;
         }
 
-        self::security__update_auth_logs( 'auth_failed' );
-
         $black_list = CT_USP_ROOT . 'data/bfp_blacklist.php';
         $fast_black_list = CT_USP_ROOT . 'data/bfp_fast_blacklist.php';
         $block_time = 3600; // 1 hour
@@ -235,9 +233,6 @@ class FireWall extends \Cleantalk\Security\FireWall
                 if( class_exists('JFactory') ) {
                     $user = \JFactory::getUser();
                     if( $user->id ) {
-                        if( empty( $_COOKIE['spbct_authorized'] ) ) {
-                            self::security__update_auth_logs( 'login' );
-                        }
                         return true;
                     }
                 } else {
@@ -247,9 +242,6 @@ class FireWall extends \Cleantalk\Security\FireWall
             case 'Drupal7' :
                 global $user;
                 if( isset( $user->uid ) && $user->uid != 0 ) {
-                    if( empty( $_COOKIE['spbct_authorized'] ) ) {
-                        self::security__update_auth_logs( 'login' );
-                    }
                     return true;
                 } else {
                     return false;
@@ -262,9 +254,6 @@ class FireWall extends \Cleantalk\Security\FireWall
                         return false;
                     }
                     else {
-                        if( empty( $_COOKIE['spbct_authorized'] ) ) {
-                            self::security__update_auth_logs( 'login' );
-                        }
                         return true;
                     }
                 }
@@ -272,9 +261,6 @@ class FireWall extends \Cleantalk\Security\FireWall
             case 'Bitrix' :
                 if( class_exists( 'CUser') ) {
                     if( \CUser::IsAuthorized() ) {
-                        if( empty( $_COOKIE['spbct_authorized'] ) ) {
-                            self::security__update_auth_logs( 'login' );
-                        }
                         return true;
                     } else {
                         return false;
@@ -287,12 +273,11 @@ class FireWall extends \Cleantalk\Security\FireWall
                 break;
 	        case 'UniForce':
 	        	if( Cookie::get( 'authentificated' ) === State::getInstance()->data->security_key ){
-			        if( empty( $_COOKIE['spbct_authorized'] ) ) {
-				        self::security__update_auth_logs( 'login' );
-			        }
 			        return true;
-		        }else
-		            return false;
+		        }else {
+                    return false;
+                }
+                break;
             default :
                 // @ToDo implement universal logic for cookies checking
                 return true;

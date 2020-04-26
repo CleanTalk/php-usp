@@ -137,12 +137,20 @@ function uniforce_attach_js( $buffer ){
     }
 
     if( State::getInstance()->settings->bfp && FireWall::is_logged_in( State::getInstance()->detected_cms ) ) {
-        setcookie( 'spbct_authorized', md5( State::getInstance()->key ), 0, '/' );
+        if( empty( Cookie::get('spbct_authorized') ) ) {
+            setcookie( 'spbct_authorized', md5( State::getInstance()->key ), 0, '/' );
+            FireWall::security__update_auth_logs( 'login' );
+            FireWall::security__logs__send( State::getInstance()->key );
+        }
     } else {
         if( ! empty( Cookie::get('spbct_authorized') ) ) {
             FireWall::security__update_auth_logs( 'logout' );
+            setcookie( 'spbct_authorized', md5( State::getInstance()->key ), time()-3600, '/' );
+        } else {
+            if( ! empty( $_POST ) && isset( $_POST['spbct_login_form'] ) ) {
+                FireWall::security__update_auth_logs( 'auth_failed' );
+            }
         }
-        setcookie( 'spbct_authorized', md5( State::getInstance()->key ), time()-3600, '/' );
     }
 
     return $buffer;
