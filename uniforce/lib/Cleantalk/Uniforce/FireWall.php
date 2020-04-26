@@ -305,7 +305,7 @@ class FireWall extends \Cleantalk\Security\FireWall
         global $salt;
 
         // Parameters
-        $time            = time();
+        $time            = gmdate('Y-m-d H:i:s');
         $page_url        = addslashes((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off' ? 'https://' : 'http://') . $_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI']);
         $page_url        = substr($page_url, 0 , 4096);
         $http_user_agent = !empty($_SERVER['HTTP_USER_AGENT'])
@@ -387,7 +387,7 @@ class FireWall extends \Cleantalk\Security\FireWall
         $auth_ip = Helper::ip__get( array('real') );
 
         $values = array(
-            'datetime'     => date('Y-m-d H:i:s'),
+            'datetime'     => gmdate('Y-m-d H:i:s'),
             'event'        => $params['event'],
             'auth_ip'      => $auth_ip,
             'page_url'     => $params['page_url'],
@@ -541,7 +541,7 @@ class FireWall extends \Cleantalk\Security\FireWall
                     $log = explode( ',', $log );
 
                     $to_data = array(
-                        'datetime'        => isset( $log[2] ) ? date('Y-m-d H:i:s', $log[2]) : 0,
+                        'datetime'        => isset( $log[2] ) ? $log[2] : 0,
                         'page_url'        => isset( $log[6] ) ? $log[6] : 0,
                         'visitor_ip'      => isset( $log[1] ) ? ( Helper::ip__validate($log[1]) == 'v4' ? (int)sprintf('%u', ip2long($log[1])) : (string)$log[1] ) : 0,
                         'http_user_agent' => isset( $log[7] ) ? $log[7] : 0,
