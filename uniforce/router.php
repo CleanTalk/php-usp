@@ -19,7 +19,10 @@ switch (true){
 		break;
 	// Login
 	case \Cleantalk\Variables\Cookie::get('authentificated') !== \Cleantalk\Common\State::getInstance()->data->security_key:
-		$page = 'login';
+        $additional_js = array(
+            'ct_js_test',
+        );
+	    $page = 'login';
         break;
     // Settings
     case \Cleantalk\Variables\Cookie::get('authentificated') === \Cleantalk\Common\State::getInstance()->data->security_key:
