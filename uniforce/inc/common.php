@@ -24,7 +24,8 @@ define( 'CT_USP_VIEW', CT_USP_ROOT . DS . 'view' . DS );
 define( 'CT_USP_DATA', CT_USP_ROOT . 'data' . DS );
 
 require_once CT_USP_LIB . 'autoloader.php';
-require_once( CT_USP_INC . 'functions.php' );
+require_once CT_USP_LIB . 'ct_phpFix.php';
+require_once CT_USP_INC . 'functions.php';
 
 // URI
 define( 'CT_USP_URI',      'http://' . Server::get('HTTP_HOST') . preg_replace( '/^(\/.*?\/).*/', '$1', parse_url( Server::get('REQUEST_URI'), PHP_URL_PATH ) ) );
