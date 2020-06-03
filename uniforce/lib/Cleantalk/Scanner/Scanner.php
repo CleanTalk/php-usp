@@ -292,7 +292,7 @@ class Scanner
 
 								if($data !== false){
 
-									$lines = Helper::buffer__parse__csv($data);
+									$lines = Helper::buffer__csv__parse($data);
 
 									$out = array();
 									foreach($lines as $line){

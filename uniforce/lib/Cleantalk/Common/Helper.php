@@ -8,9 +8,9 @@ use Cleantalk\Variables\Server;
  * CleanTalk Helper class.
  * Compatible with any CMS.
  *
- * @package       PHP Antispam by CleanTalk
+ * @package       CleanTalk common functions
  * @subpackage    Helper
- * @Version       3.2
+ * @Version       3.3
  * @author        Cleantalk team (welcome@cleantalk.org)
  * @copyright (C) 2014 CleanTalk team (http://cleantalk.org)
  * @license       GNU/GPL: http://www.gnu.org/copyleft/gpl.html
@@ -628,7 +628,7 @@ class Helper{
 	 *
 	 * @return array|mixed|string
 	 */
-	static public function get_data_from_remote_gz( $url ){
+	static public function http__get_data_from_remote_gz( $url ){
 
 		$data = false;
 		$res = static::http__request( $url, array(), 'get_code' );
@@ -803,7 +803,7 @@ class Helper{
 	}
 
 	/**
-	 * Determs is the system is windows
+	 * Checks if the system is windows
 	 *
 	 * @return bool
 	 */
@@ -817,19 +817,88 @@ class Helper{
 		return $string;
 	}
 
+	/**
+	 * Get timestamp of the current time interval start with determined $range
+	 *
+	 * @param int $range
+	 *
+	 * @return int
+	 */
+	public static function time__get_interval_start( $range = 300 ){
+		return time() - ( ( time() - strtotime( date( 'd F Y' ) ) ) % $range );
+	}
+	
+	/**
+	 * Get MIME type of anything
+	 *
+	 * @param $data
+	 *
+	 * @return string
+	 */
+	static function get_mime_type( $data )
+	{
+		if( @file_exists( $data ) ){
+			$mime = mime_content_type( $data );
+		}else{
+			$finfo = finfo_open(FILEINFO_MIME_TYPE);
+			$mime = finfo_buffer($finfo, $data);
+			finfo_close($finfo);
+		}
+		return $mime;
+	}
+	
+	static function buffer__csv__parse( $buffer ){
+		$buffer = explode( "\n", $buffer );
+		$buffer = self::buffer__trim_and_clear_from_empty_lines( $buffer );
+		foreach($buffer as &$line){
+			$line = str_getcsv($line, ',', '\'');
+		}
+		return $buffer;
+	}
+	
+	
+	/**
+	 * Pops line from buffer without formatting
+	 *
+	 * @param $csv
+	 *
+	 * @return false|string
+	 */
 	static public function buffer__csv__pop_line( &$csv ){
 		$pos = strpos( $csv, "\n" );
-		$line = substr( $csv, 0, $pos );
 		$csv = substr_replace( $csv, '', 0, $pos + 1 );
-		return $line;
+		return substr( $csv, 0, $pos );
 	}
 
+	/**
+	 * Pops line from the csv buffer and fromat it by map to array
+	 *
+	 * @param $csv
+	 * @param array $map
+	 *
+	 * @return array|false
+	 */
 	static public function buffer__csv__pop_line_to_array( &$csv, $map = array() ){
-		$pos = strpos( $csv, "\n" );
-		$line = explode( ',', substr( $csv, 0, $pos ) );
+		$line = static::buffer__csv__pop_line( $csv );
+		$line = explode( ',', $line );
 		if( $map )
 			$line = array_combine( $map, $line );
-		$csv = substr_replace( $csv, '', 0, $pos + 1 );
 		return $line;
+	}
+	
+	static function buffer__trim_and_clear_from_empty_lines( $buffer ){
+		$buffer = (array) $buffer;
+		foreach( $buffer as $indx => &$line ){
+			$line = trim( $line );
+			if($line === '')
+				unset( $buffer[$indx] );
+		}
+		return $buffer;
+	}
+	
+	static function buffer__parse__in_lines( $buffer ){
+		$buffer = explode( "\n", $buffer );
+		$buffer = self::buffer__trim_and_clear_from_empty_lines( $buffer );
+		return $buffer;
 	}
 }

@@ -121,7 +121,7 @@ class FireWall extends \Cleantalk\Security\FireWall
 
         $black_list = CT_USP_ROOT . 'data/bfp_blacklist.php';
         $fast_black_list = CT_USP_ROOT . 'data/bfp_fast_blacklist.php';
-        $block_time = 3600; // 1 hour
+        $block_time = 20 * 60; // 20 minutes
         $allowed_count = 2;
         $allowed_interval = 900; // 15 min
 
@@ -617,7 +617,7 @@ class FireWall extends \Cleantalk\Security\FireWall
 		    if ( empty( $result['error'] ) ){
 
     	        $file_url =  ! empty( $result['file_url'] ) ? $result['file_url'] : false;
-			    $data = Helper::get_data_from_remote_gz( $file_url );
+			    $data = Helper::http__get_data_from_remote_gz( $file_url );
 
 			    if( ! Err::check() ){
 
@@ -644,7 +644,7 @@ class FireWall extends \Cleantalk\Security\FireWall
 
 		if ( ! Err::check() && $file_url ){
 
-			$data = Helper::get_data_from_remote_gz( $file_url );
+			$data = Helper::http__get_data_from_remote_gz( $file_url );
 
 			if ( ! Err::check() ) {
 

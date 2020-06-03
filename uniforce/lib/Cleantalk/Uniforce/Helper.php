@@ -84,45 +84,4 @@ class Helper extends \Cleantalk\Common\Helper {
         return $param;
     }
 
-    public static function time__get_interval_start( $interval = 300 ){
-        return time() - ( ( time() - strtotime( date( 'd F Y' ) ) ) % $interval );
-    }
-
-    static function get_mime_type($data )
-    {
-        if( @file_exists( $data )){
-            $mime = mime_content_type( $data );
-        }else{
-            $finfo = finfo_open(FILEINFO_MIME_TYPE);
-            $mime = finfo_buffer($finfo, $data);
-            finfo_close($finfo);
-        }
-        return $mime;
-    }
-
-    static function buffer__trim_and_clear_from_empty_lines( $buffer ){
-        $buffer = (array) $buffer;
-        foreach( $buffer as $indx => &$line ){
-            $line = trim( $line );
-            if($line === '')
-                unset( $buffer[$indx] );
-        }
-        return $buffer;
-    }
-
-	static function buffer__parse__in_lines( $buffer ){
-		$buffer = explode( "\n", $buffer );
-		$buffer = self::buffer__trim_and_clear_from_empty_lines( $buffer );
-		return $buffer;
-	}
-
-    static function buffer__parse__csv( $buffer ){
-        $buffer = explode( "\n", $buffer );
-        $buffer = self::buffer__trim_and_clear_from_empty_lines( $buffer );
-        foreach($buffer as &$line){
-            $line = str_getcsv($line, ',', '\'');
-        }
-        return $buffer;
-    }
-
 }
