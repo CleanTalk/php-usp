@@ -8,7 +8,17 @@ jQuery(document).ready(function() {
             logout();
     });
 
-    $("#btn-uninstall").on('click', function(event){
+    // Uninstall button
+    $("#ctusp_field---uninstall_confirmation").on('input', function(event){
+        console.log(event.target);
+        let val = $(event.target).val(),
+            id = 'ctusp_field---uninstall';
+        if(val === 'uninstall')
+            uspSettingsDependencies(id, 1);
+        else
+            uspSettingsDependencies(id, 0);
+    });
+    $("#ctusp_field---uninstall").on('click', function(event){
         if(confirm('Are you sure you want to uninstall the plugin?'))
             uninstall();
     });
@@ -165,5 +175,34 @@ function usp_HighlightElement(selector, times){
                 jQuery(selector).removeClass('ctusp--highlighted');
             }
         });
+    });
+}
+
+// Settings dependences
+function uspSettingsDependencies(settingsIDs, enable){
+
+    if(typeof settingsIDs === 'string'){
+        tmp = [];
+        tmp.push(settingsIDs);
+        settingsIDs = tmp;
+    }
+
+    enable = typeof enable === 'undefined' ? null : +enable;
+
+    settingsIDs.forEach(function(settingID, i, arr){
+
+        // settingID = settingID.indexOf( 'spbc_setting_' ) === -1 ? 'spbc_setting_'+settingID : settingID;
+
+        console.log(settingID);
+
+        var elem = document.getElementById(settingID),
+            do_disable = function(){elem.setAttribute('disabled', 'disabled');},
+            do_enable  = function(){elem.removeAttribute('disabled');};
+
+        if(enable !== null) // Set
+            enable === 1 ? do_enable() : do_disable();
+        else // Switch
+            elem.getAttribute('disabled') === null ? do_disable() : do_enable();
+
     });
 }

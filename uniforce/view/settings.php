@@ -100,7 +100,6 @@ usp_localize_script( 'usp',
 
                 <!-- Uninstall Logout buttons -->
                 <div class="settings-links">
-                    <a href="#" class="text-danger" id='btn-uninstall' >Uninstall</a>
                     <a href="#" id='btn-logout'>Log out </a>
                 </div>
 
@@ -126,7 +125,7 @@ usp_localize_script( 'usp',
 
                             <?php
 
-                            $settings = new \Cleantalk\Layout\Settings();
+                            $settings = new \Cleantalk\USP\Layout\Settings();
 
                             // Tab summary
                             $settings
@@ -189,13 +188,25 @@ usp_localize_script( 'usp',
                                             ->add_field('scanner_signature_analysis')
                                                 ->setTitle('Signature analysis')
                                                 ->setDescription('Will search for known malicious signatures in files.')
+                                        ->getParent( 2)
+                                        ->add_group( 'DANGER ZONE' )
+                                            ->add_field( 'uninstall' )
+                                                ->setInput_type( 'button' )
+                                                ->setDisabled( true )
+                                                ->setTitle( 'Uninstall' )
+                                                ->setDescription( 'Completely uninstall the module from site' )
+	                                    ->getParent()
+                                        ->add_plain()
+                                            ->setHtml(
+                                                '<input form="none" type="text" id="ctusp_field---uninstall_confirmation" class="" value="" style="display: inline-block; padding: 6px 12px; border-radius: 4px; border: 1px #999 solid;">
+                                                 ')
                                         ->getParent(2)
-                                            ->add_plain()
-                                                ->setHtml(
-                                                    '<div class="text-center">
-                                                        <button type="submit" class="btn btn-setup" id=\'btn-save-settings\' name="action" value="save_settings">Save</button>
-                                                        <img class="preloader" src="img/preloader.gif">
-                                                    </div>');
+                                        ->add_plain()
+                                            ->setHtml(
+                                                '<div class="text-center">
+                                                    <button type="submit" class="btn btn-setup" id=\'btn-save-settings\' name="action" value="save_settings">Save</button>
+                                                    <img class="preloader" src="img/preloader.gif">
+                                                </div>');
 
                                 // Controller
                                 $settings
