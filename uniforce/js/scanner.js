@@ -31,21 +31,21 @@ function spbc_scannerButtonFileView_callback(result, data, params){
     }
 
     var content_height = Object.keys(result.file).length * 19 + 19,
-        visible_height = (document.documentElement.clientHeight) / 100 * 75;
+        visible_height = (document.documentElement.clientHeight) / 10 * 75;
+    content_height = content_height < 76 ? 76 : content_height;
     var overflow = content_height < visible_height ? 'no_scroll' : 'scroll';
 
     jQuery('#spbc_dialog').data('overflow', overflow);
     jQuery('#spbc_dialog').dialog({
         modal:true,
         title: result.file_path,
-        position: { my: "center top", at: "top+7%" , of: window },
+        position: { my: "center", at: "center" , of: window },
         width: +(jQuery('body').width() / 100 * 70),
-        height: overflow == 'scroll' ? visible_height : content_height,
-        minHeight: 300,
+        height: overflow === 'scroll' ? visible_height : content_height,
+        // minHeight: 300,
         show: { effect: "blind", duration: 500 },
-        draggable: false,
-        resizable: false,
-        closeText: "X",
+        draggable: true,
+        closeText: "Close",
         open: function(event, ui) {
             console.log(jQuery(event.target).data('overflow'));
             document.body.style.overflow = 'hidden';
