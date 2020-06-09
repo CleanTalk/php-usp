@@ -487,8 +487,7 @@ function usp_do_save_settings() {
 	    Cron::removeTask( 'fw_send_logs' );
 	    usp_uninstall_logs();
     }
-
-
+    
     // BFP actions
     if( $usp->settings->bfp && $usp->settings->key ){
         if( $usp->settings->bfp ) {
@@ -509,7 +508,13 @@ function usp_do_save_settings() {
         }
 
     }
-
+	
+    // Update signatures
+    if( $usp->settings->scanner_signature_analysis ){
+		\Cleantalk\USP\Scanner\Controller::action__scanner__get_signatures();
+    }
+	
+    
     $usp->data->save();
     $usp->settings->save();
 
