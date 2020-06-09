@@ -1,6 +1,6 @@
 <?php
 
-use Cleantalk\Variables\Server;
+use Cleantalk\USP\Variables\Server;
 
 // Exit if accessed directly.
 if ( ! defined( 'CT_USP_ROOT' ) ) {
@@ -8,7 +8,7 @@ if ( ! defined( 'CT_USP_ROOT' ) ) {
     exit ();
 }
 
-$usp = \Cleantalk\Common\State::getInstance();
+$usp = \Cleantalk\USP\Common\State::getInstance();
 
 ?>
 

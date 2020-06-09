@@ -1,14 +1,14 @@
 <?php
 
-use Cleantalk\Common\API;
-use Cleantalk\Common\Err;
-use Cleantalk\Common\File;
-use Cleantalk\Common\State;
-use Cleantalk\Uniforce\Cron;
-use Cleantalk\Uniforce\FireWall;
-use Cleantalk\Uniforce\Helper;
-use Cleantalk\Variables\Post;
-use Cleantalk\Variables\Server;
+use Cleantalk\USP\Common\API;
+use Cleantalk\USP\Common\Err;
+use Cleantalk\USP\Common\File;
+use Cleantalk\USP\Common\State;
+use Cleantalk\USP\Uniforce\Cron;
+use Cleantalk\USP\Uniforce\FireWall;
+use Cleantalk\USP\Uniforce\Helper;
+use Cleantalk\USP\Variables\Post;
+use Cleantalk\USP\Variables\Server;
 
 /**
  * Method notice_paid_till
@@ -285,7 +285,7 @@ function usp_uninstall(){
 	}
 
 	// Deleting FW data
-	$db = new \Cleantalk\File\FileStorage( 'fw_nets' );
+	$db = new \Cleantalk\USP\File\FileStorage( 'fw_nets' );
 	$db->delete();
 
 	// Deleting options and their files
@@ -479,7 +479,7 @@ function usp_do_save_settings() {
     // Cleaning up Firewall data
     } else {
 	    // Deleting FW data
-	    $db = new \Cleantalk\File\FileStorage( 'fw_nets' );
+	    $db = new \Cleantalk\USP\File\FileStorage( 'fw_nets' );
 	    $db->delete();
 	    State::getInstance()->data->stat->fw->last_update = 0;
 	    State::getInstance()->data->save();

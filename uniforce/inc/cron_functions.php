@@ -1,11 +1,11 @@
 <?php
 
-use Cleantalk\Common\State;
-use Cleantalk\Uniforce\FireWall;
-use Cleantalk\Common\Err;
-use Cleantalk\Common\File;
-use Cleantalk\Uniforce\Helper;
-use Cleantalk\Variables\Server;
+use Cleantalk\USP\Common\State;
+use Cleantalk\USP\Uniforce\FireWall;
+use Cleantalk\USP\Common\Err;
+use Cleantalk\USP\Common\File;
+use Cleantalk\USP\Uniforce\Helper;
+use Cleantalk\USP\Variables\Server;
 
 function uniforce_sfw_update( $immediate = false ){
 	
@@ -149,7 +149,7 @@ function usp_scanner__launch(){
 
 function usp_scanner__get_signatures() {
 
-	$out = \Cleantalk\Scanner\Controller::action__scanner__get_signatures();
+	$out = \Cleantalk\USP\Scanner\Controller::action__scanner__get_signatures();
 
 	return empty($result['error']) ? $out : true;
 }

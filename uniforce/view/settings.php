@@ -1,7 +1,7 @@
 <?php
 
-use Cleantalk\Common\Err;
-use Cleantalk\Uniforce\FireWall;
+use Cleantalk\USP\Common\Err;
+use Cleantalk\USP\Uniforce\FireWall;
 
 // Exit if accessed directly.
 if ( ! defined( 'CT_USP_ROOT' ) ) {
@@ -27,10 +27,10 @@ usp_localize_script( 'spbcScaner', array(
 	// PARAMS
 
 	// Settings / Statuses
-	'scaner_enabled'    => \Cleantalk\Common\State::getInstance()->valid ? 1 : 0,
-	'scaner_status'     => \Cleantalk\Common\State::getInstance()->valid ? 1 : 0,
-	'check_heuristic'   => \Cleantalk\Common\State::getInstance()->settings->scanner_heuristic_analysis  ? 1 : 0,
-	'check_signature'   => \Cleantalk\Common\State::getInstance()->settings->scanner_signature_analysis  ? 1 : 0,
+	'scaner_enabled'    => \Cleantalk\USP\Common\State::getInstance()->valid ? 1 : 0,
+	'scaner_status'     => \Cleantalk\USP\Common\State::getInstance()->valid ? 1 : 0,
+	'check_heuristic'   => \Cleantalk\USP\Common\State::getInstance()->settings->scanner_heuristic_analysis  ? 1 : 0,
+	'check_signature'   => \Cleantalk\USP\Common\State::getInstance()->settings->scanner_signature_analysis  ? 1 : 0,
 //	'wp_content_dir'    => realpath(WP_CONTENT_DIR),
 	'wp_root_dir'       =>  realpath(CT_USP_SITE_ROOT),
 	// Params
@@ -86,7 +86,7 @@ usp_localize_script( 'spbcScaner', array(
 
 usp_localize_script( 'usp',
         array(
-	        'remote_call_token' => strtolower( md5( \Cleantalk\Common\State::getInstance()->settings->key ) )
+	        'remote_call_token' => strtolower( md5( \Cleantalk\USP\Common\State::getInstance()->settings->key ) )
         )
 );
 
@@ -133,7 +133,7 @@ usp_localize_script( 'usp',
                                     ->setActive()
                                     ->add_group('your_security_dashboard')
                                         ->add_plain('dashboard')
-                                            ->setHtml('<p class="text-center">Check detailed statistics on <a href="https://cleantalk.org/my' . ( \Cleantalk\Common\State::getInstance()->data->user_token ? '?cp_mode=security&user_token=' . \Cleantalk\Common\State::getInstance()->data->user_token : '') . '" target="_blank">your Security dashboard</a></p>')
+                                            ->setHtml('<p class="text-center">Check detailed statistics on <a href="https://cleantalk.org/my' . ( \Cleantalk\USP\Common\State::getInstance()->data->user_token ? '?cp_mode=security&user_token=' . \Cleantalk\USP\Common\State::getInstance()->data->user_token : '') . '" target="_blank">your Security dashboard</a></p>')
                                     ->getParent(2)
                                     ->add_group('statistics')
                                         ->add_plain('stat')
@@ -156,7 +156,7 @@ usp_localize_script( 'usp',
                                             ->add_field('key')
                                                 ->setInput_type('text')
                                                 ->setTitle('')
-                                                ->setHtml_after('</p>Account registered for email: ' . \Cleantalk\Common\State::getInstance()->data->account_name_ob . '</p>')
+                                                ->setHtml_after('</p>Account registered for email: ' . \Cleantalk\USP\Common\State::getInstance()->data->account_name_ob . '</p>')
                                         ->getParent( 2)
                                         ->add_group( 'firewall')
                                             ->add_field( 'fw' )

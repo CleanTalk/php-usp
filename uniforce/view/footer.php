@@ -1,6 +1,6 @@
 <?php
 
-use Cleantalk\Common\State;
+use Cleantalk\USP\Common\State;
 
 // Exit if accessed directly.
 if ( ! defined( 'CT_USP_ROOT' ) ) {
@@ -26,6 +26,6 @@ if( isset($additional_js) ){
 ?>
 <script type='text/javascript'>
     var spbct_checkjs_val = "<?php echo md5( State::getInstance()->key ) ?>";
-    var uniforce_security = "<?php echo $page !== 'login' ? \Cleantalk\Common\State::getInstance()->data->security_key : 'login' ?>";
+    var uniforce_security = "<?php echo $page !== 'login' ? \Cleantalk\USP\Common\State::getInstance()->data->security_key : 'login' ?>";
     var uniforce_ajax_url = "<?php echo CT_USP_AJAX_URI; ?>";
 </script>

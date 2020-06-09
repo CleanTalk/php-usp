@@ -1,6 +1,6 @@
 <?php
 
-use Cleantalk\Common\State;
+use Cleantalk\USP\Common\State;
 
 /**
  * JavaScript test for sender

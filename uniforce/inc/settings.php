@@ -1,6 +1,6 @@
 <?php
 
-use Cleantalk\Common\State;
+use Cleantalk\USP\Common\State;
 
 function ctusp_settings__show_cms(){
 	echo '<p>Presumably CMS:' . State::getInstance()->data->detected_cms . '</p>';

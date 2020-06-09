@@ -1,13 +1,13 @@
 <?php
 
-use Cleantalk\Common\State;
-use Cleantalk\Layout\ListTable;
-use Cleantalk\Scanner\Scanner;
-use Cleantalk\Uniforce\API;
-use Cleantalk\Uniforce\Helper;
-use Cleantalk\Variables\Get;
-use Cleantalk\Variables\Post;
-use Cleantalk\Variables\Request;
+use Cleantalk\USP\Common\State;
+use Cleantalk\USP\Layout\ListTable;
+use Cleantalk\USP\Scanner\Scanner;
+use Cleantalk\USP\Uniforce\API;
+use Cleantalk\USP\Uniforce\Helper;
+use Cleantalk\USP\Variables\Get;
+use Cleantalk\USP\Variables\Post;
+use Cleantalk\USP\Variables\Request;
 
 function spbc_scanner_file_send( $file_id ){
 

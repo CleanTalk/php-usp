@@ -1,12 +1,12 @@
 <?php
 
-use Cleantalk\Common\File;
-use Cleantalk\Common\State;
-use Cleantalk\Uniforce\FireWall;
-use Cleantalk\Variables\Cookie;
-use Cleantalk\Variables\Get;
-use Cleantalk\Variables\Post;
-use Cleantalk\Variables\Server;
+use Cleantalk\USP\Common\File;
+use Cleantalk\USP\Common\State;
+use Cleantalk\USP\Uniforce\FireWall;
+use Cleantalk\USP\Variables\Cookie;
+use Cleantalk\USP\Variables\Get;
+use Cleantalk\USP\Variables\Post;
+use Cleantalk\USP\Variables\Server;
 
 // Config
 require_once 'inc' . DIRECTORY_SEPARATOR . 'common.php';
