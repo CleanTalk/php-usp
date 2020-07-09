@@ -30,7 +30,7 @@ function uniforce_sfw_update( $immediate = false ){
 	return ! Err::check() ? true : false;
 }
 
-function uniforce_fw_logs_send(){
+function uniforce_fw_send_logs(){
 
 	$usp = State::getInstance();
 	
@@ -53,7 +53,7 @@ function uniforce_fw_logs_send(){
 	return ! Err::check() ? true : false;
 }
 
-function uniforce_security_logs_send(){
+function uniforce_security_send_logs(){
 
 	$usp = State::getInstance();
 
