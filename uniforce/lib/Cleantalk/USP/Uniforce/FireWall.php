@@ -65,7 +65,14 @@ class FireWall extends \Cleantalk\USP\Security\FireWall
 		            ->set_where( array( 'net' => $needles, ) )
 		            ->set_limit( 0, 20 )
 		            ->select();
-
+	            
+	            for( $i = 0, $result = $results[ $i ]; $results[ $i ]; $i ++ ){
+	            	
+		            if( decbin( $result['mask'] ) & decbin( $current_ip_v4 ) != decbin( $result['net'] ) ){
+			            unset( $results[ $i ] );
+		            }
+	            }
+	            
             // v6
             } elseif ( $ip_type ) {
 
