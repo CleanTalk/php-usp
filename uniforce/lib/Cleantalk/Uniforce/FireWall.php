@@ -598,9 +598,9 @@ class FireWall extends \Cleantalk\Security\FireWall
                 }else
                     return $result;
             }else
-                return array( 'error' => 'NO_LOGS_TO_SEND' );
+                return array( 'rows' => 0 );
         }else
-            return array( 'error' => 'NO_LOGS_TO_SEND' );
+            return array( 'rows' => 0 );
     }
 
 	public static function action__fw__update( $api_key )
