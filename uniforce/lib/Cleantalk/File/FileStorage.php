@@ -348,6 +348,9 @@ class FileStorage {
 
 		foreach ( $addresses as $address ){
 
+		    if( ! $address )
+		        continue;
+
 			$byte_offset = ($address - 1)  * ( $this->meta->line_length );
 			$byte_amount = $this->meta->line_length;
 
