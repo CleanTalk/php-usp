@@ -866,8 +866,9 @@ class Helper{
 	 */
 	static public function buffer__csv__pop_line( &$csv ){
 		$pos = strpos( $csv, "\n" );
+		$first_line = substr( $csv, 0, $pos );
 		$csv = substr_replace( $csv, '', 0, $pos + 1 );
-		return substr( $csv, 0, $pos );
+		return $first_line;
 	}
 
 	/**
@@ -879,7 +880,7 @@ class Helper{
 	 * @return array|false
 	 */
 	static public function buffer__csv__pop_line_to_array( &$csv, $map = array() ){
-		$line = static::buffer__csv__pop_line( $csv );
+		$line = trim( static::buffer__csv__pop_line( $csv ) );
 		$line = explode( ',', $line );
 		if( $map )
 			$line = array_combine( $map, $line );
