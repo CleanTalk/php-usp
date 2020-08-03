@@ -605,6 +605,7 @@ class FireWall extends \Cleantalk\Security\FireWall
 
 	public static function action__fw__update( $api_key )
     {
+        $db = new \Cleantalk\File\FileStorage( 'fw_nets' );
 
 	    $file_urls = explode( ',', Get::get( 'file_urls' ) );
 
@@ -624,7 +625,6 @@ class FireWall extends \Cleantalk\Security\FireWall
 			        $file_urls = Helper::buffer__parse__in_lines( $data );
 
 				    // Clean current database
-				    $db = new \Cleantalk\File\FileStorage( 'fw_nets' );
 				    $db->delete();
 
 				    // Clean statistics
@@ -647,9 +647,6 @@ class FireWall extends \Cleantalk\Security\FireWall
 			$data = Helper::http__get_data_from_remote_gz( $file_url );
 
 			if ( ! Err::check() ) {
-
-
-				$db = new \Cleantalk\File\FileStorage( 'fw_nets' );
 
 				while( $data !== '' ){
 
@@ -697,8 +694,6 @@ class FireWall extends \Cleantalk\Security\FireWall
 			);
 
 		}else{
-
-			$db = new \Cleantalk\File\FileStorage( 'fw_nets' );
 
 			$nets_for_save = array();
 
