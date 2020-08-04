@@ -209,12 +209,20 @@ class FileStorage {
 		// Going on...
 		// Indexes exist and correct. Getting data by indexes.
 		if ( $this->where && $this->check__column_index( $this->where ) ) {
-			return $this->get_data__by_index(
-				$this->columns,
-				$this->offset,
-				$this->amount
-			);
-
+            // @ToDo temporary solution. The index sometimes is wrong. And we have to check the network by alternative getting data way
+            $data = $this->get_data__by_index(
+                $this->columns,
+                $this->offset,
+                $this->amount
+            );
+            if( $data == null ) {
+                $data = $this->get_data__by_bruteforce(
+                    $this->columns,
+                    $this->offset,
+                    $this->amount
+                );
+            }
+            return $data;
 			// No index. Bruteforce solution.
 		} else {
 			return $this->get_data__by_bruteforce(
@@ -292,7 +300,9 @@ class FileStorage {
 			}
 		}
 
+		error_log(var_export($addresses,1));
 		$this->get_rows__to_buffer( $addresses );
+        error_log(var_export($this->buffer,1));
 		if( ! $this->buffer )
 			return false;
 
