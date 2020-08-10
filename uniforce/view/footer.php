@@ -16,7 +16,13 @@ if ( ! defined( 'CT_USP_ROOT' ) ) {
 <script src="js/overhang.min.js"></script>
 <script src="js/placeholder-shim.min.js"></script>
 <script src="js/common.js?v=<?php echo SPBCT_VERSION; ?>"></script>
+<script src="js/ct_ajax.js?v=<?php echo SPBCT_VERSION; ?>"></script>
 <script src="js/<?php echo $page; ?>.js?v=<?php echo SPBCT_VERSION; ?>"></script>
+<script type='text/javascript'>
+    var spbct_checkjs_val = "<?php echo md5( State::getInstance()->key ) ?>";
+    var uniforce_security = "<?php echo $page !== 'login' ? \Cleantalk\USP\Common\State::getInstance()->data->security_key : 'login' ?>";
+    var uniforce_ajax_url = "<?php echo CT_USP_AJAX_URI; ?>";
+</script>
 <?php
 if( isset($additional_js) ){
 	foreach ($additional_js as $script){
@@ -24,8 +30,3 @@ if( isset($additional_js) ){
 	}
 }
 ?>
-<script type='text/javascript'>
-    var spbct_checkjs_val = "<?php echo md5( State::getInstance()->key ) ?>";
-    var uniforce_security = "<?php echo $page !== 'login' ? \Cleantalk\USP\Common\State::getInstance()->data->security_key : 'login' ?>";
-    var uniforce_ajax_url = "<?php echo CT_USP_AJAX_URI; ?>";
-</script>

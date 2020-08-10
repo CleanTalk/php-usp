@@ -14,58 +14,26 @@ namespace Cleantalk\USP\Common;
  * @see https://github.com/CleanTalk/php-antispam
 */
 
-class DB
+interface DB
 {
-	use \Cleantalk\USP\Templates\Singleton;
-
-	static $instance;
-
 	/**
-	 * @var string Query string
-	 */
-	private $query;
-	
-	/**
-	 * @var wpdb result
-	 */
-	private $db_result;
-	
-	/**
-	 * @var array Processed result
-	 */
-	public $result = array();
-	
-	/**
-	 * @var string Database prefix
-	 */
-	public $prefix = '';
-	
-	/**
-	 * Alternative constructor.
-	 * Initilize Database object and write it to property.
-	 * Set tables prefix.
-	 */
-	private function init(){
-	
-	}
-	
-	/**
-	 * Set $this->query string for next uses
+	 * Executes a query to DB
 	 *
-	 * @param $query
-	 * @return $this
+	 * @param string $query
+	 *
+	 * @return mixed
 	 */
-	public function set_query($query){ }
+	function query( $query );
 	
 	/**
 	 * Safely replace place holders
 	 *
 	 * @param string $query
-	 * @param array  $vars
+	 * @param array $param
 	 *
 	 * @return $this
 	 */
-	public function prepare($query, $vars = array()){ }
+	function prepare($query, $param = array() );
 	
 	/**
 	 * Run any raw request
@@ -74,10 +42,10 @@ class DB
 	 *
 	 * @return bool|int Raw result
 	 */
-	public function execute($query){ }
+	function execute($query);
 	
 	/**
-	 * Fetchs first column from query.
+	 * Fetch first column from query.
 	 * May receive raw or prepared query.
 	 *
 	 * @param bool $query
@@ -85,10 +53,10 @@ class DB
 	 *
 	 * @return array|object|void|null
 	 */
-	public function fetch($query = false, $response_type = false){ }
+	function fetch($query = false, $response_type = false);
 	
 	/**
-	 * Fetchs all result from query.
+	 * Fetch all result from query.
 	 * May receive raw or prepared query.
 	 *
 	 * @param bool $query
@@ -96,5 +64,5 @@ class DB
 	 *
 	 * @return array|object|null
 	 */
-	public function fetch_all($query = false, $response_type = false){ }
+	function fetch_all($query = false, $response_type = false);
 }

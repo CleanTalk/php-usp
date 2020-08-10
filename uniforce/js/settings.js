@@ -10,13 +10,10 @@ jQuery(document).ready(function() {
 
     // Uninstall button
     $("#ctusp_field---uninstall_confirmation").on('input', function(event){
-        console.log(event.target);
+
         let val = $(event.target).val(),
             id = 'ctusp_field---uninstall';
-        if(val === 'uninstall')
-            uspSettingsDependencies(id, 1);
-        else
-            uspSettingsDependencies(id, 0);
+        uspSettingsDependencies(id, val === 'uninstall');
     });
     $("#ctusp_field---uninstall").on('click', function(event){
         if(confirm('Are you sure you want to uninstall the plugin?'))
@@ -76,15 +73,13 @@ function usp_switchTab(tab, params){
 }
 
 function logout() {
-    usp_AJAX(
+    ctAJAX(
         {
             action: 'logout',
         },
-        {
-            callback: function(result, data, params, obj) {
-                if (result.success)
-                    location.reload();
-            },
+        function (result, data, params, obj) {
+            if (result.success)
+                location.reload();
         }
     );
 }
@@ -115,49 +110,45 @@ function save_settings(){
         }
     }
 
-    usp_AJAX(
-        data,
-        {
-            callback: function(result, data, params, obj) {
-                if (result.success) {
-                    $("body").overhang({
-                        type: "success",
-                        message: "Settings saved! Page will be updated in 3 seconds.",
-                        duration: 3,
-                        overlay: true,
-                        // closeConfirm: true,
-                        easing: 'linear'
-                    });
-                    setTimeout(function(){ location.href='?tab=settings'; }, 3000 );
-                }
-            },
-            spinner: $('#btn-save-settings+.preloader'),
-            button: $('#btn-save-settings'),
-            error_handler: function(result, data, params, obj){
+    ctAJAX({
+        data: data,
+        successCallback: function(result, data, params, obj) {
+            if (result.success) {
                 $("body").overhang({
-                    type: "error",
-                    message: 'Error: ' + result.error,
-                    duration: 43200,
+                    type: "success",
+                    message: "Settings saved! Page will be updated in 3 seconds.",
+                    duration: 3,
                     overlay: true,
-                    closeConfirm: true,
+                    // closeConfirm: true,
                     easing: 'linear'
                 });
+                setTimeout(function(){ location.href='?tab=settings'; }, 3000 );
             }
+        },
+        spinner: $('#btn-save-settings+.preloader'),
+        button: $('#btn-save-settings'),
+        errorOutput: function( msg ){
+            $("body").overhang({
+                type: "error",
+                message: 'Error: ' + msg,
+                duration: 43200,
+                overlay: true,
+                closeConfirm: true,
+                easing: 'linear'
+            });
         }
-    );
+    });
 }
 
 function uninstall(){
-    usp_AJAX(
+    ctAJAX(
         {
             action: 'uninstall',
         },
-        {
-            callback: function(result, data, params, obj) {
-                if(result.success){
-                    location.reload();
-                }
-            },
+        function( result ) {
+            if(result.success){
+                location.reload();
+            }
         }
     );
 
@@ -191,7 +182,10 @@ function uspSettingsDependencies(settingsIDs, enable){
 
     settingsIDs.forEach(function(settingID, i, arr){
 
-        // settingID = settingID.indexOf( 'spbc_setting_' ) === -1 ? 'spbc_setting_'+settingID : settingID;
+        console.log(settingID);
+
+        settingID = settingID.indexOf( 'spbc_setting_' ) !== -1 || settingID.indexOf( 'ctusp_field_' ) !== -1
+            ? 'spbc_setting_'+settingID : settingID;
 
         console.log(settingID);
 

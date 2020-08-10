@@ -1,6 +1,7 @@
 <?php
 
 use Cleantalk\USP\Common\Err;
+use Cleantalk\USP\Common\State;
 use Cleantalk\USP\Uniforce\FireWall;
 
 // Exit if accessed directly.
@@ -12,7 +13,7 @@ if ( ! defined( 'CT_USP_ROOT' ) ) {
 require_once CT_USP_INC . 'settings.php';
 require_once CT_USP_INC . 'scanner.php';
 
-usp_localize_script( 'spbcTable',
+usp_localize_script( 'spbc_TableData',
     array(
         'warning_bulk'       => __('Are sure you want to perform these actions?', 'security-malware-firewall'),
         'warning_default'    => __('Do you want to proceed?', 'security-malware-firewall'),
@@ -22,44 +23,54 @@ usp_localize_script( 'spbcTable',
     )
 );
 
-usp_localize_script( 'spbcScaner', array(
+usp_localize_script( 'spbc_ScannerData', array(
 
 	// PARAMS
 
 	// Settings / Statuses
-	'scaner_enabled'    => \Cleantalk\USP\Common\State::getInstance()->valid ? 1 : 0,
-	'scaner_status'     => \Cleantalk\USP\Common\State::getInstance()->valid ? 1 : 0,
-	'check_heuristic'   => \Cleantalk\USP\Common\State::getInstance()->settings->scanner_heuristic_analysis  ? 1 : 0,
-	'check_signature'   => \Cleantalk\USP\Common\State::getInstance()->settings->scanner_signature_analysis  ? 1 : 0,
+	'scaner_enabled'    => State::getInstance()->valid ? 1 : 0,
+	'scaner_status'     => State::getInstance()->valid ? 1 : 0,
+	'check_heuristic'   => State::getInstance()->settings->scanner_heuristic_analysis  ? 1 : 0,
+	'check_signature'   => State::getInstance()->settings->scanner_signature_analysis  ? 1 : 0,
 //	'wp_content_dir'    => realpath(WP_CONTENT_DIR),
 	'wp_root_dir'       =>  realpath(CT_USP_SITE_ROOT),
 	// Params
 	'on_page' => 20,
+	
+	'settings' => array(
+		'scanner_create_db'          => ! State::getInstance()->data->db_created ? 1 : 0,
+		'scanner_heuristic_analysis' => State::getInstance()->settings->scanner_heuristic_analysis,
+		'scanner_get_signatures'     => State::getInstance()->settings->scanner_signature_analysis,
+	    'scanner_get_approved'       => true,
+		'scanner_signature_analysis' => State::getInstance()->settings->scanner_signature_analysis,
+		'scanner_auto_cure'          => State::getInstance()->settings->scanner_auto_cure,
+		'scanner_outbound_links'     => State::getInstance()->settings->scanner_outbound_links,
+		'scanner_frontend_analysis'  => State::getInstance()->settings->scanner_frontend_analysis,
+	),
 
 	//TRANSLATIONS
 
 	//Confirmation
-	'scan_modified_confiramation' => __('There is more than 30 modified files and this could take time. Do you want to proceed?', 'security-malware-firewall'),
-	'warning_about_cancel' => __('Scan will be performed in the background mode soon.', 'security-malware-firewall'),
-	'delete_warning' => __('Are you sure you want to delete the file? It can not be undone.'),
+	'scan_modified_confiramation'           => __( 'There is more than 30 modified files and this could take time. Do you want to proceed?', 'security-malware-firewall' ),
+	'warning_about_cancel'                  => __( 'Scan will be performed in the background mode soon.', 'security-malware-firewall' ),
+	'delete_warning'                        => __( 'Are you sure you want to delete the file? It can not be undone.' ),
 	// Buttons
 	'button_scan_perform'                   => __('Perform scan', 'security-malware-firewall'),
 	'button_scan_pause'                     => __('Pause scan',   'security-malware-firewall'),
 	'button_scan_resume'                    => __('Resume scan',  'security-malware-firewall'),
 	// Progress bar
-	'progressbar_get_hashes'                => __('Receiving hashes', 'security-malware-firewall'),
-	'progressbar_count_hashes_plug'         => __('Counting plugins and themes', 'security-malware-firewall'),
-	'progressbar_get_hashes_plug'           => __('Receiving plugins hashes', 'security-malware-firewall'),
+	'progressbar_create_db'                 => __('Creating remote database',        'security-malware-firewall'),
+	'progressbar_get_signatures'            => __('Receiving signatures', 'security-malware-firewall'),
 	'progressbar_clear_table'               => __('Preparing',        'security-malware-firewall'),
+	'progressbar_get_hashes'                => __('Receiving hashes', 'security-malware-firewall'),
+	'progressbar_get_approved'              => __('Receiving approved files', 'security-malware-firewall'),
 	// Scanning core
-	'progressbar_count_files'                     => __('Counting files',             'security-malware-firewall'),
-	'progressbar_scan'                      => __('Scanning for modifications', 'security-malware-firewall'),
-	'progressbar_count_modified_heur'       => __('Counting not checked',        'security-malware-firewall'),
-	'progressbar_scan_heuristic'        => __('Heuristic analysis',         'security-malware-firewall'),
-	'progressbar_count_modified_sign'       => __('Counting not checked',        'security-malware-firewall'),
-	'progressbar_scan_signatures'        => __('Serching for signatures',    'security-malware-firewall'),
+	'progressbar_count_files'               => __('Counting files',             'security-malware-firewall'),
+	'progressbar_surface_analysis'          => __('Scanning for modifications', 'security-malware-firewall'),
+	'progressbar_signature_analysis'        => __('Serching for signatures',    'security-malware-firewall'),
+	'progressbar_heuristic_analysis'        => __('Heuristic analysis',         'security-malware-firewall'),
 	//Cure
-	'progressbar_cure_backup'               => __('Backuping', 'security-malware-firewall'),
+	'progressbar_cure_backup'               => __('Backup', 'security-malware-firewall'),
 	'progressbar_count_cure'                => __('Count cure', 'security-malware-firewall'),
 	'progressbar_cure'                      => __('cure', 'security-malware-firewall'),
 	// Links
@@ -71,11 +82,11 @@ usp_localize_script( 'spbcScaner', array(
 	// Other
 	'progressbar_send_results'              => __('Sending results', 'security-malware-firewall'),
 	// Warnings
-	'result_text_bad_template' => __('Recommend to scan all (%s) of the found files to make sure the website is secure.', 'security-malware-firewall'),
-	'result_text_good_template' => __('No threats are found.', 'security-malware-firewall'),
+	'result_text_bad_template'              => __('Recommend to scan all (%s) of the found files to make sure the website is secure.', 'security-malware-firewall'),
+	'result_text_good_template'             => __('No threats are found.', 'security-malware-firewall'),
 	//Misc
-	'look_below_for_scan_res' => __('Look below for scan results.', 'security-malware-firewall'),
-	'view_all_results'        => sprintf(
+	'look_below_for_scan_res'               => __('Look below for scan results.', 'security-malware-firewall'),
+	'view_all_results'                      => sprintf(
 		__('</br>%sView all scan results for this website%s', 'security-malware-firewall'),
 		'<a target="blank" href="https://cleantalk.org/my/logs_mscan?service='.$usp->service_id.'">',
 		'</a>'
@@ -86,7 +97,7 @@ usp_localize_script( 'spbcScaner', array(
 
 usp_localize_script( 'usp',
         array(
-	        'remote_call_token' => strtolower( md5( \Cleantalk\USP\Common\State::getInstance()->settings->key ) )
+	        'remote_call_token' => strtolower( md5( State::getInstance()->settings->key ) )
         )
 );
 
@@ -133,7 +144,7 @@ usp_localize_script( 'usp',
                                     ->setActive()
                                     ->add_group('your_security_dashboard')
                                         ->add_plain('dashboard')
-                                            ->setHtml('<p class="text-center">Check detailed statistics on <a href="https://cleantalk.org/my' . ( \Cleantalk\USP\Common\State::getInstance()->data->user_token ? '?cp_mode=security&user_token=' . \Cleantalk\USP\Common\State::getInstance()->data->user_token : '') . '" target="_blank">your Security dashboard</a></p>')
+                                            ->setHtml('<p class="text-center">Check detailed statistics on <a href="https://cleantalk.org/my' . ( State::getInstance()->data->user_token ? '?cp_mode=security&user_token=' . State::getInstance()->data->user_token : '') . '" target="_blank">your Security dashboard</a></p>')
                                     ->getParent(2)
                                     ->add_group('statistics')
                                         ->add_plain('stat')
@@ -156,7 +167,7 @@ usp_localize_script( 'usp',
                                             ->add_field('key')
                                                 ->setInput_type('text')
                                                 ->setTitle('')
-                                                ->setHtml_after('</p>Account registered for email: ' . \Cleantalk\USP\Common\State::getInstance()->data->account_name_ob . '</p>')
+                                                ->setHtml_after('</p>Account registered for email: ' . State::getInstance()->data->account_name_ob . '</p>')
                                         ->getParent( 2)
                                         ->add_group( 'firewall')
                                             ->add_field( 'fw' )
@@ -189,16 +200,22 @@ usp_localize_script( 'usp',
                                                 ->setTitle('Signature analysis')
                                                 ->setDescription('Will search for known malicious signatures in files.')
                                         ->getParent( 2)
-                                        ->add_group( 'DANGER ZONE' )
+                                        ->add_group( 'Danger Zone' )
                                             ->add_field( 'uninstall' )
                                                 ->setInput_type( 'button' )
                                                 ->setDisabled( true )
                                                 ->setTitle( 'Uninstall' )
-                                                ->setDescription( 'Completely uninstall the module from site' )
+                                                ->setDescription( 'Completely uninstall the module from site.' )
 	                                    ->getParent()
                                         ->add_plain()
                                             ->setHtml(
-                                                '<input form="none" type="text" id="ctusp_field---uninstall_confirmation" class="" value="" style="display: inline-block; padding: 6px 12px; border-radius: 4px; border: 1px #999 solid;">
+                                                '<input
+                                                    id="ctusp_field---uninstall_confirmation"
+                                                    form="none"
+                                                    type="text"
+                                                    placeholder="Type \'uninstall\' to enable button"
+                                                    class="" value=""
+                                                    style="display: inline-block; width: 220px; padding: 6px 12px; border-radius: 4px; border: 1px #999 solid;">
                                                  ')
                                         ->getParent(2)
                                         ->add_plain()

@@ -4,6 +4,8 @@
  * /lib/autoloader.php
  *
  * Sets all main constants
+ *
+ * Version: 2.2
  */
 
 use Cleantalk\USP\Variables\Server;

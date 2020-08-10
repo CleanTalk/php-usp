@@ -77,8 +77,7 @@ class Helper extends \Cleantalk\USP\Common\Helper {
                 $param = 'NULL';
                 break;
             case is_string($param):
-                global $wpdb;
-                $param = $quotes . $wpdb->_real_escape($param) . $quotes;
+                $param = $quotes . \PDO::prepare ( $param ) . $quotes;
                 break;
         }
         return $param;

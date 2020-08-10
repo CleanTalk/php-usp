@@ -902,4 +902,17 @@ class Helper{
 		$buffer = self::buffer__trim_and_clear_from_empty_lines( $buffer );
 		return $buffer;
 	}
+	
+	static function search_page_errors($string_page){
+		return (
+			empty($string_page)
+			|| strpos($string_page,  'Notice')            !== false
+			|| strpos($string_page,  'Warning')           !== false
+			|| strpos($string_page,  'Fatal error')       !== false
+			|| strpos($string_page,  'Parse error')       !== false
+			|| stripos($string_page, 'internal server error') !== false
+			|| stripos($string_page, 'there has been a critical error on your website') !== false
+		);
+	}
+	
 }

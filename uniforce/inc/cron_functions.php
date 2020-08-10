@@ -27,7 +27,7 @@ function uniforce_sfw_update( $immediate = false ){
 		);
 	}
 
-	return ! Err::check() ? true : false;
+	return ! Err::check();
 }
 
 function uniforce_fw_send_logs(){
@@ -148,8 +148,14 @@ function usp_scanner__launch(){
 }
 
 function usp_scanner__get_signatures() {
-
-	$out = \Cleantalk\USP\Scanner\Controller::action__scanner__get_signatures();
+	
+	$usp = State::getInstance();
+	
+	$scanner_controller = new \Cleantalk\USP\ScannerController(
+		CT_USP_SITE_ROOT,
+		array( $usp->data->db_request_string, $usp->data->db_user, $usp->data->db_password)
+	);
+	$out = $scanner_controller->action__scanner__get_signatures();
 
 	return empty($result['error']) ? $out : true;
 }

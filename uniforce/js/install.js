@@ -76,14 +76,13 @@ function get_key(){
 
     let field = $('input[name="access_key_field"]');
 
-    usp_AJAX(
-        {
+    ctAJAX({
+        data: {
             action: 'get_key',
             email: field.val().trim(),
             security: uniforce_security,
         },
-        {
-            callback: function(result, data, params, obj) {
+        successCallback: function(result) {
                 if(result.auth_key){
                     do_install = true;
                     field.val(result.auth_key);
@@ -94,20 +93,24 @@ function get_key(){
                     $('.setup-links').hide();
                 }
             },
-            spinner: function(){field.toggleClass('loading')}
-        }
-    );
+        spinner: function(){field.toggleClass('loading')}
+    });
 }
 
 function key_validate( value, field ){
-    usp_AJAX(
+    ctAJAX(
         {
-            action: 'key_validate',
-            key: value,
-        },
-        {
-            callback: function(result, data, params, obj){
+            data: {
+                action: 'key_validate',
+                key: value,
+            },
+            successCallback: function( result ){
+
+                console.log( result );
+
                 if(result.valid){
+
+                    console.log( 'go!' );
 
                     key_valid = true;
 
@@ -122,6 +125,7 @@ function key_validate( value, field ){
                     if(do_install)
                         install();
                 }else{
+                    console.log( 'no go!' );
                     field.css('box-shadow', '0 0 8px #F44336');
                     field.css('border', '1px solid #F44336');
                     $('.btn-setup').prop('disabled', true);
@@ -136,7 +140,7 @@ function key_validate( value, field ){
 }
 
 function install(){
-    usp_AJAX(
+    ctAJAX(
         {
             action: 'install',
             key: $('input[name="access_key_field"]').val().trim(),
@@ -146,17 +150,14 @@ function install(){
             user_token: user_token,
             account_name_ob: account_name_ob,
         },
-        {
-            callback: function(result, data, params, obj) {
-                if(result.success){
-                    jQuery('.alert-danger').hide(300);
-                    $('.alert-success').show(300);
-                    $('#setup-form').hide();
-                    $('.setup-links').hide();
-                }else{
-                    do_install = false;
-                }
-            },
-        }
-    );
+        function(result, data, params, obj) {
+            if(result.success){
+                jQuery('.alert-danger').hide(300);
+                $('.alert-success').show(300);
+                $('#setup-form').hide();
+                $('.setup-links').hide();
+            }else{
+                do_install = false;
+            }
+    });
 }

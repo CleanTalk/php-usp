@@ -1,0 +1,58 @@
+<?php
+	$uniforce_tasks = array (
+  'sfw_update' => 
+  array (
+    'handler' => 'uniforce_sfw_update',
+    'next_call' => 1594148275,
+    'executed' => 0,
+    'last_executed' => 0,
+    'period' => 86400,
+    'params' => 
+    array (
+    ),
+  ),
+  'security_send_logs' => 
+  array (
+    'handler' => 'uniforce_security_send_logs',
+    'next_call' => 1594151815,
+    'executed' => 0,
+    'last_executed' => 0,
+    'period' => 3600,
+    'params' => 
+    array (
+    ),
+  ),
+  'fw_send_logs' => 
+  array (
+    'handler' => 'uniforce_fw_send_logs',
+    'next_call' => 1594151815,
+    'executed' => 0,
+    'last_executed' => 0,
+    'period' => 3600,
+    'params' => 
+    array (
+    ),
+  ),
+  'clean_black_lists' => 
+  array (
+    'handler' => 'uniforce_clean_black_lists',
+    'next_call' => 1594234615,
+    'executed' => 0,
+    'last_executed' => 0,
+    'period' => 86400,
+    'params' => 
+    array (
+    ),
+  ),
+  'update_signatures' => 
+  array (
+    'handler' => 'usp_scanner__get_signatures',
+    'next_call' => 1594148275,
+    'executed' => 0,
+    'last_executed' => 0,
+    'period' => 60,
+    'params' => 
+    array (
+    ),
+  ),
+);

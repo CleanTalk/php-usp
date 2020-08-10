@@ -2,6 +2,9 @@
 
 namespace Cleantalk\USP\Layout;
 
+use Cleantalk\USP\Common\State;
+use Cleantalk\USP\DB;
+
 class ListTable
 {
     static $NUMBER_ELEMENTS_TO_VIEW = 20;
@@ -52,8 +55,17 @@ class ListTable
 	public $html_after     = ''; // HTML after table
 	public $if_empty_items = 'No data given.'; // HTML message
 	
-	function __construct($args = array()){
-		
+	/**
+     * DB Handler
+     *
+	 * @var DB|\PDO|mixed
+	 */
+	private $db;
+	
+	function __construct($db, $args = array()){
+	    
+        $this->db = $db;
+	    
 		$this->args = json_encode($args);
 		
 		$this->id      = !empty($args['id'])      ? $args['id']      : 'table_' . rand(0, 10000);
@@ -110,8 +122,6 @@ class ListTable
 	}
 
 	public function get_data(){
-		
-		global $wpdb;
 
 		// Getting total of items
 		// by using given function
@@ -119,7 +129,7 @@ class ListTable
 			$this->items_total = call_user_func_array($this->func_data_total, array());
 		// by using direct SQL request
 		}else{
-			$total = $wpdb->get_results(
+			$total = $this->db->fetch_all(
 				sprintf(
 					'SELECT COUNT(*) as cnt'
 						.' FROM %s'
@@ -127,7 +137,7 @@ class ListTable
 					$this->sql['table'], // TABLE
 					$this->sql['where']  // WHERE
 				),
-				OBJECT_K
+				'obj'
 			);
 			$this->items_total = key($total);			
 		}
@@ -145,7 +155,7 @@ class ListTable
 		    foreach ( $this->columns_names as $columns_name ) {
 			    $columns[] = $this->sql['table'] . '.' . $columns_name;
             }
-			$this->rows = $wpdb->get_results(
+			$this->rows = $this->db->fetch_all(
 				sprintf(
 					'SELECT %s'
 						.' FROM %s'
@@ -158,7 +168,7 @@ class ListTable
 					key($this->order_by), current($this->order_by), // ORDER BY
 					$this->sql['offset'].',', $this->sql['limit']   // LIMIT	
 				),
-				$this->sql['get_array'] === true ? ARRAY_A : OBJECT
+				$this->sql['get_array'] === true ? 'array' : 'obj'
 			);
 		}
 		
@@ -176,6 +186,8 @@ class ListTable
 		else{
 			$this->preapre_data__default();
 		}
+		
+		return $this;
 		
 	}
 	
@@ -347,13 +359,13 @@ class ListTable
 					$out .= "<td class='$classes'>";
 					
 						$out .= isset($item[$column_key]) ? $item[$column_key] : 'Unknown';
+						
 						if(isset($column['primary']) && !empty($this->actions) && !empty($item['uid']))
 							$out .= $this->display__row_actions($item['uid'], $item);
 
 						
 					$out .= '</td>';
 				}
-				
 				
 			} unset($column_key, $column['heading']);
 			
@@ -461,10 +473,19 @@ class ListTable
 	{
 	    require_once CT_USP_INC . 'scanner.php';
 
+	    $usp = State::getInstance();
+	    
 		$page = intval($_POST['page']);
 		$args = self::stripslashes__array($_POST['args']);
 		$args['pagination']['page'] = $page;
-		$table = new ListTable($args);
+		$table = new ListTable(
+            \Cleantalk\USP\DB::getInstance(
+                $usp->data->db_request_string,
+                $usp->data->db_user,
+                $usp->data->db_password
+            ),
+            $args
+        );
 		$table->get_data();
 		$table->display();
 		die();

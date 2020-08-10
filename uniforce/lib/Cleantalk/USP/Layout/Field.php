@@ -145,7 +145,7 @@ class Field extends Element {
 		echo '<button type="button" id="ctusp_field---' . $this->getName() . '" name="' . $name . '" value="1" '
 		     .($this->disabled == true || ( $this->parent_field && !$this->state->settings->{$this->parent_field} ) ? ' disabled="disabled"' : '')
 		     .($this->child_fields ? ' onchange="uspSettingsDependencies([\''.implode("','",$this->child_fields).'\'])"' : '')
-		     .'>' . $this->getName() . '</button>' ;
+		     .'>' . ( $this->title ?: $this->getName() ) . '</button>' ;
 		echo $this->description
 			?'<div class="ctusp_field-description">'. $this->description .'</div>'
 			: '';

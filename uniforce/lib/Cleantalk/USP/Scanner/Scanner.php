@@ -2,7 +2,8 @@
 
 namespace Cleantalk\USP\Scanner;
 
-use Cleantalk\USP\Uniforce\Helper;
+use Cleantalk\USP\Scanner\Helper as ScannerHelper;
+use Cleantalk\USP\Uniforce\Helper as Helper;
 
 class Scanner
 {
@@ -266,64 +267,6 @@ class Scanner
 		}
 	}
 
-	static public function get_hashes__signature($last_signature_update)
-	{
-		$version_file_url = 'https://s3-us-west-2.amazonaws.com/cleantalk-security/security_signatures/version.txt';
-
-		if(Helper::http__request__get_response_code($version_file_url) == 200) {
-
-			$latest_signatures = Helper::http__request__get_content($version_file_url);
-
-			if(strtotime($latest_signatures)){
-
-				if(strtotime($last_signature_update) < strtotime($latest_signatures)){
-
-					// _v2 since 2.31 version
-					$file_url = 'https://s3-us-west-2.amazonaws.com/cleantalk-security/security_signatures/security_signatures_v2.csv.gz';
-
-					if(Helper::http__request__get_response_code($file_url) == 200) {
-
-						$gz_data = Helper::http__request__get_content($file_url);
-
-						if(empty($gz_data['error'])){
-
-							if(function_exists('gzdecode')){
-
-								$data = gzdecode($gz_data);
-
-								if($data !== false){
-
-									$lines = Helper::buffer__csv__parse($data);
-
-									$out = array();
-									foreach($lines as $line){
-										$out[] = array(
-											'id' => !isset($line[0]) ? '' : $line[0],
-											'name' => !isset($line[1]) ? '' : $line[1],
-											'body' => !isset($line[2]) ? '' : stripcslashes($line[2]),
-											'type' => !isset($line[3]) ? '' : $line[3],
-											'attack_type' => !isset($line[4]) ? '' : $line[4],
-											'submitted' => !isset($line[5]) ? '' : $line[5],
-											'cci' => !isset($line[6]) ? '' : stripcslashes($line[6]),
-										);
-									}
-									return $out;
-								}else
-									return array('error' => 'COULDNT_UNPACK');
-							}else
-								return array('error' => 'Function gzdecode not exists. Please update your PHP to version 5.4');
-						}else
-							return $gz_data;
-					}else
-						return array('error' =>'NO_FILE');
-				}else
-					return array('error' =>'UP_TO_DATE');
-			}else
-				return array('error' =>'WRONG_VERSION_FILE');
-		}else
-			return array('error' =>'NO_VERSION_FILE');
-	}
-
 	/**
 	 * Getting file details like last modified time, size, permissions
 	 *  
@@ -335,10 +278,11 @@ class Scanner
 
 		foreach($file_list as $key => $val){
 			// Cutting file's path, leave path from CMS ROOT to file
-			$this->files[$key]['path']  = substr(\Cleantalk\USP\Uniforce\Helper::is_windows() ? str_replace('/', '\\', $val['path']) : $val['path'], $path_offset);
-			$this->files[$key]['mtime'] = filemtime($val['path']);
-			$this->files[$key]['perms'] = substr(decoct(fileperms($val['path'])), 3);
+			$this->files[$key]['path']  = substr(Helper::is_windows() ? str_replace('/', '\\', $val['path']) : $val['path'], $path_offset);
 			$this->files[$key]['size']  = filesize($val['path']);
+			$this->files[$key]['perms'] = substr(decoct(fileperms($val['path'])), 3);
+			$this->files[$key]['mtime'] = filemtime($val['path']);
+			$this->files[$key]['status'] = 'UNKNOWN';
 
 			// Fast hash
 			$this->files[$key]['fast_hash']  = md5($this->files[$key]['path']);
@@ -361,56 +305,10 @@ class Scanner
 	public function dir__details($dir_list, $path_offset)
 	{
 		foreach($dir_list as $key => $val){
-			$this->dirs[$key]['path']  = substr(\Cleantalk\USP\Uniforce\Helper::is_windows() ? str_replace('/', '\\', $val['path']) : $val['path'], $path_offset);
+			$this->dirs[$key]['path']  = substr(Helper::is_windows() ? str_replace('/', '\\', $val['path']) : $val['path'], $path_offset);
 			$this->dirs[$key]['mtime'] = filemtime($val['path']);
 			$this->dirs[$key]['perms'] = substr(decoct(fileperms($val['path'])), 2);
 		}
-	}
-	
-	/**
-	 * Scanning file
-	 * 
-	 * @param string $root_path Path to CMS's root folder
-	 * @param array $file_info Array with files data (path, real_full_hash, source_type, source, version), other is optional
-	 * @return array|false
-	 */
-	static public function file__scan__differences($root_path, $file_info)
-	{		
-		if(file_exists($root_path.$file_info['path'])){
-			
-			if(is_readable($root_path.$file_info['path'])){
-				
-				/** @todo Add proper comparing mechanism
-				// Comparing with original file (if it's exists) and getting difference
-				if(!empty($file_info['real_full_hash']) && $file_info['real_full_hash'] !== $file_info['full_hash']){
-					
-					$file_original = self::file__get_original($file_info, $cms);
-					
-					if(!empty($file_original['error'])){
-						
-						$file = file($root_path.$file_info['path']);
-
-						// Comparing files strings
-						for($row = 0; !empty($file[$row]); $row++){
-							if(isset($file[$row]) || isset($file_original[$row])){
-								if(!isset($file[$row]))          $file[$row] = '';
-								if(!isset($file_original[$row])) $file_original[$row] = '';
-								if(strcmp(trim($file[$row]), trim($file_original[$row])) != 0){
-									$difference[] = $row+1;
-								}
-							}
-						}
-					}
-				}
-				*/
-				
-			}else
-				$output = array('error' => 'NOT_READABLE');
-		}else
-			$output = array('error' => 'NOT_EXISTS');
-		
-		return !empty($output) ? $output : false;
-		
 	}
 	
 	/**
@@ -443,7 +341,7 @@ class Scanner
 						case 'CODE_PHP':
 							$file_content = file_get_contents($root_path.$file_info['path']);
 							if(strripos($file_content, $signature['body']) !== false){
-								$string_number = \Cleantalk\USP\Scanner\Helper::file__get_string_number_with_needle($file_content, strripos($file_content, $signature['body']));
+								$string_number = ScannerHelper::file__get_string_number_with_needle($file_content, strripos($file_content, $signature['body']));
 								/** @todo Add new type CODE_PHP */
 								$verdict['SIGNATURES'][$string_number][] = $signature['id'];
 							}
@@ -487,7 +385,6 @@ class Scanner
 			
 			if(is_readable($root_path.$file_info['path'])){
 				
-				
 				$scanner = new ScannerH( $root_path . $file_info['path']);
 				if ( !empty( $scanner -> errors ) )
 					return $scanner -> errors;
@@ -516,61 +413,5 @@ class Scanner
 		return $output;
 	}
 	
-	/**
-	 * Get original file's content
-	 *
-	 * @param array $file_info Array with files data (path, real_full_hash, source_type, source), other is optional
-	 *
-	 * @return array File splitted by EOL
-	 */
-	static public function file__get_original($file_info)
-	{
-		$file_info['path'] = str_replace('\\', '/', $file_info['path']); // Replacing win slashes to Orthodox slashes =) in case of Windows
-		
-		switch( $file_info['source_type'] ){
-			case 'PLUGIN':
-				$file_info['path'] = preg_replace('@/wp-content/plugins/.*?/(.*)$@i', '$1',$file_info['path']);
-				$url_path = 'https://plugins.svn.wordpress.org/'.$file_info['source'].'/tags/'.$file_info['version'].'/'.$file_info['path'];
-				break;
-			case 'THEME':
-				$file_info['path'] = preg_replace('@/wp-content/themes/.*?/(.*)$@i', '$1',$file_info['path']);
-				$url_path = 'https://themes.svn.wordpress.org/'.$file_info['source'].'/'.$file_info['version'].'/'.$file_info['path'];
-				break;
-			default:
-				$url_path = 'http://cleantalk-security.s3.amazonaws.com/cms_sources/'.$file_info['source'].'/'.$file_info['version'].$file_info['path'];
-				break;
-		}
-		
-		if( Helper::http__request__get_response_code($url_path) == 200 ){
-			$user_agent = ini_get('user_agent');
-			ini_set('user_agent', 'Secuirty Plugin by CleanTalk');
-			$out = Helper::http__request__get_content($url_path);
-			ini_set('user_agent', $user_agent);
-		}else
-			$out = array('error' => 'Couldn\'t get original file');
-		
-		
-		return $out;
-	}
 	
-	/**
-	 * Checks if the current system is Windows or not
-	 * 
-	 * @return boolean 
-	 */
-	static function is_windows(){
-		return strpos(strtolower(php_uname('s')), 'windows') !== false ? true : false;
-	}
-	
-	/**
-	 * Returns number of string with a given char position
-	 *
-	 * @param string $haystack String to search in
-	 * @param int    $position Character position
-	 *
-	 * @return int String nubmer
-	 */
-	static function file__get_string_number_with_needle($haystack, $position){
-		return count(explode(PHP_EOL, substr($haystack, 0, $position)));
-	}
 }

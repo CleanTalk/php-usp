@@ -10,40 +10,42 @@ use Cleantalk\USP\Variables\Post;
 use Cleantalk\USP\Variables\Request;
 
 function spbc_scanner_file_send( $file_id ){
-
+	
 	$usp = State::getInstance();
+	$db  = \Cleantalk\USP\DB::getInstance(
+		$usp->data->db_request_string,
+		$usp->data->db_user,
+		$usp->data->db_password
+	);
 
 	$root_path = substr(CT_USP_SITE_ROOT, 0 ,-1);
 
 	if($file_id){
 
 		// Getting file info.
-		$index = array_search(
-			$file_id,
-			array_column($usp->scan_result->convertToArray(), 'fast_hash')
-		);
-		$file_info = $usp->scan_result->$index;
+		$file_info = $db->fetch_all('SELECT *'
+            .' FROM scanner_files'
+            .' WHERE fast_hash = "' . $file_id . '"')[0];
+		
+		// Scan file before send it
+		// Heuristic
+		$result_heur = Scanner::file__scan__heuristic($root_path, $file_info);
+		if(!empty($result['error'])){
+			$output = array('error' =>'RESCACNNING_FAILED');
+			die(json_encode($output));
+		}
+		
+		// Signature
+		$signatures = $usp->signatures->array_values();
+		$result_sign = Scanner::file__scan__for_signatures($root_path, $file_info, $signatures);
+		if(!empty($result['error'])){
+			$output = array('error' =>'RESCACNNING_FAILED');
+			die(json_encode($output));
+		}
 
-//		// Scan file before send it
-//		@todo make heuristic rescan
-//		// Heuristic
-//		$result_heur = Controller::file__scan__heuristic($root_path, $file_info);
-//		if(!empty($result['error'])){
-//			$output = array('error' =>'RESCACNNING_FAILED');
-//			if($direct_call) return $output; else die(json_encode($output));
-//		}
-//		@todo make signature rescan
-//		// Signature
-//		$signatures = $wpdb->get_results('SELECT * FROM '. SPBC_TBL_SCAN_SIGNATURES, ARRAY_A);
-//		$result_sign = Controller::file__scan__for_signatures($root_path, $file_info, $signatures);
-//		if(!empty($result['error'])){
-//			$output = array('error' =>'RESCACNNING_FAILED');
-//			if($direct_call) return $output; else die(json_encode($output));
-//		}
+		$result = Helper::array_merge__save_numeric_keys__recursive($result_sign, $result_heur);
 
-//		$result = Helper::array_merge__save_numeric_keys__recursive($result_sign, $result_heur);
-
-//		$wpdb->update(
+//		\Cleantalk\USP\DB::getInstance()->update(
 //			SPBC_TBL_SCAN_FILES,
 //			array(
 //				'checked'    => $file_info['checked'],
@@ -56,8 +58,8 @@ function spbc_scanner_file_send( $file_id ){
 //			array( '%s', '%s', '%s', '%s', '%s' ),
 //			array( '%s' )
 //		);
-//		$file_info['weak_spots'] = $result['weak_spots'];
-//		$file_info['full_hash']  = md5_file($root_path.$file_info['path']);
+		$file_info['weak_spots'] = $result['weak_spots'];
+		$file_info['full_hash']  = md5_file($root_path.$file_info['path']);
 
 		if(!empty($file_info)){
 			if(file_exists($root_path.$file_info['path'])){
@@ -72,13 +74,13 @@ function spbc_scanner_file_send( $file_id ){
 							if(empty($result['error'])){
 								if($result['result']){
 
-//									// Updating "last_sent"
-//									$sql_result = $wpdb->query('UPDATE '.SPBC_TBL_SCAN_FILES.' SET last_sent = '.current_time('timestamp').' WHERE fast_hash = "'.$file_id.'"');
+									// Updating "last_sent"
+									$sql_result = $db->query('UPDATE scanner_files SET last_sent = ' . time() . ' WHERE fast_hash = "' . $file_id . '"');
 
-//									if($sql_result !== false){
+									if($sql_result !== false){
 										$output = array('success' => true, 'result' => $result);
-//									}else
-//										$output = array('error' =>'DB_COULDNT_UPDATE_ROW');
+									}else
+										$output = array('error' =>'DB_COULDNT_UPDATE_ROW');
 								}else
 									$output = array('error' =>'API_RESULT_IS_NULL');
 							}else
@@ -102,31 +104,43 @@ function spbc_scanner_file_send( $file_id ){
 function spbc_scanner_file_delete( $file_id ){
 
 	$usp = State::getInstance();
-
+	$db  = \Cleantalk\USP\DB::getInstance(
+		$usp->data->db_request_string,
+		$usp->data->db_user,
+		$usp->data->db_password
+	);
+	
 	$root_path = substr(CT_USP_SITE_ROOT, 0 ,-1);
 
 	if($file_id){
 
 		// Getting file info.
-		$index = array_search(
-			$file_id,
-			array_column($usp->scan_result->convertToArray(), 'fast_hash')
-		);
-		$file_info = $usp->scan_result->$index;
+		$file_info = $db->fetch_all('SELECT *'
+            .' FROM scanner_files'
+          .' WHERE fast_hash = "' . $file_id . '"')[0];
 
 		if(!empty($file_info)){
+			
+			$file_path = $file_info['status'] == 'QUARANTINED' ? $file_info['q_path'] : $root_path.$file_info['path'];
+			
 			if(file_exists($root_path.$file_info['path'])){
 				if(is_writable($root_path.$file_info['path'])){
-
+					
 					// Getting file && API call
-					$result = unlink($root_path.$file_info['path']);
+					$remeber = file_get_contents($file_path);
+					$result = unlink($file_path);
 
 					if($result){
-
-						// Deleting row from DB
-						unset($usp->scan_result->$index);
-						$usp->scan_result->save();
-
+						
+						$response = Helper::http__request( CT_USP_URI ,array(),'dont_split_to_array');
+						if( Helper::http__request(CT_USP_URI, array(), 'get get_code') && ! Helper::search_page_errors($response) ){
+							// Deleting row from DB
+							$db->query('DELETE FROM scanner_files WHERE fast_hash = "'.$file_id.'"');
+						}else{
+							$output = array('error' =>'WEBSITE_RESPONSE_BAD');
+							$result = file_put_contents( $file_path, $remeber );
+							$output['error'] .= $result === false ? ' REVERT_FAILED' : ' REVERT_OK';
+						}
 						$output = array('success' => true);
 
 					}else
@@ -145,23 +159,30 @@ function spbc_scanner_file_delete( $file_id ){
 
 function spbc_scanner_file_view( $file_id = null ){
 
-	$file_id = Post::get('file_id');
+	$file_id = $file_id ?: Post::get('file_id');
+	$usp = State::getInstance();
+	$db  = \Cleantalk\USP\DB::getInstance(
+		$usp->data->db_request_string,
+		$usp->data->db_user,
+		$usp->data->db_password
+	);
 
 	if($file_id){
 
 		$root_path = substr(CT_USP_SITE_ROOT, 0 ,-1);
-		$usp = State::getInstance();
 
 		// Getting file info.
-		$index = array_search(
-			$file_id,
-			array_column($usp->scan_result->convertToArray(), 'fast_hash')
-		);
-		$file_info = $usp->scan_result->$index;
-
+		// Getting file info.
+		$file_info = $db->fetch_all('SELECT *'
+            .' FROM scanner_files'
+            .' WHERE fast_hash = "' . $file_id . '"')[0];
+		
 		if ( ! empty( $file_info ) ) {
-			if ( file_exists( $root_path . $file_info['path'] ) ) {
-				if ( is_readable( $root_path . $file_info['path'] ) ) {
+			
+			$file_path = $file_info['status'] == 'QUARANTINED' ? $file_info['q_path'] : $root_path.$file_info['path'];
+			
+			if ( file_exists( $file_path ) ) {
+				if ( is_readable( $file_path ) ) {
 
 					// Getting file && API call
 					$file = file( $root_path . $file_info['path'] );
@@ -199,18 +220,6 @@ function spbc_scanner_file_view( $file_id = null ){
 	die(json_encode( $output, true ));
 }
 
-function usp_scanner__display__count__files(){
-	return State::getInstance()->scan_result ? State::getInstance()->scan_result->count() : 0;
-}
-
-function usp_scanner__display__get_data__files( $offset = 0, $limit = 20, $order_by = '', $direction = 'DESC' ) {
-	return array_slice(
-		State::getInstance()->scan_result->array_values(),
-		$offset,
-		$limit
-	);
-}
-
 function spbc_scanner__display__prepare_data__files( &$table ){
 
 	$usp = State::getInstance();
@@ -228,7 +237,7 @@ function spbc_scanner__display__prepare_data__files( &$table ){
 				unset($row->actions['view_bad']);
 			if($row->status === 'quarantined')
 				unset($row->actions['quarantine']);
-
+			
 			$table->items[] = array(
 				'cb'       => $row->fast_hash,
 				'uid'      => $row->fast_hash,
@@ -240,7 +249,7 @@ function spbc_scanner__display__prepare_data__files( &$table ){
 					: $root . $row->path,
 				'actions' => $row->actions,
 			);
-
+			
 			if(isset($row->weak_spots)){
 				$weak_spots = json_decode($row->weak_spots, true);
 				if($weak_spots){
@@ -369,7 +378,8 @@ function usp_scanner__display(){
 	     .__('Perform scan', 'security-malware-firewall')
 	     .'</button>'
 	     .'<img  class="preloader" src="'.CT_USP_URI.'img/preloader.gif" />'
-     .'</div>';
+     .'</div>'
+	 .'<br>';
 
 
 	echo '<p class="spbc_hint spbc_hint_warning spbc_hint_warning__long_scan text-center" style="display: none; margin-top: 5px;">'
@@ -392,44 +402,64 @@ function usp_scanner__display(){
 
 	// Progressbar
 	echo '<div id="spbc_scaner_progress_bar" class="--hide" style="height: 22px;"><div class="spbc_progressbar_counter"><span></span></div></div>';
-
-	$table = new ListTable(
-		array(
-			'columns' => array(
-//				'cb'         => array('heading' => '<input type=checkbox>',	'class' => 'check-column',),
-				'path'       => array('heading' => 'Path','primary' => true,),
-				'size'       => array('heading' => 'Size, bytes',),
-				'perms'      => array('heading' => 'Permissions',),
-				'weak_spots' => array('heading' => 'Detected'),
-				'mtime'      => array('heading' => 'Last Modified',),
-			),
-			'func_data_total' => 'usp_scanner__display__count__files',
-			'func_data_get' => 'usp_scanner__display__get_data__files',
-			'func_data_prepare' => 'spbc_scanner__display__prepare_data__files',
-			'if_empty_items' => '<p class="text-center" style="margin-top: 20px;">'.__('No threats to display', 'security-malware-firewall').'</p>',
-			'html_before' => '<p>' . __('These files may not contain malicious code but they use very dangerous PHP functions and constructions! PHP developers don\'t recommend to use it and it looks very suspicious.', 'security-malware-firewall') . '</p>',
-			'actions' => array(
-				'send'       => array('name' => 'Send for Analysis',),
-				'view'    => array('name' => 'View', 'handler' => 'spbc_scanner_button_file_view_event(this);',),
-//				'view_bad'   => array('name' => 'View Bad Code', 'handler' => 'spbc_scanner_button_file_view_bad_event(this);',),
-				'delete'  => array('name' => 'Delete',),
-//				'quarantine' => array('name' => 'Quarantine it',),
-			),
-//			'bulk_actions'  => array(
-//				'send'       => array('name' => 'Send',),
-//				'delete'  => array('name' => 'Delete',),
-////				'approve'    => array('name' => 'Approve',),
-////				'quarantine' => array('name' => 'Quarantine it',),
-//			),
-//			'sortable' => array('path', 'size', 'perms', 'mtime',),
-			'pagination' => array(
-				'page'     => 1,
-				'per_page' => ListTable::$NUMBER_ELEMENTS_TO_VIEW,
-			),
-			'order_by'  => array('path' => 'asc'),
-		)
-	);
-
-	$table->get_data();
-	$table->display();
+	
+	if( $usp->data->stat->scanner->last_scan ){
+		
+		$db = Cleantalk\USP\DB::getInstance(
+			$usp->data->db_request_string,
+			$usp->data->db_user,
+			$usp->data->db_password
+		);
+		
+		if( $db ){
+			
+			$table = new ListTable(
+				$db,
+				array(
+					'sql'               => array(
+						'table' => 'scanner_files',
+						'where' => ' WHERE status = \'INFECTED\'',
+						'add_col' => array(
+							'fast_hash'
+						),
+					),
+					'columns'           => array(
+//						'cb'         => array('heading' => '<input type=checkbox>',	'class' => 'check-column',),
+						'path'       => array( 'heading' => 'Path', 'primary' => true, ),
+						'size'       => array( 'heading' => 'Size, bytes', ),
+						'perms'      => array( 'heading' => 'Permissions', ),
+						'weak_spots' => array( 'heading' => 'Detected' ),
+						'mtime'      => array( 'heading' => 'Last Modified', ),
+					),
+					'func_data_prepare' => 'spbc_scanner__display__prepare_data__files',
+					'if_empty_items'    => '<p class="text-center" style="margin-top: 20px;">' . __( 'No threats to display', 'security-malware-firewall' ) . '</p>',
+					'html_before'       => '<p>' . __( 'These files may not contain malicious code but they use very dangerous PHP functions and constructions! PHP developers don\'t recommend to use it and it looks very suspicious.', 'security-malware-firewall' ) . '</p>',
+					'actions'           => array(
+						'send'   => array( 'name' => 'Send for Analysis', ),
+						'view'   => array( 'name'    => 'View',
+						                   'handler' => 'spbc_scanner_button_file_view_event(this);',
+						),
+						'view_bad'   => array('name' => 'View Bad Code', 'handler' => 'spbc_scanner_button_file_view_bad_event(this);',),
+						'delete' => array( 'name' => 'Delete', ),
+//						'quarantine' => array('name' => 'Quarantine it',),
+					),
+		//			'bulk_actions'  => array(
+		//				'send'       => array('name' => 'Send',),
+		//				'delete'  => array('name' => 'Delete',),
+		////				'approve'    => array('name' => 'Approve',),
+		////				'quarantine' => array('name' => 'Quarantine it',),
+		//			),
+		//			'sortable' => array('path', 'size', 'perms', 'mtime',),
+					'pagination'        => array(
+						'page'     => 1,
+						'per_page' => ListTable::$NUMBER_ELEMENTS_TO_VIEW,
+					),
+					'order_by'          => array( 'path' => 'asc' ),
+				)
+			);
+			
+			$table->get_data()
+			      ->display();
+		}
+	}
 }

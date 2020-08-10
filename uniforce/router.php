@@ -34,7 +34,8 @@ switch (true){
 	    $additional_css = array(
 		    'settings-scanner',
 	        'settings-table',
-		    'jquery-ui.min'
+		    'jquery-ui.min',
+		    '//cdn.polyfill.io/v1/polyfill.js?features=es6',
 	    );
 	    $page = 'settings';
         break;

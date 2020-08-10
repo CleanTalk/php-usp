@@ -18,7 +18,7 @@ class API{
 	use \Cleantalk\USP\Templates\Singleton;
 	
 	/* Default params  */
-	const URL = 'https://api.cleantalk.org';
+	const URL = 'https://api-next.cleantalk.org';
 	const DEFAULT_AGENT = 'cleantalk-api-321';
 
 	static $instance;
@@ -601,7 +601,32 @@ class API{
 		return $result;
 	}
 	
-	static public function get_agent(){
+	/**
+	 * DataBase Client 2 Client
+	 * Creates remote database
+	 *
+	 * @param $api_key
+	 * @param bool $do_check
+	 *
+	 * @return array|bool|mixed|string[] Returns the following data on success call db_name, db_user, db_password, db_host, created
+	 *
+	 */
+	static public function method__dbc2c_get_info( $api_key, $do_check = true ) {
+		
+		$request = array(
+			'method_name' => 'dbc2c_get_info',
+			'auth_key'    => $api_key,
+		);
+		
+		$result = static::send_request( $request );
+		$result = $do_check ? static::check_response( $result, 'dbc2c_get_info' ) : $result;
+		
+		return $result;
+	}
+
+
+
+static public function get_agent(){
 		return defined( 'CLEANTALK_AGENT' ) ? CLEANTALK_AGENT : static::DEFAULT_AGENT;
 	}
 	

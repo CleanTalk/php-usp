@@ -183,7 +183,7 @@ class FileStorage {
 	// Where
 	// Check for right names
 	public function set_where( $where ){
-
+		
 		$result = $this->check__column( array_keys( $where ) );
 		if ( $result !== true ) {
 			Err::add( 'Unknown column: ' . $result );
@@ -260,23 +260,26 @@ class FileStorage {
 
 		// Clear file
 		ftruncate( $this->stream, 0 );
-
+		
 		// Clear indexes and data about indexes
-		foreach ( $this->meta->indexes as $column_name => &$column ){
-			switch ( $column['type'] ){
-				case 'hash':
-					$this->indexes[ $column_name ]->clear_hash();
-					break;
-				case 'binary_tree':
-					$this->indexes[ $column_name ]->clear_tree();
-					break;
-				case 'b_tree':
-					$this->indexes[ $column_name ]->clear_tree();
-					break;
+		if( $this->meta->indexes ){
+			
+			foreach( $this->meta->indexes as $column_name => &$column ){
+				switch( $column['type'] ){
+					case 'hash':
+						$this->indexes[ $column_name ]->clear_hash();
+						break;
+					case 'binary_tree':
+						$this->indexes[ $column_name ]->clear_tree();
+						break;
+					case 'b_tree':
+						$this->indexes[ $column_name ]->clear_tree();
+						break;
+				}
+				$column['status'] = false;
 			}
-			$column['status'] = false;
+			
 		}
-
 		// Null additional data
 		$this->meta->rows = 0;
 		$this->meta->save();

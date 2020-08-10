@@ -59,8 +59,8 @@ class State extends \Cleantalk\USP\Common\Storage{
 		'scanner_auto_start'		       => 1,
 		'scanner_outbound_links'		   => 0,
 		'scanner_outbound_links_mirrors'   => '',
-		'scanner_heuristic_analysis'	   => 1,
 		'scanner_signature_analysis'       => 1,
+		'scanner_heuristic_analysis'	   => 1,
 		'scanner_auto_cure'                => 1,
 		'scanner_frontend_analysis'        => 1,
 
@@ -70,6 +70,12 @@ class State extends \Cleantalk\USP\Common\Storage{
 
 	public $default_data = array(
 
+		//DB
+		'db_request_string' => '',
+		'db_user' => '',
+		'db_password' => '',
+		'db_created' => '',
+		
 		// Application
 		'is_installed'   => false,
 		'detected_cms'   => 'Unknown',
@@ -155,25 +161,20 @@ class State extends \Cleantalk\USP\Common\Storage{
 		'rollback_repair'         => array('last_call' => 0,),
 
 	// Scanner
-		'scanner_signatures_update'        => array('last_call' => 0, 'cooldown' => 0),
-		'scanner_clear_hashes'             => array('last_call' => 0, 'cooldown' => 0),
-
-		'scanner__controller'              => array('last_call' => 0, 'cooldown' => 0),
-		'scanner__get_remote_hashes'       => array('last_call' => 0, 'cooldown' => 0),
-		'scanner__count_hashes_plug'       => array('last_call' => 0, 'cooldown' => 0),
-		'scanner__get_remote_hashes__plug' => array('last_call' => 0, 'cooldown' => 0),
-		'scanner__clear_table'             => array('last_call' => 0, 'cooldown' => 0),
-		'scanner__count_files'             => array('last_call' => 0, 'cooldown' => 0),
-		'scanner__scan'                    => array('last_call' => 0, 'cooldown' => 0),
-		'scanner__count_files__by_status'  => array('last_call' => 0, 'cooldown' => 0),
-		'scanner__scan_heuristic'          => array('last_call' => 0, 'cooldown' => 0),
-		'scanner__scan_signatures'         => array('last_call' => 0, 'cooldown' => 0),
-		'scanner__count_cure'              => array('last_call' => 0, 'cooldown' => 0),
-		'scanner__cure'                    => array('last_call' => 0, 'cooldown' => 0),
-		'scanner__links_count'             => array('last_call' => 0, 'cooldown' => 0),
-		'scanner__links_scan'              => array('last_call' => 0, 'cooldown' => 0),
-		'scanner__frontend_scan'           => array('last_call' => 0, 'cooldown' => 0),
-		'scanner__send_results'            => array('last_call' => 0, 'cooldown' => 0),
+		'scanner__controller'              => array( 'last_call' => 0, 'cooldown' => 0 ),
+		'scanner__create_db'               => array( 'last_call' => 0, 'cooldown' => 0 ),
+		'scanner__clear_hashes'            => array( 'last_call' => 0, 'cooldown' => 0 ),
+		'scanner__clear_table'             => array( 'last_call' => 0, 'cooldown' => 0 ),
+		'scanner__get_remote_hashes'       => array( 'last_call' => 0, 'cooldown' => 0 ),
+		'scanner__get_signatures'          => array( 'last_call' => 0, 'cooldown' => 0 ),
+		'scanner__surface_analysis'        => array( 'last_call' => 0, 'cooldown' => 0 ),
+		'scanner__get_approved'            => array( 'last_call' => 0, 'cooldown' => 0 ),
+		'scanner__heuristic_analysis'      => array( 'last_call' => 0, 'cooldown' => 0 ),
+		'scanner__signature_analysis'      => array( 'last_call' => 0, 'cooldown' => 0 ),
+		'scanner__cure'                    => array( 'last_call' => 0, 'cooldown' => 0 ),
+		'scanner__outbound_links'          => array( 'last_call' => 0, 'cooldown' => 0 ),
+		'scanner__frontend_analysis'       => array( 'last_call' => 0, 'cooldown' => 0 ),
+		'scanner__send_results'            => array( 'last_call' => 0, 'cooldown' => 0 ),
 	);
 
 	public function __construct( ...$options )

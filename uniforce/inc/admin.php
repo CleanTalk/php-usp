@@ -511,7 +511,11 @@ function usp_do_save_settings() {
 	
     // Update signatures
     if( $usp->settings->scanner_signature_analysis ){
-		\Cleantalk\USP\Scanner\Controller::action__scanner__get_signatures();
+	    $scanner_controller = new \Cleantalk\USP\ScannerController(
+		    CT_USP_SITE_ROOT,
+		    array( $usp->data->db_request_string, $usp->data->db_user, $usp->data->db_password)
+	    );
+	    $scanner_controller->action__scanner__get_signatures();
     }
 	
     

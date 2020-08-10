@@ -1,353 +1,213 @@
-(function($){
+'use strict';
 
-    // Wrappers
-    $.spbc = {
-        scanner: {
+class spbc_Scanner{
 
-            // Controller
-            control: function(result, data, start) { return spbcObj.spbcScannerPlugin('control', result, data, start) },
+    first_start = true;
 
-            // Common
-            data:  function(param, data) { return spbcObj.spbcScannerPlugin('data', param, data)  },
-            ajax:  function(data)        { return spbcObj.spbcScannerPlugin('ajax', data)         },
-            start: function()            { return spbcObj.spbcScannerPlugin('start')              },
-            end:   function()            { return spbcObj.spbcScannerPlugin('end')                },
-            pause: function(result, data){ return spbcObj.spbcScannerPlugin('pause', result, data)},
-            resume:function()            { return spbcObj.spbcScannerPlugin('resume')             },
+    root  = '';
+    settings = '';
+    states = [
+        'create_db',
+        'get_signatures',
+        'clear_table',
+        'surface_analysis',
+        'get_approved',
+        'signature_analysis',
+        'heuristic_analysis',
+        // 'auto_cure',
+        // 'frontend_analysis',
+        // 'outbound_links',
+        'send_results',
+    ];
+    state = null;
+    offset = 0;
+    $amount = 0;
+    total_scanned = 0;
+    scan_percent = 0;
+    percent_completed = 0;
 
-            // Debug
-            clear:           function() { return spbcObj.spbcScannerPlugin('clear')          },
-            clear_callback:  function() { return spbcObj.spbcScannerPlugin('clear_callback') },
+    paused_status = '';
+    paused = false;
 
-            // Actions
+    button = null;
+    spinner = null;
 
-            clearTable:    function()                     { return spbcObj.spbcScannerPlugin('clearTable')},
-            count:         function()                     { return spbcObj.spbcScannerPlugin('count')},
-            scanModified_sign:  function(status)          { return spbcObj.spbcScannerPlugin('scanModified_sign',  status)},
-            scanModified_heur:  function(status)          { return spbcObj.spbcScannerPlugin('scanModified_heur',  status)},
-            scanLinks:     function()                     { return spbcObj.spbcScannerPlugin('scanLinks')},
-            sendResults:   function()                     { return spbcObj.spbcScannerPlugin('sendResults')},
+    progress_overall = null;
+    progressbar = null;
+    progressbar_text = null;
 
-            // Callbacks
-            count_callback:         function(result, data) { return spbcObj.spbcScannerPlugin('count_callback',         result, data) },
-            scanModified_callback:  function(result, data) { return spbcObj.spbcScannerPlugin('scanModified_callback',  result, data) },
-            sendResults_callback:   function(result, data) { return spbcObj.spbcScannerPlugin('sendResults_callback',   result, data) },
+    timeout = 60000;
 
-        },
+    constructor ( settings ) {
+
+        console.log('init');
+
+        for( let key in settings ){
+            if( typeof this[key] !== 'undefined' ){
+                this[key] = settings[key];
+            }
+        }
+
     };
 
-    $.fn.spbcScannerPlugin = function(param){
+    get_next_state(state) {
 
-        var scanner = jQuery.spbc.scanner;
+        state = state === null ? this.states[0] : this.states[ this.states.indexOf( state ) + 1 ];
 
-        // Methods
-        var methods = {
-            init: function(settings) {
-                console.log('init');
-                this.data(settings);
-                window.spbcObj = this;
-            },
-            start: function(opt){
-                opt.progressbar.show(500)
-                    .progressbar('option', 'value', 0);
-                opt.progress_overall.show(500);
-                opt.button.html(spbcScaner.button_scan_pause);
-                opt.spinner.css({display: 'inline'});
-            },
-            end: function(opt){
-                opt.progressbar.hide(500)
-                    .progressbar('option', 'value', 100);
-                opt.progress_overall.hide(500);
-                opt.button.html(spbcScaner.button_scan_perform);
-                opt.spinner.css({display: 'none'});
-                this.removeData('status');
-                this.data('total_links', 0)
-                    .data('plug', false)
-                    .data('total_scanned', 0);
-            },
-            resume: function(opt){
-                console.log('RESUME');
-                opt.button.html(spbcScaner.button_scan_pause);
-                opt.spinner.css({display: 'inline'});
-                opt.paused = false;
-            },
-            pause: function(result, data, opt){
-                console.log('PAUSE');
-                opt.button.html(spbcScaner.button_scan_resume);
-                opt.spinner.css({display: 'none'});
-                opt.result = result;
-                opt.data = data;
-                opt.paused = true;
-            },
-            data: function(param, data){
-                if(typeof data === 'undefined'){
-                    if(param === 'all')
-                        return this.data();
-                    return this.data(param);
-                }
-                this.data(param, data);
-            },
-            clear: function(){
-                console.log('CLEAR');
-                scanner.start();
-                this.data('scan_status', 'clear')
-                    .data('callback', scanner.clear_callback);
-                var data = { action : 'spbc_scanner_clear' };
-                scanner.ajax(data);
-            },
-            clear_callback: function(){
-                console.log('CLEARED');
-                scanner.end();
-            },
+        if (typeof this.settings[ 'scanner_' + state ] !== 'undefined' && this.settings[ 'scanner_' + state ] === 0)
+            state = this.get_next_state( state );
 
-            // AJAX request
-            ajax: function(data, opt){
+        return state;
+    };
 
-                // Default prarams
-                var notJson = this.data('notJson') || false;
+    // Processing response from backend
+    successCallback( result ){
 
-                console.log(opt.status);
+        this.scan_percent = result.total !== 0 ? 100 / result.total : 1;
 
-                // Changing text and precent
-                if(opt.prev_action != data.action && typeof opt.progressbar !== 'undefined'){
-                    opt.progress_overall.children('span')
-                        .removeClass('spbc_bold')
-                        .filter('.spbc_overall_scan_status_'+opt.status)
-                        .addClass('spbc_bold');
-                    opt.progressbar.progressbar('option', 'value', 0);
-                    opt.progressbar_text.text(spbcScaner['progressbar_'+opt.status] + ' - 0%');
-                }
-                this.data('prev_action', data.action);
+        if( result.end !== true && result.end !== 1 ){
+            this.set_percents( this.percent_completed + Math.floor( result.processed / this.scan_percent ) );
+            this.offset = this.offset + result.processed;
+        }else{
+            this.set_percents( 100 );
+            this.offset = 0;
+        }
 
-                // Default params
-                data.spbc_remote_call_token = usp.remote_call_token; // Adding security code
-                data.spbc_remote_call_action = 'scanner__' + opt.status; // Adding security code
-                data.plugin_name = 'spbc'; // Adding security code
+        console.log( result );
 
-                jQuery.ajax({
-                    type: "GET",
-                    url: uniforce_ajax_url,
-                    data: data,
-                    success: function(result){
-                        if(!notJson) result = JSON.parse(result);
-                        if(result.error){
-                            console.log(result); console.log(data);	console.log(opt);
-                            alert('Error happens: ' + (result.error || 'Unkown'));
-                            setTimeout(function(){ scanner.end(); }, 1000);
-                        }else{
-                            console.log(result); console.log(data);	console.log(opt);
-                            if(result.processed)
-                                opt.button.data('precent_completed', opt.precent_completed + result.processed / opt.scan_precent);
-                            if(typeof opt.progressbar !== 'undefined'){
-                                opt.progressbar.progressbar('option', 'value', Math.floor(opt.precent_completed));
-                                opt.progressbar_text.text(spbcScaner['progressbar_'+opt.status] + ' - ' + Math.floor(opt.precent_completed) + '%');
-                            }
-                            if(typeof opt.callback !== 'undefined'){
-                                setTimeout(function(){
-                                    opt.callback(result, data);
-                                }, 1000);
-                            }
-                        }
-                    },
-                    error: function(jqXHR, textStatus, errorThrown){
-                        scanner.end();
-                        console.log('SPBC_AJAX_ERROR');
-                        console.log(jqXHR);
-                        console.log(textStatus);
-                        console.log(errorThrown);
-                        if(errorThrown)
-                            alert(errorThrown);
-                    },
-                    timeout: opt.timeout,
-                });
-            },
+        setTimeout(() => {
 
-            // CONTROL
+            // Changing text and percent
+            if ( result.end ) {
 
-            control: function(result, data, action, opt){
+                this.state = this.get_next_state( this.state );
 
-                this.data('callback', scanner.control)
-                    .data('precent_completed', 100);
-
-                if(typeof action !== 'undefined' && action){
-                    if(opt.status == null){
-                        scanner.start();
-                        scanner.clearTable();
-                        return;
-                    }else{
-                        if(opt.paused == true){
-                            scanner.resume();
-                            result = opt.result;
-                            data = opt.data;
-                        }else{
-                            scanner.pause(result, data);
-                            return;
-                        }
-                    }
-                }
-                if(opt.paused == true) return;
-
-                setTimeout(function(){
-                    switch(opt.status){
-
-                        case 'clear_table':
-                            scanner.count();
-                            break;
-
-                        case 'count_files':
-                            if(result.total > 30)
-                                opt.warnings.long_scan.show(500);
-                            if( +spbcScaner.check_signature ){ scanner.scanModified_sign('UNKNOWN,MODIFIED,OK,INFECTED', 'NO,YES_HEURISTIC');  return;}
-                            if( +spbcScaner.check_heuristic ){ scanner.scanModified_heur('UNKNOWN,MODIFIED,OK,INFECTED', 'NO,YES_SIGNATURE');  return;}
-                            scanner.sendResults();
-                            break;
-
-                        case 'scan_signatures':
-                            if( +spbcScaner.check_heuristic ){ scanner.scanModified_heur('UNKNOWN,MODIFIED,OK,INFECTED', 'NO,YES_SIGNATURE');  return;}
-                            scanner.sendResults();
-                            break;
-
-                        case 'scan_heuristic':
-                            scanner.sendResults();
-                            break;
-
-                        // Send results
-                        case 'send_results':
-                            scanner.end();
-                            opt.button.data('status', null);
-                            location.href=location.origin+location.pathname+"?tab=malware_scanner";
-                            break;
-
-                        default:
-
-                            break;
-                    }
-                }, 300);
-            },
-
-            // ACTIONS
-           clearTable: function(){
-                console.log('CLEAR_TABLE');
-                this.data('status', 'clear_table');
-                scanner.ajax({action : 'scanner__clear_table'});
-            },
-
-            count: function(opt){
-                console.log('COUNT_FILES');
-                this.data('status', 'count_files')
-                    .data('callback', scanner.count_callback);
-                scanner.ajax({
-                    action : 'spbc_scanner_count_files',
-                });
-            },
-            count_callback: function(result, data, opt){
-                console.log('FILES COUNTED');
-                this.data('total_scanned', this.data('total_scanned') + +result.total)
-                    .data('scan_precent', +result.total / 98);
-                scanner.control(result);
-            },
-
-            scanModified_sign: function(status, opt){
-                console.log('SCAN MODIFIED FILES');
-                this.data('status', 'scan_signatures')
-                    .data('precent_completed', 0)
-                    .data('callback', scanner.scanModified_callback)
-                    .data('timeout',  60000);
-                data = {
-                    action : 'spbc_scanner_scan_signatures',
-                    offset : 0,
-                    amount : 50,
-                    status : status
-                };
-                scanner.ajax(data);
-            },
-            scanModified_heur: function(status, opt){
-                console.log('SCAN MODIFIED FILES');
-                this.data('status', 'scan_heuristic')
-                    .data('precent_completed', 0)
-                    .data('callback', scanner.scanModified_callback)
-                    .data('timeout',  60000);
-                data = {
-                    action : 'spbc_scanner_scan_heuristic',
-                    offset : 0,
-                    amount : 5,
-                    status : status
-                };
-                scanner.ajax(data);
-            },
-            scanModified_callback: function(result, data, opt){
-                console.log('MODIFIED FILES SCANNING');
-                if(result.processed >= data.amount){
-                    data.offset += result.processed;
-                    scanner.ajax(data);
+                if (typeof this.state === 'undefined'){
+                    this.end( true );
                     return;
                 }
-                console.log('MODIFIED FILES END');
-                opt.progressbar.progressbar('option', 'value', 100);
-                opt.progressbar_text.text(spbcScaner['progressbar_'+opt.status] + ' - 100%');
-                scanner.control();
-            },
 
-            sendResults: function(){
-                console.log('SEND RESULTS');
-                this.data('status', 'send_results')
-                    .data('callback', scanner.sendResults_callback);
-                var data = {
-                    action: 'spbc_scanner_send_results',
-                    total_scanned: this.data('total_scanned'),
-                };
-                if( +spbcScaner.check_links )
-                    data.total_links = this.data('total_links');
-                scanner.ajax(data);
-            },
-            sendResults_callback: function(result, data, opt){
-                console.log('RESULTS_SENT');
-                if( +spbcScaner.check_links ){
-                    opt.button.parent().next().html(spbcScaner.last_scan_was_just_now_links.printf(data.total_scanned, data.total_links));
-                }else{
-                    opt.button.parent().next().html(spbcScaner.last_scan_was_just_now.printf(data.total_scanned));
-                }
+                this.set_percents( 0 );
+                this.progress_overall.children('span')
+                    .removeClass('spbc_bold')
+                    .filter('.spbc_overall_scan_status_' + this.state)
+                    .addClass('spbc_bold');
+            }
 
-                // jQuery('#spbc_scanner_status_icon').attr('src', spbcSettings.img_path + '/yes.png');
-                scanner.control();
-            },
-        };
+            this.controller( result );
 
-        // Method call. Passing current settings to each function as the last element.
-        if(typeof methods[param]==='function'){
-            var args = Array.prototype.slice.call(arguments, 1);
-            if(param !== 'data')
-                args.push(this.data());
-            // console.log(param); console.log(args);
-            return methods[param].apply(this, args);
-        }
+        }, 2000);
 
-        // Init
-        if(typeof param === 'object'){
-            var settings = $.extend({
-
-                status: null,
-                paused_status: null,
-                paused: false,
-
-                total_links: 0,
-                total_scanned: 0,
-
-                button: null,
-                spinner: null,
-
-                progress_overall: null,
-                progressbar: null,
-                progressbar_text: null,
-
-                callback: null,
-                timeout: 60000,
-            }, param);
-            return methods.init.apply(this, [settings]);
-        }
-
-        // Error
-        $.error( 'Method "' +  param + '" is unset for jQuery.spbcScannerPlugin' );
     };
 
-})(jQuery);
+    set_percents( percent ){
+        this.percent_completed = percent;
+        this.progressbar.progressbar( 'option', 'value', this.percent_completed );
+        this.progressbar_text.text( spbc_ScannerData[ 'progressbar_' + this.state ] + ' - ' + this.percent_completed + '%' );
+    };
+
+    error( xhr, status, error ){
+
+        let errorOutput = typeof this.errorOutput === 'function' ? this.errorOutput : function( msg ){ alert( msg ) };
+
+        console.log( '%c APBCT_AJAX_ERROR', 'color: red;' );
+        console.log( status );
+        console.log( error );
+        console.log( xhr );
+
+        if( xhr.status === 200 ){
+            if( status === 'parsererror' ){
+                errorOutput( 'Unexpected response from server. See console for details.' );
+                console.log( '%c ' + xhr.responseText, 'color: pink;' );
+            }else {
+                errorOutput( 'Unexpected error:' + status + ' Additional info: ' + error );
+            }
+        }else if(xhr.status === 500){
+            errorOutput( 'Internal server error.');
+        }else
+            errorOutput( 'Unexpected response code:' + xhr.status );
+
+        if( this.progressbar ) this.progressbar.fadeOut('slow');
+
+        this.end( false );
+
+    };
+
+    errorOutput( msg ){
+        alert( msg );
+    };
+
+    controller( result ) {
+
+        // // AJAX params
+        let data = {
+            spbc_remote_call_token: usp.remote_call_token,
+            spbc_remote_call_action: 'scanner__' + this.state, // Adding security code
+            plugin_name: 'spbc', // Adding security code
+            offset: this.offset,
+        };
+
+        switch (this.state) {
+
+            case 'clear_table':        this.amount = 1000; break;
+            case 'surface_analysis':   this.amount = 500; break;
+            case 'signature_analysis': this.amount = 10; break;
+            case 'heuristic_analysis': this.amount = 10; break;
+            case 'auto_cure':          this.amount = 5; break;
+            case 'send_results':
+
+                break;
+
+            default:
+
+                break;
+        }
+
+        data.amount = this.amount;
+
+        if( typeof this.state !== 'undefined' )
+            ctAJAX({
+                data: data,
+                type: 'GET',
+                successCallback: this.successCallback,
+                complete: null,
+                errorOutput: this.errorOutput,
+                context: this,
+            });
+
+    };
+
+    start(){
+
+        this.state = this.get_next_state( null );
+
+        this.set_percents( 0 );
+        this.progressbar.show(500);
+        this.progress_overall.show(500);
+        this.button.attr('disabled', 'disabled');
+        this.spinner.css({display: 'inline'});
+
+        setTimeout(() => {
+            this.controller();
+        }, 1000);
+
+    };
+
+    end( reload ){
+
+        this.progressbar.hide(500);
+        this.progress_overall.hide(500);
+        this.button.removeAttr('disabled', 'disabled');
+        this.spinner.css({display: 'none'});
+        this.state = this.states[0];
+        this.total_links = 0;
+        this.plug = false;
+        this.total_scanned = 0;
+
+        if(reload){
+            document.location = document.location;
+        }
+
+    };
+
+};

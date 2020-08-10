@@ -22,16 +22,46 @@ jQuery(document).ready(function($) {
 
 function usp_AJAX(data, params, obj){
 
-	// Default params
+	// Getting params
 	var button        = params.button        || null;
-	var field         = params.field         || null;
 	var spinner       = params.spinner       || null;
 	var progressbar   = params.progressbar   || null;
 	var callback      = params.callback      || null;
-	var error_handler = params.error_handler || usp_AJAX__error_handler;
 	var notJson       = params.notJson       || null;
 	var timeout       = params.timeout       || 30000;
 	obj               = obj                  || null;
+	var error_handler  = params.errorHandler   || usp_AJAX__error_handler;
+	var successHandler = params.successHandler || function(result, data, params, obj){
+
+		if(button){ button.removeAttr('disabled'); button.css('cursor', 'pointer'); }         // Enable button
+		if(spinner && typeof spinner == 'function') spinner();                                // Hide spinner
+		if(spinner && typeof spinner == 'object') 	jQuery(spinner).css('display', 'none'); // Hide spinner
+		if(!notJson) result = JSON.parse(result);                                             // Parse answer
+		if(!!result.error){                                                         // Show error
+
+			setTimeout(function(){
+					if(progressbar) progressbar.fadeOut('slow');
+				}, 1000
+			);
+
+			error_handler(result, data, params, obj);
+
+		}else{
+			if(callback)
+				callback(result, data, params, obj);
+		}
+	};
+	var errorHandler = params.errorHandler || function(jqXHR, textStatus, errorThrown){
+		if(button){ button.removeAttr('disabled'); button.css('cursor', 'pointer'); }
+		if(spinner && typeof spinner == 'function') spinner();
+		if(spinner && typeof spinner == 'object') 	jQuery(spinner).css('display', 'none');
+		console.log('SPBC_AJAX_ERROR');
+		console.log(jqXHR);
+		console.log(textStatus);
+		console.log(errorThrown);
+		if(errorThrown)
+			alert(errorThrown);
+	};
 
 	// Button and spinner
 	if(button)  { button.attr('disabled', 'disabled'); button.css('cursor', 'not-allowed'); }  // Disable button
@@ -40,46 +70,22 @@ function usp_AJAX(data, params, obj){
 
 	data.security = uniforce_security; // Adding security code
 
-	console.log(data);
-	console.log(params);
-	console.log(obj);
-	jQuery.ajax({
-		type: "POST",
+	let ajax_aprams = {
 		url: uniforce_ajax_url,
 		data: data,
-		success: function(result){
-
-			if(button){ button.removeAttr('disabled'); button.css('cursor', 'pointer'); }         // Enable button
-			if(spinner && typeof spinner == 'function') spinner();                                // Hide spinner
-			if(spinner && typeof spinner == 'object') 	jQuery(spinner).css('display', 'none'); // Hide spinner
-			if(!notJson) result = JSON.parse(result);                                             // Parse answer
-			if(!!result.error){                                                         // Show error
-
-				setTimeout(function(){
-						if(progressbar) progressbar.fadeOut('slow');
-					}, 1000
-				);
-
-				error_handler(result, data, params, obj);
-
-			}else{
-				if(callback)
-					callback(result, data, params, obj);
-			}
-		},
-		error: function(jqXHR, textStatus, errorThrown){
-			if(button){ button.removeAttr('disabled'); button.css('cursor', 'pointer'); }
-			if(spinner && typeof spinner == 'function') spinner();
-			if(spinner && typeof spinner == 'object') 	jQuery(spinner).css('display', 'none');
-			console.log('SPBC_AJAX_ERROR');
-			console.log(jqXHR);
-			console.log(textStatus);
-			console.log(errorThrown);
-			if(errorThrown)
-				alert(errorThrown);
-		},
+		success: successHandler,
+		error: errorHandler,
+		complete: callback,
 		timeout: timeout,
-	});
+	};
+
+	if( !! params.request_type ) ajax_aprams.type       = params.request_type;
+	if( !! params.dataFilter )   ajax_aprams.dataFilter = params.dataFilter;
+	// if( !! params.dataType )     ajax_aprams.dataType   = params.dataType;
+	// ajax_aprams.dataType = !! params.dataType ? params.dataType : 'json';
+	ajax_aprams.context = !! params.context ? params.context : 'POST';
+
+	jQuery.ajax(ajax_aprams);
 }
 
 function usp_AJAX__error_handler(result, data, params, obj){
