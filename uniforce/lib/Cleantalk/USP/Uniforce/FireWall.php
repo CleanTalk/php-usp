@@ -371,7 +371,7 @@ class FireWall extends \Cleantalk\USP\Security\FireWall
 
     }
 
-    public static function security__update_logs( $params = null ) {
+    public static function security__update_logs( $params = array() ) {
 
         global $salt;
 
