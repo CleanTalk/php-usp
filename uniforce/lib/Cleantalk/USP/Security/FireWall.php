@@ -110,8 +110,6 @@ class FireWall
 		$this->was_logged_in = isset($params['was_logged_in'])         ? (bool)$params['was_logged_in']     : false;
 		
 		$this->ip_array    = (array)static::ip__get(array('real'));
-		
-		$this->db = $params['db'];
 	}
 	
 	static public function ip__get($ip_types = array('real', 'remote_addr', 'x_forwarded_for', 'x_real_ip', 'cloud_flare')){
