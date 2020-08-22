@@ -32,7 +32,7 @@ trait FluidInterface {
 			$namespace = preg_replace('/^(.*)?(\\\\.*)$/', '$1', __CLASS__ );
 			$class = ucfirst( substr( $name, 4) );
 			$class = '\\' . $namespace . '\\' . $class;
-			$child = new $class( $arguments[0] );
+			$child = new $class( isset( $arguments[0] ) ? $arguments[0] : ''  );
 			$this->addChild ( $child );
 			return $child;
 		}
