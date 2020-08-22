@@ -612,7 +612,7 @@ class FireWall extends \Cleantalk\USP\Security\FireWall
 
 	public static function action__fw__update( $api_key )
     {
-        $db = new \Cleantalk\File\FileStorage( 'fw_nets' );
+        $db = new \Cleantalk\USP\File\FileStorage( 'fw_nets' );
 
 	    $file_urls = explode( ',', Get::get( 'file_urls' ) );
 

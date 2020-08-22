@@ -136,7 +136,7 @@ usp_localize_script( 'usp',
 
                             <?php
 
-                            $settings = new \Cleantalk\Layout\Settings();
+                            $settings = new \Cleantalk\USP\Layout\Settings();
 
                             // Tab summary
                             $settings
