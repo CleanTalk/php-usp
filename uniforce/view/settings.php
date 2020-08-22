@@ -88,7 +88,7 @@ usp_localize_script( 'spbc_ScannerData', array(
 	'look_below_for_scan_res'               => __('Look below for scan results.', 'security-malware-firewall'),
 	'view_all_results'                      => sprintf(
 		__('</br>%sView all scan results for this website%s', 'security-malware-firewall'),
-		'<a target="blank" href="https://cleantalk.org/my/logs_mscan?service='.$usp->service_id.'">',
+		'<a target="blank" href="https://cleantalk.org/my/logs_mscan?service=' . Cleantalk\USP\Common\State::getInstance()->service_id . '">',
 		'</a>'
 	),
 	'last_scan_was_just_now'        => __('Website last scan was just now. %s files were scanned.', 'security-malware-firewall'),
