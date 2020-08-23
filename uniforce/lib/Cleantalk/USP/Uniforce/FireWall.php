@@ -632,7 +632,7 @@ class FireWall extends \Cleantalk\USP\Security\FireWall
 			        $file_urls = Helper::buffer__parse__in_lines( $data );
 
 				    // Clean current database
-				    $db = new \Cleantalk\File\FileStorage( 'fw_nets' );
+				    $db = new \Cleantalk\USP\File\FileStorage( 'fw_nets' );
 				    $db->delete();
 
 				    // Clean statistics
