@@ -658,7 +658,7 @@ class FireWall extends \Cleantalk\USP\Security\FireWall
 
 				while( $data !== '' ){
 
-					for ( $i = 0, $nets_for_save = array(); $i < 2500 && $data !== ''; $i ++ ){
+					for ( $i = 0, $nets_for_save = array(); $i < 5000 && $data !== ''; $i ++ ){
 
 						$entry = Helper::buffer__csv__pop_line_to_array( $data );
 
