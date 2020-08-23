@@ -546,7 +546,19 @@ class Helper{
 			if(in_array('async', $presets))
 				return true;
 			
-			if($result){
+			if( ! $result ){
+				
+				$out = array( 'error' => curl_error( $ch ) );
+				
+			}elseif( strpos( $result, 'error_message' ) ){
+				
+				$out_tmp = json_decode( $result, true);
+				$out = array(
+					'error' => $out_tmp['error_message'],
+					'error_original' => $out_tmp,
+				);
+				
+			}else{
 				
 				// Split to array by lines if such preset given
 				if( strpos( $result, PHP_EOL ) !== false && in_array( 'split_to_array', $presets ) )
@@ -560,8 +572,8 @@ class Helper{
 				
 				$out = $result;
 				
-			}else
-				$out = array('error' => curl_error($ch));
+			}
+			
 			
 			curl_close($ch);
 			
