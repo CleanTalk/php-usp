@@ -701,13 +701,14 @@ class FireWall extends \Cleantalk\USP\Security\FireWall
 				'get async'
 			);
 
-		}else{
+		}elseif( ! Err::check() ){
 
 			$nets_for_save = array();
 
 			if (!empty($_SERVER['HTTP_HOST'])) {
 				$exclusions[] = Helper::dns__resolve(Server::get('HTTP_HOST'));
-//				$exclusions[] = '127.0.0.1';
+				$exclusions[] = '127.0.0.1';
+				$exclusions = array_unique( $exclusions );
 				foreach ($exclusions as $exclusion) {
 					if (Helper::ip__validate($exclusion) && sprintf('%u', ip2long($exclusion))) {
 						$nets_for_save[] = array(
