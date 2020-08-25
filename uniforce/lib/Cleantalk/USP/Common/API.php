@@ -18,7 +18,7 @@ class API{
 	use \Cleantalk\USP\Templates\Singleton;
 	
 	/* Default params  */
-	const URL = 'https://api-next.cleantalk.org';
+	const URL = 'https://api.cleantalk.org';
 	const DEFAULT_AGENT = 'cleantalk-api-321';
 
 	static $instance;
