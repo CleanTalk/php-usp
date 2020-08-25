@@ -644,11 +644,12 @@ class Helper{
 
 		$data = false;
 		$res = static::http__request( $url, array(), 'get_code' );
-		if ( $res === 200 ) { // Check if it's there
+		// @todo fix API. Should return 200 for files.
+		if ( $res === 200 || $res === 501 ) { // Check if it's there
 			$result = static::http__request__get_content( $url );
 			if ( empty( $result['error'] ) ){
 				if(function_exists('gzdecode')) {
-					$data = gzdecode( $result );
+					$data = @gzdecode( $result );
 					if ( $data !== false ){
 						return $data;
 					}else
