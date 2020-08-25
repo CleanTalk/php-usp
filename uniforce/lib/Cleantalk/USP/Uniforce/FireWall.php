@@ -518,9 +518,9 @@ class FireWall extends \Cleantalk\USP\Security\FireWall
                 }else
                     return $result;
             }else
-                return array( 'error' => 'NO_LOGS_TO_SEND' );
+                return array( 'rows' => 0 ); // No logs. Log file is empty.
         }else
-            return array( 'error' => 'NO_LOGS_TO_SEND' );
+            return array( 'rows' => 0 ); // No logs. Directory is not exists.
 
     }
 

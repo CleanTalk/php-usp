@@ -68,7 +68,7 @@ function uniforce_security_send_logs(){
 
         if( ! Err::check() ) {
 	        $usp->data->stat->bfp->logs_sent_time = time();
-	        $usp->data->stat->bfp->count = $result;
+	        $usp->data->stat->bfp->count = $result['rows'];
         }
 
     }
