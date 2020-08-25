@@ -24,6 +24,7 @@ define( 'CT_USP_SITE_ROOT', realpath( CT_USP_ROOT . '..') . DS );
 define( 'CT_USP_LIB', CT_USP_ROOT . 'lib' . DS );
 define( 'CT_USP_VIEW', CT_USP_ROOT . DS . 'view' . DS );
 define( 'CT_USP_DATA', CT_USP_ROOT . 'data' . DS );
+define( 'CT_USP_DATA_SSL_CERT', CT_USP_DATA . 'ssl' . DS );
 
 require_once CT_USP_LIB . 'autoloader.php';
 require_once CT_USP_LIB . 'ct_phpFix.php';

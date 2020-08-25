@@ -34,8 +34,10 @@ class DB extends \PDO implements \Cleantalk\USP\Common\DB {
 			$options  = $params[3] ? $params[3] : array(
 				\PDO::ATTR_ERRMODE            => \PDO::ERRMODE_EXCEPTION, // Handle errors as an exceptions
 				\PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,        // Set default fetch mode as associative array
-				\PDO::MYSQL_ATTR_SSL_CA => strtoupper( substr( PHP_OS, 0, 3 ) ) === 'WIN' ? '1' : '',        // Set default fetch mode as associative array
-				\PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT => false,
+				\PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT => true,
+				\PDO::MYSQL_ATTR_SSL_CA => CT_USP_DATA_SSL_CERT . 'ca.pem',
+				\PDO::MYSQL_ATTR_SSL_CERT => CT_USP_DATA_SSL_CERT . 'client-cert.pem',
+				\PDO::MYSQL_ATTR_SSL_KEY => CT_USP_DATA_SSL_CERT . 'client-key.pem',
 			);
 			
 			parent::__construct( $dsn, $username, $password, $options );
