@@ -1,4 +1,4 @@
-<?
+<?php
 
 /* 
  * Patch for filter_var()
