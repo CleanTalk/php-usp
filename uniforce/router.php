@@ -30,12 +30,12 @@ switch (true){
 	    	'scanner-plugin',
 	    	'scanner',
 		    'table',
+		    'http://cdn.polyfill.io/v1/polyfill.js?features=es6',
 	    );
 	    $additional_css = array(
 		    'settings-scanner',
 	        'settings-table',
 		    'jquery-ui.min',
-		    '//cdn.polyfill.io/v1/polyfill.js?features=es6',
 	    );
 	    $page = 'settings';
         break;

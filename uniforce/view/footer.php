@@ -25,8 +25,12 @@ if ( ! defined( 'CT_USP_ROOT' ) ) {
 </script>
 <?php
 if( isset($additional_js) ){
+    $attach_js_string = '';
 	foreach ($additional_js as $script){
-		echo '<script src="js/' . $script . '.js?v=' . SPBCT_VERSION . '"></script>';
+	    $attach_js_string .= strpos( $script, 'http') === 0
+            ? '<script src="' . $script . '"></script>'
+            : '<script src="js/' . $script . '.js?v=' . SPBCT_VERSION . '"></script>';
 	}
+	echo $attach_js_string;
 }
 ?>
