@@ -112,3 +112,10 @@ label.checkbox {
 	outline-width: 3px !important;
 	outline-style: solid !important;
 }
+
+#ctusp_field---uninstall{
+	background: rgba(255,30,30,.8);
+	border-radius: 6px;
+	border: 0;
+	padding: 4px 10px 4px;
+}
