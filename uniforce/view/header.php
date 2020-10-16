@@ -33,13 +33,15 @@
         <!-- Custom page style -->
         <link href="css/<?php echo $page ?>.css" rel="stylesheet">
         <?php
-            $attach_css_string = '';
-            foreach ($additional_css as $style){
-                $attach_css_string .= strpos( $style, 'http') === 0
-                    ? '<link href="' . $style . '" rel="stylesheet">'
-	                : '<link href="css/' . $style . '.css?v=' . SPBCT_VERSION . '" rel="stylesheet">';
+            if( isset( $additional_css ) ){
+	            $attach_css_string = '';
+	            foreach( $additional_css as $style ){
+		            $attach_css_string .= strpos( $style, 'http' ) === 0
+			            ? '<link href="' . $style . '" rel="stylesheet">'
+			            : '<link href="css/' . $style . '.css?v=' . SPBCT_VERSION . '" rel="stylesheet">';
+	            }
+	            echo $attach_css_string;
             }
-            echo $attach_css_string;
         ?>
 
     </head>
