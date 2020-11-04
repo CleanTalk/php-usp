@@ -63,13 +63,15 @@ class spbc_Scanner{
     // Processing response from backend
     successCallback( result ){
 
-        this.scan_percent = result.total !== 0 ? 100 / result.total : 1;
+        if( this.scan_percent === 0 && typeof result.total !== 'undefined' )
+            this.scan_percent = 100 / result.total;
 
         if( result.end !== true && result.end !== 1 ){
-            this.set_percents( this.percent_completed + Math.floor( result.processed / this.scan_percent ) );
+            this.set_percents( this.percent_completed + result.processed * this.scan_percent );
             this.offset = this.offset + result.processed;
         }else{
             this.set_percents( 100 );
+            this.scan_percent = 0;
             this.offset = 0;
         }
 
@@ -88,6 +90,8 @@ class spbc_Scanner{
                 }
 
                 this.set_percents( 0 );
+                this.scan_percent = 0;
+                this.offset = 0;
                 this.progress_overall.children('span')
                     .removeClass('spbc_bold')
                     .filter('.spbc_overall_scan_status_' + this.state)
@@ -101,9 +105,9 @@ class spbc_Scanner{
     };
 
     set_percents( percent ){
-        this.percent_completed = percent;
+        this.percent_completed = Math.floor( percent );
         this.progressbar.progressbar( 'option', 'value', this.percent_completed );
-        this.progressbar_text.text( spbc_ScannerData[ 'progressbar_' + this.state ] + ' - ' + this.percent_completed + '%' );
+        this.progressbar_text.text( spbc_ScannerData[ 'progressbar_' + this.state ] + ' - ' + Math.floor( percent * 100 ) / 100 + '%' );
     };
 
     error( xhr, status, error ){
