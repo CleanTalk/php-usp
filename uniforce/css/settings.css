@@ -113,6 +113,10 @@ label.checkbox {
 	outline-style: solid !important;
 }
 
+#ctusp_field---uninstall:disabled{
+	background: gray;
+	color: #ccc;
+}
 #ctusp_field---uninstall{
 	background: rgba(255,30,30,.8);
 	border-radius: 6px;
