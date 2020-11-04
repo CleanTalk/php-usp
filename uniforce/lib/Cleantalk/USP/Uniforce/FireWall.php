@@ -641,7 +641,6 @@ class FireWall extends \Cleantalk\USP\Security\FireWall
 
 				    // Clean statistics
 				    State::getInstance()->data->stat->fw->entries = 0;
-				    State::getInstance()->data->stat->fw->last_update = 0;
 				    State::getInstance()->data->save();
 
 			    }else
