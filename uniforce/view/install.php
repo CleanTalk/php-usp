@@ -1,5 +1,7 @@
 <?php
 
+require_once CT_USP_VIEW. 'check_requirements.php';
+
 use Cleantalk\USP\Variables\Server;
 
 // Exit if accessed directly.
@@ -38,6 +40,14 @@ $usp = \Cleantalk\USP\Common\State::getInstance();
                     </div>
                     <!-- End Success box -->
 
+                    <?php if( ! CT_USP_OPENSSL_INSTALLED ): ?>
+                        <!-- Warning box -->
+                        <div class="alert alert-warning alert-dismissible fade in" role="alert">
+                            <button type="button" class="close" > &times;</button>
+                            <p id='error-msg'>Warning: OpenSSL extension is not installed on your server. Malware scanner will use local database to store scan results.</p>
+                        </div>
+                    <?php endif; ?>
+                    
                     <!-- Start Error box -->
                     <div class="alert alert-danger alert-dismissible fade in" style="display:none" role="alert">
                         <button type="button" class="close" > &times;</button>
@@ -68,6 +78,11 @@ $usp = \Cleantalk\USP\Common\State::getInstance();
                             <input type="text" class="input-field" name="addition_scripts" />
                         </div>
                         <button type="submit" class="btn btn-setup" disabled>Install</button>
+	
+	                    <?php if( CT_USP_OPENSSL_INSTALLED ): ?>
+                            <input type="hidden" name="openssl_installed" value="1" />
+	                    <?php endif; ?>
+                     
                     </form>
 
                     <div class="setup-links">
