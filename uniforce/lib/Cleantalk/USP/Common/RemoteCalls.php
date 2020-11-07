@@ -44,6 +44,8 @@ class RemoteCalls
 					// Scanner actions
 					if ( strpos( $action, 'scanner__' ) !== false ) {
 						
+						$action = Get::get( 'no_sql' ) ? $action . '___no_sql' : $action;
+						
 						if ( method_exists( '\Cleantalk\USP\ScannerController', $action ) ) {
 								
 								$scanner_controller = new \Cleantalk\USP\ScannerController(
@@ -51,7 +53,8 @@ class RemoteCalls
 									array( $usp->data->db_request_string, $usp->data->db_user, $usp->data->db_password)
 								);
 								$out = $scanner_controller->$action();
-						}
+						}else
+							Err::add('UNKNOWN_SCANNER_ACTION_METHOD');
 
 					// Common actions
 					}else if(method_exists('\Cleantalk\USP\Common\RemoteCalls', $action)){

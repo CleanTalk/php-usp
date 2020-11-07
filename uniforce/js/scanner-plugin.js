@@ -149,6 +149,7 @@ class spbc_Scanner{
             spbc_remote_call_action: 'scanner__' + this.state, // Adding security code
             plugin_name: 'spbc', // Adding security code
             offset: this.offset,
+            no_sql: this.settings['no_sql'],
         };
 
         switch (this.state) {

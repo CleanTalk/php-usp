@@ -38,10 +38,18 @@ usp_localize_script( 'spbc_ScannerData', array(
 	'on_page' => 20,
 	
 	'settings' => array(
-		'scanner_create_db'          => ! State::getInstance()->data->db_created ? 1 : 0,
+        
+        // Common
+        'no_sql' => ! State::getInstance()->data->openssl_installed ? 1 : 0,
+	       
+        // Do not create DB if created or OpenSSL is not installed
+		'scanner_create_db'          => State::getInstance()->data->db_created || ! State::getInstance()->data->openssl_installed
+            ? 0
+            : 1,
+		'scanner_surface_analysis'   => State::getInstance()->data->openssl_installed ? 1 : 0,
+		'scanner_get_approved'       => State::getInstance()->data->openssl_installed ? 1 : 0,
 		'scanner_heuristic_analysis' => State::getInstance()->settings->scanner_heuristic_analysis,
 		'scanner_get_signatures'     => State::getInstance()->settings->scanner_signature_analysis,
-	    'scanner_get_approved'       => true,
 		'scanner_signature_analysis' => State::getInstance()->settings->scanner_signature_analysis,
 		'scanner_auto_cure'          => State::getInstance()->settings->scanner_auto_cure,
 		'scanner_outbound_links'     => State::getInstance()->settings->scanner_outbound_links,
@@ -231,7 +239,10 @@ usp_localize_script( 'usp',
                                         ->add_group( 'common')
                                             ->setTitle('')
 	                                        ->add_group( 'common2')
-                                            ->setCallback('usp_scanner__display');
+                                            ->setCallback(
+                                                    'usp_scanner__display'
+                                                  . ( ! State::getInstance()->data->openssl_installed ? '___no_sql' : '' )
+                                            );
 
                                 $settings->draw();
 
