@@ -302,10 +302,8 @@ class FileStorage {
 					break;
 			}
 		}
-
-		error_log(var_export($addresses,1));
+		
 		$this->get_rows__to_buffer( $addresses );
-        error_log(var_export($this->buffer,1));
 		if( ! $this->buffer )
 			return false;
 
