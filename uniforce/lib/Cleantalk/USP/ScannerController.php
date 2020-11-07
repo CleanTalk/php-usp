@@ -221,11 +221,17 @@ class ScannerController {
 		$amount = $amount ?: (int) Get::get('amount');
 		
 		$result = $this->db->fetch_all(
+			'SELECT count(fast_hash) as cnt'
+			. ' FROM ' . self::table__scanner___files
+		);
+		$total = $result['cnt'];
+		
+		$result = $this->db->fetch_all(
 			'SELECT path, fast_hash, status'
 			. ' FROM ' . self::table__scanner___files
 			. " LIMIT $offset, $amount;"
 		);
-		$checked = $this->db->rows_affected;
+		$checked = count($result);
 		
 		$to_delete = array();
 		foreach($result as $value){
@@ -246,17 +252,12 @@ class ScannerController {
 		$out = array(
 			'processed' => (int) $checked,
 			'deleted'   => (int) $deleted,
-			'end'       => $checked < $amount,
+			'end'       => $total <= $offset + $amount,
 		);
 		
 		// Count if needed
-		if( $offset == 0 ){
-			$result = $this->db->fetch_all(
-				'SELECT count(fast_hash) as cnt'
-				. ' FROM ' . self::table__scanner___files
-			);
+		if( $offset == 0 )
 			$out['total'] = (int) $result[0]['cnt'];
-		}
 		
 		if($deleted === false)
 			$out['error'] = 'COULDNT_DELETE';
