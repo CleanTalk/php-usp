@@ -40,3 +40,26 @@ function usp_settings__show_fw_statistics( $out = '' )
 		echo '<br>';
 	}
 }
+
+function usp_settings__show_scanner_statistics(){
+	
+	$usp = State::getInstance();
+	$stat = State::getInstance()->data->stat;
+	
+	if( State::getInstance()->data->no_sql )
+	echo '<div class="alert alert-warning" role="alert">
+            <p id="error-msg">Warning: Malware scanner will use local database to store scan results. Please, check your OpenSSL module for PHP.</p>
+        </div>';
+	
+	echo 'Last scan: ' . ( $stat->scanner->last_scan ? date('M d Y H:i:s', $stat->scanner->last_scan) : 'never' ) . '<br>';
+	echo 'Number of scanned files at the last scan: ' . $stat->scanner->last_scan_amount . '<br>';
+	
+	echo '<br>';
+	
+	echo 'Signature last update: ' . ( $stat->scanner->signature_last_update
+			? date('M d Y H:i:s', $stat->scanner->signature_last_update)
+			: 'never.'
+		) . '<br>';
+	echo 'Signatures in local base:' . $stat->scanner->signature_entries . '.<br>';
+	
+}
