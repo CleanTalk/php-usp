@@ -11,7 +11,7 @@ use Cleantalk\USP\Variables\Request;
 
 function spbc_scanner_file_send( $file_id ){
 	
-	if( ! State::getInstance()->data->openssl_installed )
+	if( State::getInstance()->data->no_sql )
 		return spbc_scanner_file_send___no_sql( $file_id );
 	
 	$usp = State::getInstance();
@@ -106,7 +106,7 @@ function spbc_scanner_file_send( $file_id ){
 
 function spbc_scanner_file_delete( $file_id ){
 	
-	if( ! State::getInstance()->data->openssl_installed )
+	if( State::getInstance()->data->no_sql )
 		return spbc_scanner_file_delete___no_sql( $file_id );
 	
 	$usp = State::getInstance();

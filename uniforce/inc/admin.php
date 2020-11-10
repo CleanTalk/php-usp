@@ -248,7 +248,7 @@ function usp_install_config($modified_files, $api_key, $cms, $exclusions ){
 	$usp->data->modified_files = $modified_files;
 	$usp->data->detected_cms = $cms['name'];
 	$usp->data->is_installed  = true;
-	$usp->data->openssl_installed  = (boolean)Post::get( 'openssl_installed' );
+	$usp->data->no_sql  = (boolean)Post::get( 'no_sql' );
 
     $usp->settings->bfp_admin_page =  $cms['admin_page'];
 	$usp->settings->key  = $api_key;

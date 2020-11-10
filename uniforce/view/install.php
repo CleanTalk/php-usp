@@ -40,11 +40,11 @@ $usp = \Cleantalk\USP\Common\State::getInstance();
                     </div>
                     <!-- End Success box -->
 
-                    <?php if( ! CT_USP_OPENSSL_INSTALLED ): ?>
+                    <?php if( CT_USP__NO_SQL ): ?>
                         <!-- Warning box -->
                         <div class="alert alert-warning alert-dismissible fade in" role="alert">
                             <button type="button" class="close" > &times;</button>
-                            <p id='error-msg'>Warning: OpenSSL extension is not installed on your server. Malware scanner will use local database to store scan results.</p>
+                            <p id='error-msg'>Warning: Couldn't connect to cloud SQL. Malware scanner will use local database to store scan results.</p>
                         </div>
                     <?php endif; ?>
                     
@@ -79,8 +79,8 @@ $usp = \Cleantalk\USP\Common\State::getInstance();
                         </div>
                         <button type="submit" class="btn btn-setup" disabled>Install</button>
 	
-	                    <?php if( CT_USP_OPENSSL_INSTALLED ): ?>
-                            <input type="hidden" name="openssl_installed" value="1" />
+	                    <?php if( CT_USP__NO_SQL ): ?>
+                            <input type="hidden" name="no_sql" value="1" />
 	                    <?php endif; ?>
                      
                     </form>

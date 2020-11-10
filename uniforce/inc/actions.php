@@ -58,7 +58,7 @@ if( Post::is_set('action', 'security') ) {
 
 			case 'spbc_scanner_file_view':
 				require_once CT_USP_INC . 'scanner.php';
-				State::getInstance()->data->openssl_installed ? spbc_scanner_file_view() : spbc_scanner_file_view___no_sql();
+				State::getInstance()->data->no_sql ? spbc_scanner_file_view___no_sql() : spbc_scanner_file_view();
 				break;
 
 			default:

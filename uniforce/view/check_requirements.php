@@ -1,6 +1,20 @@
 <?php
-	// Check if the openssl extension is installed
-	define( 'CT_USP_OPENSSL_INSTALLED', in_array( 'openssl', get_loaded_extensions() ) );
+
+    $no_sql = false;
+
+	try{
+		$db = \Cleantalk\USP\DB::getInstance(
+			'mysql:host=db2c.cleantalk.org;charset=utf8',
+			'test_user',
+			'oMae9Neid8yi'
+		);
+	}catch(Exception $e){
+        $no_sql = true;
+    }
+    
+    // Check if the openssl extension is installed
+    define( 'CT_USP__NO_SQL', $no_sql );
+    
 ?>
 
 <?php if( version_compare( phpversion(), '5.6', '<' ) ) : ?>
