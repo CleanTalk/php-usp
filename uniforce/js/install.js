@@ -146,7 +146,7 @@ function install(){
             key: $('input[name="access_key_field"]').val().trim(),
             addition_scripts: $('input[name="addition_scripts"]').val().trim(),
             admin_password : $('input[name="admin_password"]').val().trim(),
-            no_sql : !!$('input[name="no_sql"]').length,
+            no_sql : $('input[name="no_sql"]').length,
             email: email,
             user_token: user_token,
             account_name_ob: account_name_ob,
