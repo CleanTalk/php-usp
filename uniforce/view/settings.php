@@ -75,7 +75,7 @@ usp_localize_script( 'spbc_ScannerData', array(
 	// Scanning core
 	'progressbar_count_files'               => __('Counting files',             'security-malware-firewall'),
 	'progressbar_surface_analysis'          => __('Scanning for modifications', 'security-malware-firewall'),
-	'progressbar_signature_analysis'        => __('Serching for signatures',    'security-malware-firewall'),
+	'progressbar_signature_analysis'        => __('Searching for signatures',    'security-malware-firewall'),
 	'progressbar_heuristic_analysis'        => __('Heuristic analysis',         'security-malware-firewall'),
 	//Cure
 	'progressbar_cure_backup'               => __('Backup', 'security-malware-firewall'),
