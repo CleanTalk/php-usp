@@ -224,7 +224,7 @@ class ScannerController {
 			'SELECT count(fast_hash) as cnt'
 			. ' FROM ' . self::table__scanner___files
 		);
-		$total = $result['cnt'];
+		$total = (int)$result[0]['cnt'];
 		
 		$result = $this->db->fetch_all(
 			'SELECT path, fast_hash, status'
@@ -250,14 +250,15 @@ class ScannerController {
 		}
 		
 		$out = array(
-			'processed' => (int) $checked,
+			'checked' => (int) $checked,
 			'deleted'   => (int) $deleted,
+			'processed'   => (int) $checked - (int) $deleted,
 			'end'       => $total <= $offset + $amount,
 		);
 		
 		// Count if needed
 		if( $offset == 0 )
-			$out['total'] = (int) $result[0]['cnt'];
+		  $out['total'] = $total;
 		
 		if($deleted === false)
 			$out['error'] = 'COULDNT_DELETE';
