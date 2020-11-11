@@ -263,7 +263,7 @@ function usp_install_config($modified_files, $api_key, $cms, $exclusions ){
  */
 function usp_install_cron(){
 
-	Cron::addTask( 'sfw_update', 'uniforce_sfw_update', 86400, time() + 60 );
+	Cron::addTask( 'sfw_update', 'uniforce_sfw_update', 86400, time() + 10 );
 	Cron::addTask( 'security_send_logs', 'uniforce_security_send_logs', 3600 );
     Cron::addTask( 'fw_send_logs', 'uniforce_fw_send_logs', 3600 );
     Cron::addTask( 'clean_black_lists', 'uniforce_clean_black_lists', 86400 );

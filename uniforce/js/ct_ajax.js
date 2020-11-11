@@ -16,8 +16,7 @@ class CTAJAX{
 	type         = 'POST';
 	dataType     = 'json';
 	timeout      = 30000;
-
-	obj          = null;
+	additional_error = function(){};
 
 	constructor( params, callback ) {
 
@@ -106,14 +105,20 @@ class CTAJAX{
 				errorOutput( 'Unexpected response from server. See console for details.' );
 				console.log( '%c ' + xhr.responseText, 'color: pink;' );
 			}else {
-				errorOutput( 'Unexpected error:' + status + ' Additional info: ' + error );
+				var error_string = 'Unexpected error: ' + status;
+				if( typeof error !== 'undefined' )
+					error_string += ' Additional info: ' + error;
+				errorOutput( error_string );
 			}
 		}else if(xhr.status === 500){
 			errorOutput( 'Internal server error.');
 		}else
 			errorOutput( 'Unexpected response code:' + xhr.status );
 
-		if( this.progressbar ) this.progressbar.fadeOut('slow');
+		if( this.progressbar )
+			this.progressbar.fadeOut('slow');
+
+		this.additional_error();
 
 	};
 

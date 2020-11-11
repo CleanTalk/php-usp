@@ -105,36 +105,9 @@ class spbc_Scanner{
     };
 
     set_percents( percent ){
-        this.percent_completed = Math.floor( percent );
+        this.percent_completed = Math.floor( percent * 100 ) / 100;
         this.progressbar.progressbar( 'option', 'value', this.percent_completed );
         this.progressbar_text.text( spbc_ScannerData[ 'progressbar_' + this.state ] + ' - ' + Math.floor( percent * 100 ) / 100 + '%' );
-    };
-
-    error( xhr, status, error ){
-
-        let errorOutput = typeof this.errorOutput === 'function' ? this.errorOutput : function( msg ){ alert( msg ) };
-
-        console.log( '%c APBCT_AJAX_ERROR', 'color: red;' );
-        console.log( status );
-        console.log( error );
-        console.log( xhr );
-
-        if( xhr.status === 200 ){
-            if( status === 'parsererror' ){
-                errorOutput( 'Unexpected response from server. See console for details.' );
-                console.log( '%c ' + xhr.responseText, 'color: pink;' );
-            }else {
-                errorOutput( 'Unexpected error:' + status + ' Additional info: ' + error );
-            }
-        }else if(xhr.status === 500){
-            errorOutput( 'Internal server error.');
-        }else
-            errorOutput( 'Unexpected response code:' + xhr.status );
-
-        if( this.progressbar ) this.progressbar.fadeOut('slow');
-
-        this.end( false );
-
     };
 
     errorOutput( msg ){
@@ -152,33 +125,33 @@ class spbc_Scanner{
             no_sql: this.settings['no_sql'],
         };
 
+        var params = {
+            additional_error: this.end,
+            data: data,
+            type: 'GET',
+            successCallback: this.successCallback,
+            complete: null,
+            errorOutput: this.errorOutput,
+            context: this,
+            timeout: 40000
+        };
+
         switch (this.state) {
 
-            case 'clear_table':        this.amount = 1000; break;
-            case 'surface_analysis':   this.amount = 500; break;
-            case 'signature_analysis': this.amount = 10; break;
-            case 'heuristic_analysis': this.amount = 10; break;
-            case 'auto_cure':          this.amount = 5; break;
-            case 'send_results':
-
-                break;
-
-            default:
-
-                break;
+            case 'get_signatures':     params.timeout = 60000; break;
+            case 'clear_table':        this.amount = 1000;     break;
+            case 'surface_analysis':   this.amount = 500;      break;
+            case 'signature_analysis': this.amount = 10;       break;
+            case 'heuristic_analysis': this.amount = 10;       break;
+            case 'auto_cure':          this.amount = 5;        break;
+            case 'send_results':                               break;
+            default:                                           break;
         }
 
         data.amount = this.amount;
 
         if( typeof this.state !== 'undefined' )
-            ctAJAX({
-                data: data,
-                type: 'GET',
-                successCallback: this.successCallback,
-                complete: null,
-                errorOutput: this.errorOutput,
-                context: this,
-            });
+            ctAJAX( params );
 
     };
 

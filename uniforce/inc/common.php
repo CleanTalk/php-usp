@@ -9,6 +9,7 @@
  */
 
 use Cleantalk\USP\Variables\Server;
+use Cleantalk\USP\Common\RemoteCalls;
 
 if( ! defined( 'SPBCT_PLUGIN' ) )     define( 'SPBCT_PLUGIN', 'uniforce' );
 if( ! defined( 'SPBCT_VERSION' ) )    define( 'SPBCT_VERSION', '2.2' );
@@ -49,3 +50,6 @@ if( ! empty( $cron->tasks_to_run ) )
 	require_once CT_USP_INC . 'cron_functions.php'; // File with cron wrappers
 	$cron->runTasks();
 unset( $cron );
+
+// Accept remote calls
+RemoteCalls::check() && RemoteCalls::perform();

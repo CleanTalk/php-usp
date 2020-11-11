@@ -6,9 +6,6 @@ define( 'USP_DASHBOARD', true );
 
 require_once 'inc' . DIRECTORY_SEPARATOR . 'common.php';  // Common stuff
 
-// Accept remote calls
-RemoteCalls::check() && RemoteCalls::perform();
-
 require_once 'inc' . DIRECTORY_SEPARATOR . 'actions.php'; // Actions
 
 // URL ROUTING
