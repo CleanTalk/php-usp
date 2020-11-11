@@ -72,6 +72,12 @@ function usp_switchTab(tab, params){
     }
 }
 
+// Shows/hides full text
+function spbcStartShowHide(){
+    jQuery('.spbcShortText').on('mouseover', function(){ jQuery(this).hide(); jQuery(this).next().show(); });
+    jQuery('.spbcFullText').on('mouseout',   function(){ jQuery(this).hide(); jQuery(this).prev().show(); });
+}
+
 function logout() {
     ctAJAX(
         {

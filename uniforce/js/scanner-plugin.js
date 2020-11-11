@@ -110,6 +110,37 @@ class spbc_Scanner{
         this.progressbar_text.text( spbc_ScannerData[ 'progressbar_' + this.state ] + ' - ' + Math.floor( percent * 100 ) / 100 + '%' );
     };
 
+    error( xhr, status, error ){
+
+        let errorOutput = typeof this.errorOutput === 'function' ? this.errorOutput : function( msg ){ alert( msg ) };
+
+        console.log( '%c APBCT_AJAX_ERROR', 'color: red;' );
+        console.log( status );
+        console.log( error );
+        console.log( xhr );
+
+        if( xhr.status === 200 ){
+            if( status === 'parsererror' ){
+                errorOutput( 'Unexpected response from server. See console for details.' );
+                console.log( '%c ' + xhr.responseText, 'color: pink;' );
+            }else {
+                var error_string = 'Unexpected error: ' + status;
+                if( typeof error !== 'undefined' )
+                    error_string += ' Additional info: ' + error;
+                errorOutput( error_string );
+            }
+        }else if(xhr.status === 500){
+            errorOutput( 'Internal server error.');
+        }else
+            errorOutput( 'Unexpected response code:' + xhr.status );
+
+        if( this.progressbar )
+            this.progressbar.fadeOut('slow');
+
+        this.end();
+
+    };
+
     errorOutput( msg ){
         alert( msg );
     };
