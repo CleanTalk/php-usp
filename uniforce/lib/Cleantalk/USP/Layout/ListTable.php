@@ -139,7 +139,7 @@ class ListTable
 				),
 				'obj'
 			);
-			$this->items_total = key($total);			
+			$this->items_total = $total[0]->cnt;
 		}
 		
 		// Getting data
