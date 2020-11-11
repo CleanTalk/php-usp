@@ -287,6 +287,7 @@ class ScannerController {
 				
 				$usp->data->stat->scanner->signature_last_update = time();
 				$usp->data->stat->scanner->signature_entries = count( $result );
+				$usp->data->save();
 				
 				$path = CT_USP_DATA . 'signatures.php';
 				
