@@ -60,6 +60,6 @@ function usp_settings__show_scanner_statistics(){
 			? date('M d Y H:i:s', $stat->scanner->signature_last_update)
 			: 'never.'
 		) . '<br>';
-	echo 'Signatures in local base:' . $stat->scanner->signature_entries . '.<br>';
+	echo 'Signatures in local base: ' . $stat->scanner->signature_entries . '.<br>';
 	
 }
