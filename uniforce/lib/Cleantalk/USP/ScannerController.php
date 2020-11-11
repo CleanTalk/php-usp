@@ -558,9 +558,8 @@ class ScannerController {
 						$result['status'] !== 'OK' ? $out['found']++   : $out['found'];
 						$result_db !== false       ? $out['scanned']++ : $out['scanned'];
 						
-					}else{
-						// @todo Add exception Notice level
-					}
+					}else
+						 return $result;
 					
 					$out['processed']++;
 				}
