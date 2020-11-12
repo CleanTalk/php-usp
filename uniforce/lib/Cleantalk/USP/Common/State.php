@@ -149,7 +149,7 @@ class State extends \Cleantalk\USP\Common\Storage{
 	// Common
 		'close_renew_banner'       => array('last_call' => 0,),
 		'update_plugin'            => array('last_call' => 0,),
-		'fw__update'               => array('last_call' => 0, 'cooldown' => 0),
+		'update_security_firewall' => array('last_call' => 0, 'cooldown' => 0),
 		'drop_security_firewall'   => array('last_call' => 0,),
 		'update_settings'          => array('last_call' => 0,),
 

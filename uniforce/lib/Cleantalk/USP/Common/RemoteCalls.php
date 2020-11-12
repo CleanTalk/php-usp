@@ -86,9 +86,9 @@ class RemoteCalls
 		die('OK');
 	}
 
-	static function action__fw__update() {
+	static function action__update_security_firewall() {
 		
-		$result = \Cleantalk\USP\Uniforce\FireWall::action__fw__update(
+		$result = \Cleantalk\USP\Uniforce\FireWall::action__update_security_firewall(
 			State::getInstance()->key
 		);
 		

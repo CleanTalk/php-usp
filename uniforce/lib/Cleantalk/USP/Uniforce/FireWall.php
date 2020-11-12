@@ -614,7 +614,7 @@ class FireWall extends \Cleantalk\USP\Security\FireWall
             return array( 'rows' => 0 );
     }
 
-	public static function action__fw__update( $api_key )
+	public static function action__update_security_firewall( $api_key )
     {
         $db = new \Cleantalk\USP\File\FileStorage( 'fw_nets' );
 
@@ -697,7 +697,7 @@ class FireWall extends \Cleantalk\USP\Security\FireWall
 				Server::get('HTTP_HOST') . CT_USP_AJAX_URI,
 				array(
 					'spbc_remote_call_token'  => md5( $api_key ),
-					'spbc_remote_call_action' => 'fw__update',
+					'spbc_remote_call_action' => 'update_security_firewall',
 					'plugin_name'             => 'security',
 					'file_urls'               => implode(',', $file_urls),
 				),

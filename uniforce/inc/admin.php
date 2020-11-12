@@ -508,7 +508,7 @@ function usp_do_save_settings() {
 			Server::get('HTTP_HOST') . CT_USP_AJAX_URI,
 			array(
 				'spbc_remote_call_token'  => md5( $usp->settings->key ),
-				'spbc_remote_call_action' => 'fw__update',
+				'spbc_remote_call_action' => 'update_security_firewall',
 				'plugin_name'             => 'security',
 				'file_urls'               => '',
 			),
