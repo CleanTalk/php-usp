@@ -8,7 +8,14 @@ jQuery(document).ready(function() {
             logout();
     });
 
-    $("#btn-uninstall").on('click', function(event){
+    // Uninstall button
+    $("#ctusp_field---uninstall_confirmation").on('input', function(event){
+
+        let val = $(event.target).val(),
+            id = 'ctusp_field---uninstall';
+        uspSettingsDependencies(id, val === 'uninstall');
+    });
+    $("#ctusp_field---uninstall").on('click', function(event){
         if(confirm('Are you sure you want to uninstall the plugin?'))
             uninstall();
     });
@@ -65,16 +72,20 @@ function usp_switchTab(tab, params){
     }
 }
 
+// Shows/hides full text
+function spbcStartShowHide(){
+    jQuery('.spbcShortText').on('mouseover', function(){ jQuery(this).hide(); jQuery(this).next().show(); });
+    jQuery('.spbcFullText').on('mouseout',   function(){ jQuery(this).hide(); jQuery(this).prev().show(); });
+}
+
 function logout() {
-    usp_AJAX(
+    ctAJAX(
         {
             action: 'logout',
         },
-        {
-            callback: function(result, data, params, obj) {
-                if (result.success)
-                    location.reload();
-            },
+        function (result, data, params, obj) {
+            if (result.success)
+                location.reload();
         }
     );
 }
@@ -105,49 +116,45 @@ function save_settings(){
         }
     }
 
-    usp_AJAX(
-        data,
-        {
-            callback: function(result, data, params, obj) {
-                if (result.success) {
-                    $("body").overhang({
-                        type: "success",
-                        message: "Settings saved! Page will be updated in 3 seconds.",
-                        duration: 3,
-                        overlay: true,
-                        // closeConfirm: true,
-                        easing: 'linear'
-                    });
-                    setTimeout(function(){ location.href='?tab=settings'; }, 3000 );
-                }
-            },
-            spinner: $('#btn-save-settings+.preloader'),
-            button: $('#btn-save-settings'),
-            error_handler: function(result, data, params, obj){
+    ctAJAX({
+        data: data,
+        successCallback: function(result, data, params, obj) {
+            if (result.success) {
                 $("body").overhang({
-                    type: "error",
-                    message: 'Error: ' + result.error,
-                    duration: 43200,
+                    type: "success",
+                    message: "Settings saved! Page will be updated in 3 seconds.",
+                    duration: 3,
                     overlay: true,
-                    closeConfirm: true,
+                    // closeConfirm: true,
                     easing: 'linear'
                 });
+                setTimeout(function(){ location.href='?tab=settings'; }, 3000 );
             }
+        },
+        spinner: $('#btn-save-settings+.preloader'),
+        button: $('#btn-save-settings'),
+        errorOutput: function( msg ){
+            $("body").overhang({
+                type: "error",
+                message: 'Error: ' + msg,
+                duration: 43200,
+                overlay: true,
+                closeConfirm: true,
+                easing: 'linear'
+            });
         }
-    );
+    });
 }
 
 function uninstall(){
-    usp_AJAX(
+    ctAJAX(
         {
             action: 'uninstall',
         },
-        {
-            callback: function(result, data, params, obj) {
-                if(result.success){
-                    location.reload();
-                }
-            },
+        function( result ) {
+            if(result.success){
+                location.reload();
+            }
         }
     );
 
@@ -165,5 +172,37 @@ function usp_HighlightElement(selector, times){
                 jQuery(selector).removeClass('ctusp--highlighted');
             }
         });
+    });
+}
+
+// Settings dependences
+function uspSettingsDependencies(settingsIDs, enable){
+
+    if(typeof settingsIDs === 'string'){
+        tmp = [];
+        tmp.push(settingsIDs);
+        settingsIDs = tmp;
+    }
+
+    enable = typeof enable === 'undefined' ? null : +enable;
+
+    settingsIDs.forEach(function(settingID, i, arr){
+
+        console.log(settingID);
+
+        settingID = settingID.indexOf( 'spbc_setting_' ) !== -1 || settingID.indexOf( 'ctusp_field_' ) !== -1
+            ? 'spbc_setting_'+settingID : settingID;
+
+        console.log(settingID);
+
+        var elem = document.getElementById(settingID),
+            do_disable = function(){elem.setAttribute('disabled', 'disabled');},
+            do_enable  = function(){elem.removeAttribute('disabled');};
+
+        if(enable !== null) // Set
+            enable === 1 ? do_enable() : do_disable();
+        else // Switch
+            elem.getAttribute('disabled') === null ? do_disable() : do_enable();
+
     });
 }

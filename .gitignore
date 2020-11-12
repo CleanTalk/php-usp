@@ -2,5 +2,4 @@
 !/uniforce
 !/uniforce/*
 !/README.md
-!/.gitignore
-index.php
+#/uniforce/data/

@@ -1,3 +1,2 @@
 <?php
-	$fast_bad_ips = array (
-);
+$fast_bad_ips = array();

@@ -10,16 +10,14 @@ String.prototype.printf = function(){
 };
 
 function spbc_scanner_button_file_view_event(obj){
-    var self = jQuery(obj);
-    var data = {
-        action: 'spbc_scanner_file_view',
-        file_id: self.parent().attr('uid'),
-    };
-    var params = {
-        spinner: self.parent().siblings('.tbl-preloader--tiny'),
-        callback: spbc_scannerButtonFileView_callback,
-    };
-    usp_AJAX(data, params);
+    ctAJAX({
+        data: {
+            action: 'spbc_scanner_file_view',
+            file_id: jQuery(obj).parent().attr('uid'),
+        },
+        spinner: jQuery(obj).parent().siblings('.tbl-preloader--tiny'),
+        successCallback: spbc_scannerButtonFileView_callback,
+    });
 }
 
 function spbc_scannerButtonFileView_callback(result, data, params){
@@ -31,21 +29,21 @@ function spbc_scannerButtonFileView_callback(result, data, params){
     }
 
     var content_height = Object.keys(result.file).length * 19 + 19,
-        visible_height = (document.documentElement.clientHeight) / 100 * 75;
+        visible_height = (document.documentElement.clientHeight) / 10 * 75;
+    content_height = content_height < 76 ? 76 : content_height;
     var overflow = content_height < visible_height ? 'no_scroll' : 'scroll';
 
     jQuery('#spbc_dialog').data('overflow', overflow);
     jQuery('#spbc_dialog').dialog({
         modal:true,
         title: result.file_path,
-        position: { my: "center top", at: "top+7%" , of: window },
+        position: { my: "center", at: "center" , of: window },
         width: +(jQuery('body').width() / 100 * 70),
-        height: overflow == 'scroll' ? visible_height : content_height,
-        minHeight: 300,
+        height: overflow === 'scroll' ? visible_height : content_height,
+        // minHeight: 300,
         show: { effect: "blind", duration: 500 },
-        draggable: false,
-        resizable: false,
-        closeText: "X",
+        draggable: true,
+        closeText: "Close",
         open: function(event, ui) {
             console.log(jQuery(event.target).data('overflow'));
             document.body.style.overflow = 'hidden';
@@ -59,7 +57,7 @@ jQuery(document).ready(function(){
 
     // Preparing progressbar
     jQuery('#spbc_scaner_progress_bar').progressbar({
-        value: 0,
+        value: 50,
         create: function( event, ui ) {
             event.target.style.position = 'relative';
             event.target.style.marginBottom = '12px';
@@ -81,8 +79,9 @@ jQuery(document).ready(function(){
     });
 
     // Init scanner plugin
-    jQuery('#spbc_perform_scan').spbcScannerPlugin({
-        status: null,
+
+    window.spbc_scanner = new spbc_Scanner({
+        settings: spbc_ScannerData.settings,
         paused: false,
         button: jQuery('#spbc_perform_scan'),
         spinner: jQuery('#spbc_perform_scan').next(),
@@ -93,18 +92,12 @@ jQuery(document).ready(function(){
         wrapper: document.getElementsByClassName('spbc_unchecked_file_list'),
         warnings: {
             long_scan: jQuery('.spbc_hint_warning__long_scan'),
-            outdated:  jQuery('.spbc_hint_warning__outdated')
+            outdated: jQuery('.spbc_hint_warning__outdated'),
         }
     });
 
     jQuery('#spbc_perform_scan').on('click', function(){
-        jQuery.spbc.scanner.control(null, null, true);
-    });
-
-    //DEBUG
-    // Clear table
-    jQuery('#spbc_scanner_clear').on('click', function(){
-        jQuery.spbc.scanner.clear();
+        spbc_scanner.start();
     });
 
 });

@@ -1,7 +1,7 @@
 <?php
 
-use Cleantalk\Common\State;
-use Cleantalk\Variables\Server;
+use Cleantalk\USP\Common\State;
+use Cleantalk\USP\Variables\Server;
 
 // Exit if accessed directly.
 if ( ! defined( 'CT_USP_ROOT' ) ) {
@@ -36,7 +36,7 @@ if ( ! defined( 'CT_USP_ROOT' ) ) {
                     </div>
                     <!-- End Error box -->
 
-                    <form action = 'javascript:void();' method="post" id='login-form'>
+                    <form method="post" id='login-form'>
 
                         <input type="text" placeholder="Access key<?php if( State::getInstance()->email && State::getInstance()->password ) echo ' or e-mail'; ?>" class="input-field" name="login" required/>
 

@@ -14,7 +14,7 @@ spbc_bulk_action = null;
 function spbc_tbl__bulk_actions__listen(){
     jQuery('.tbl-bulk_actions--apply').on('click', function(){
 
-        if(!spbc_bulk_action && !confirm(spbcTable.warning_bulk))
+        if(!spbc_bulk_action && !confirm(spbc_TableData.warning_bulk))
             return;
 
         var self = spbc_bulk_action || jQuery(this);
@@ -50,18 +50,28 @@ function spbc_tbl__row_actions__listen(){
             spinner: self.parent().siblings('.tbl-preloader--tiny'),
         };
         if(!spbc_bulk_action){
-            var confirmation = spbcTable['warning_'+self.attr('row-action')] || spbcTable.warning_default;
+            var confirmation = spbc_TableData['warning_'+self.attr('row-action')] || spbc_TableData.warning_default;
             if(confirm(confirmation))
-                usp_AJAX(data, params, self.parents('tr'));
+                ctAJAX({
+                    data: data,
+                    successCallback: spbc_tbl__row_actions__callback,
+                    spinner: self.parent().siblings('.tbl-preloader--tiny'),
+                    obj: self.parents('tr'),
+                });
         }
         if(spbc_bulk_action){
-            usp_AJAX(data, params, self.parents('tr'));
+            ctAJAX({
+                data: data,
+                successCallback: spbc_tbl__row_actions__callback,
+                spinner: self.parent().siblings('.tbl-preloader--tiny'),
+                obj: self.parents('tr'),
+            });
         }
     });
 }
 
 // Callback for TABLE ROW ACTIONS
-function spbc_tbl__row_actions__callback(result, data, params, obj){
+function spbc_tbl__row_actions__callback( result, data, obj ){
     if(result.color)    {obj.css({background: result.background, color: result.color});}
     if(result.html)     {obj.html(result.html); setTimeout(function(){obj.fadeOut(300);}, 1500);}
     if(result.temp_html){
@@ -148,17 +158,19 @@ function spbc_tbl__pagination__callback(result, data, params, obj){
 // TABLE SORT ACTIONS
 function spbc_tbl__sort__listen(){
 
-    var params = {callback: spbc_tbl__sort__callback, notJson: true,};
+    var self = jQuery(this);
+    var obj = self.parents('.tbl-root');
     jQuery('.tbl-column-sortable').on('click', function(){
-        var self = jQuery(this);
-        var obj = self.parents('.tbl-root');
-        var data = {
-            action: 'spbc_tbl-sort',
-            order_by: self.attr('id'),
-            order: self.attr('sort_direction'),
-            args: eval('args_'+obj.attr('id')),
-        };
-        usp_AJAX(data, params, obj);
+        ctAJAX({
+            data: {
+                action: 'spbc_tbl-sort',
+                order_by: self.attr('id'),
+                order: self.attr('sort_direction'),
+                args: eval('args_'+obj.attr('id')),
+            },
+            successCallback: spbc_tbl__sort__callback,
+            dataType: 'text'
+        });
     });
 }
 

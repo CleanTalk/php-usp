@@ -29,11 +29,11 @@ $fw_nets_meta = array (
   array (
     'net' => 
     array (
-      'status' => 'ready',
+      'status' => false,
       'type' => 'b_tree',
     ),
   ),
   'cols_num' => 4,
   'rows' => 0,
-  'median' => 5000000000,
+  'median' => 5000000000.0,
 );

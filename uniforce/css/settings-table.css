@@ -40,10 +40,10 @@ tbody{
     /*border: 1px solid black;*/
 }
     tr:nth-child(2n){
-        background-color: #ccd0d4;
+        background-color: #ccd0d4 !important;
     }
     tr:nth-child(2n+1){
-        background-color: #f9f9f9;
+        background-color: #f9f9f9 !important;
     }
     tbody tr th, tbody tr td{
         text-align: left;

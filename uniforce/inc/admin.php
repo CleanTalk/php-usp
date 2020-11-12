@@ -1,14 +1,14 @@
 <?php
 
-use Cleantalk\Common\API;
-use Cleantalk\Common\Err;
-use Cleantalk\Common\File;
-use Cleantalk\Common\State;
-use Cleantalk\Uniforce\Cron;
-use Cleantalk\Uniforce\FireWall;
-use Cleantalk\Uniforce\Helper;
-use Cleantalk\Variables\Post;
-use Cleantalk\Variables\Server;
+use Cleantalk\USP\Common\API;
+use Cleantalk\USP\Common\Err;
+use Cleantalk\USP\Common\File;
+use Cleantalk\USP\Common\State;
+use Cleantalk\USP\Uniforce\Cron;
+use Cleantalk\USP\Uniforce\FireWall;
+use Cleantalk\USP\Uniforce\Helper;
+use Cleantalk\USP\Variables\Post;
+use Cleantalk\USP\Variables\Server;
 
 /**
  * Method notice_paid_till
@@ -248,6 +248,7 @@ function usp_install_config($modified_files, $api_key, $cms, $exclusions ){
 	$usp->data->modified_files = $modified_files;
 	$usp->data->detected_cms = $cms['name'];
 	$usp->data->is_installed  = true;
+	$usp->data->no_sql  = (boolean)Post::get( 'no_sql' );
 
     $usp->settings->bfp_admin_page =  $cms['admin_page'];
 	$usp->settings->key  = $api_key;
@@ -262,7 +263,7 @@ function usp_install_config($modified_files, $api_key, $cms, $exclusions ){
  */
 function usp_install_cron(){
 
-	Cron::addTask( 'sfw_update', 'uniforce_sfw_update', 86400, time() + 60 );
+	Cron::addTask( 'sfw_update', 'uniforce_sfw_update', 86400, time() + 10 );
 	Cron::addTask( 'security_send_logs', 'uniforce_security_send_logs', 3600 );
     Cron::addTask( 'fw_send_logs', 'uniforce_fw_send_logs', 3600 );
     Cron::addTask( 'clean_black_lists', 'uniforce_clean_black_lists', 86400 );
@@ -285,7 +286,7 @@ function usp_uninstall(){
 	}
 
 	// Deleting FW data
-	$db = new \Cleantalk\File\FileStorage( 'fw_nets' );
+	$db = new \Cleantalk\USP\File\FileStorage( 'fw_nets' );
 	$db->delete();
 
 	// Deleting options and their files
@@ -445,7 +446,10 @@ function usp_do_save_settings() {
 			: $value;
 		settype($settings[$setting], gettype($value));
 	} unset($setting, $value);
-
+	
+	// Recognizing new key
+	$new_key_is_set = $usp->settings->key !== $settings['key'];
+	
 	// Set values
 	foreach ( $settings as $setting => $value) {
 		$usp->settings->$setting = $value;
@@ -453,42 +457,7 @@ function usp_do_save_settings() {
 
     // validate the new key
 	$usp->data->key_is_ok = usp_check_account_status();
-
-    // FireWall actions
-    if( ( $usp->settings->fw || $usp->settings->waf ) && $usp->settings->key ){
-
-        // Update SFW
-	    Helper::http__request(
-		    Server::get('HTTP_HOST') . CT_USP_AJAX_URI,
-		    array(
-			    'spbc_remote_call_token'  => md5( $usp->settings->key ),
-			    'spbc_remote_call_action' => 'fw__update',
-			    'plugin_name'             => 'security',
-			    'file_urls'               => '',
-		    ),
-		    'get async'
-	    );
-
-        // Send FW logs
-        $result = FireWall::logs__send( $usp->settings->key );
-        if( empty( $result['error'] ) && ! Err::check() ) {
-            $usp->data->stat->fw->logs_sent_time = time();
-            $usp->data->stat->fw->logs_sent_amount = $result['rows'];
-        }
-
-    // Cleaning up Firewall data
-    } else {
-	    // Deleting FW data
-	    $db = new \Cleantalk\File\FileStorage( 'fw_nets' );
-	    $db->delete();
-	    State::getInstance()->data->stat->fw->last_update = 0;
-	    State::getInstance()->data->save();
-	    Cron::removeTask( 'sfw_update' );
-	    Cron::removeTask( 'fw_send_logs' );
-	    usp_uninstall_logs();
-    }
-
-
+    
     // BFP actions
     if( $usp->settings->bfp && $usp->settings->key ){
         if( $usp->settings->bfp ) {
@@ -509,9 +478,60 @@ function usp_do_save_settings() {
         }
 
     }
-
-    $usp->data->save();
-    $usp->settings->save();
+	
+	if( $new_key_is_set ){
+		$scanner_controller = new \Cleantalk\USP\ScannerController(
+			CT_USP_SITE_ROOT
+		);
+		$scanner_controller->action__scanner__create_db();
+	}
+    
+    // Update signatures
+    if( $usp->settings->scanner_signature_analysis && $usp->data->db_request_string ){
+	    $scanner_controller = new \Cleantalk\USP\ScannerController(
+		    CT_USP_SITE_ROOT,
+		    array( $usp->data->db_request_string, $usp->data->db_user, $usp->data->db_password)
+	    );
+	    if($scanner_controller->db)
+	        $scanner_controller->action__scanner__get_signatures();
+    }
+	
+	$usp->data->save();
+	$usp->settings->save();
+ 
+	// FireWall actions
+	// Last in the list because it can overwrite the data in the the remote call it makes
+	if( ( $usp->settings->fw || $usp->settings->waf ) && $usp->settings->key ){
+		
+		// Update SFW
+		Helper::http__request(
+			Server::get('HTTP_HOST') . CT_USP_AJAX_URI,
+			array(
+				'spbc_remote_call_token'  => md5( $usp->settings->key ),
+				'spbc_remote_call_action' => 'update_security_firewall',
+				'plugin_name'             => 'security',
+				'file_urls'               => '',
+			),
+			'get async'
+		);
+		
+		// Send FW logs
+		$result = FireWall::logs__send( $usp->settings->key );
+		if( empty( $result['error'] ) && ! Err::check() ) {
+			$usp->data->stat->fw->logs_sent_time = time();
+			$usp->data->stat->fw->logs_sent_amount = $result['rows'];
+		}
+		
+		// Cleaning up Firewall data
+	} else {
+		// Deleting FW data
+		$db = new \Cleantalk\USP\File\FileStorage( 'fw_nets' );
+		$db->delete();
+		State::getInstance()->data->save();
+		Cron::removeTask( 'sfw_update' );
+		Cron::removeTask( 'fw_send_logs' );
+		usp_uninstall_logs();
+	}
 
     Err::check() or die(json_encode(array('success' => true)));
     die(Err::check_and_output( 'as_json' ));

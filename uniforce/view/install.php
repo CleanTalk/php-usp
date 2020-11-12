@@ -1,6 +1,8 @@
 <?php
 
-use Cleantalk\Variables\Server;
+require_once CT_USP_VIEW. 'check_requirements.php';
+
+use Cleantalk\USP\Variables\Server;
 
 // Exit if accessed directly.
 if ( ! defined( 'CT_USP_ROOT' ) ) {
@@ -8,7 +10,7 @@ if ( ! defined( 'CT_USP_ROOT' ) ) {
     exit ();
 }
 
-$usp = \Cleantalk\Common\State::getInstance();
+$usp = \Cleantalk\USP\Common\State::getInstance();
 
 ?>
 
@@ -38,6 +40,14 @@ $usp = \Cleantalk\Common\State::getInstance();
                     </div>
                     <!-- End Success box -->
 
+                    <?php if( CT_USP__NO_SQL ): ?>
+                        <!-- Warning box -->
+                        <div class="alert alert-warning alert-dismissible fade in" role="alert">
+                            <button type="button" class="close" > &times;</button>
+                            <p id='error-msg'>Warning: Couldn't connect to cloud SQL. Malware scanner will use local database to store scan results.</p>
+                        </div>
+                    <?php endif; ?>
+                    
                     <!-- Start Error box -->
                     <div class="alert alert-danger alert-dismissible fade in" style="display:none" role="alert">
                         <button type="button" class="close" > &times;</button>
@@ -68,6 +78,11 @@ $usp = \Cleantalk\Common\State::getInstance();
                             <input type="text" class="input-field" name="addition_scripts" />
                         </div>
                         <button type="submit" class="btn btn-setup" disabled>Install</button>
+	
+	                    <?php if( CT_USP__NO_SQL ): ?>
+                            <input type="hidden" name="no_sql" value="1" />
+	                    <?php endif; ?>
+                     
                     </form>
 
                     <div class="setup-links">

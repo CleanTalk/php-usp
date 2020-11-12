@@ -1,9 +1,9 @@
 <?php
 
-use Cleantalk\Common\Err;
-use Cleantalk\Common\State;
-use Cleantalk\Variables\Post;
-use Cleantalk\Variables\Server;
+use Cleantalk\USP\Common\Err;
+use Cleantalk\USP\Common\State;
+use Cleantalk\USP\Variables\Post;
+use Cleantalk\USP\Variables\Server;
 
 // ACTIONS ROUTING
 if( Post::is_set('action', 'security') ) {
@@ -49,16 +49,16 @@ if( Post::is_set('action', 'security') ) {
 				break;
 
 			case 'spbc_tbl-action--row':
-				call_user_func( '\Cleantalk\Layout\ListTable::ajax__row_action_handler' );
+				call_user_func( '\Cleantalk\USP\Layout\ListTable::ajax__row_action_handler' );
 				break;
 
 			case 'spbc_tbl-pagination':
-				call_user_func( '\Cleantalk\Layout\ListTable::ajax__pagination_handler' );
+				call_user_func( '\Cleantalk\USP\Layout\ListTable::ajax__pagination_handler' );
 				break;
 
 			case 'spbc_scanner_file_view':
 				require_once CT_USP_INC . 'scanner.php';
-				call_user_func( 'spbc_scanner_file_view' );
+				State::getInstance()->data->no_sql ? spbc_scanner_file_view___no_sql() : spbc_scanner_file_view();
 				break;
 
 			default:

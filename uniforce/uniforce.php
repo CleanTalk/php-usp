@@ -1,12 +1,12 @@
 <?php
 
-use Cleantalk\Common\File;
-use Cleantalk\Common\State;
-use Cleantalk\Uniforce\FireWall;
-use Cleantalk\Variables\Cookie;
-use Cleantalk\Variables\Get;
-use Cleantalk\Variables\Post;
-use Cleantalk\Variables\Server;
+use Cleantalk\USP\Common\File;
+use Cleantalk\USP\Common\State;
+use Cleantalk\USP\Uniforce\FireWall;
+use Cleantalk\USP\Variables\Cookie;
+use Cleantalk\USP\Variables\Get;
+use Cleantalk\USP\Variables\Post;
+use Cleantalk\USP\Variables\Server;
 
 // Config
 require_once 'inc' . DIRECTORY_SEPARATOR . 'common.php';
@@ -86,7 +86,7 @@ if ( $usp->settings->fw || $usp->settings->waf || $usp->settings->bfp ) {
     }
 
     // Spam FireWall check
-    if( $usp->key && $usp->data->stats->fw->entries ) {
+    if( $usp->key && $usp->data->stat->fw->entries ) {
         $firewall->ip__test();
     }
     // WebApplication FireWall check
@@ -137,12 +137,20 @@ function uniforce_attach_js( $buffer ){
     }
 
     if( State::getInstance()->settings->bfp && FireWall::is_logged_in( State::getInstance()->detected_cms ) ) {
-        setcookie( 'spbct_authorized', md5( State::getInstance()->key ), 0, '/' );
+        if( Cookie::get('spbct_authorized' ) ) {
+            setcookie( 'spbct_authorized', md5( State::getInstance()->key ), 0, '/' );
+            FireWall::security__update_auth_logs( 'login' );
+            FireWall::security__logs__send( State::getInstance()->key );
+        }
     } else {
         if( ! empty( Cookie::get('spbct_authorized') ) ) {
             FireWall::security__update_auth_logs( 'logout' );
+            setcookie( 'spbct_authorized', md5( State::getInstance()->key ), time()-3600, '/' );
+        } else {
+            if( Post::get('spbct_login_form') ) {
+                FireWall::security__update_auth_logs( 'auth_failed' );
+            }
         }
-        setcookie( 'spbct_authorized', md5( State::getInstance()->key ), time()-3600, '/' );
     }
 
     return $buffer;

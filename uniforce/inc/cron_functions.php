@@ -1,11 +1,11 @@
 <?php
 
-use Cleantalk\Common\State;
-use Cleantalk\Uniforce\FireWall;
-use Cleantalk\Common\Err;
-use Cleantalk\Common\File;
-use Cleantalk\Uniforce\Helper;
-use Cleantalk\Variables\Server;
+use Cleantalk\USP\Common\State;
+use Cleantalk\USP\Uniforce\FireWall;
+use Cleantalk\USP\Common\Err;
+use Cleantalk\USP\Common\File;
+use Cleantalk\USP\Uniforce\Helper;
+use Cleantalk\USP\Variables\Server;
 
 function uniforce_sfw_update( $immediate = false ){
 	
@@ -19,7 +19,7 @@ function uniforce_sfw_update( $immediate = false ){
 			Server::get('HTTP_HOST') . CT_USP_AJAX_URI,
 			array(
 				'spbc_remote_call_token'  => md5( $usp->settings->key ),
-				'spbc_remote_call_action' => 'fw__update',
+				'spbc_remote_call_action' => 'update_security_firewall',
 				'plugin_name'             => 'security',
 				'file_urls'               => '',
 			),
@@ -27,10 +27,10 @@ function uniforce_sfw_update( $immediate = false ){
 		);
 	}
 
-	return ! Err::check() ? true : false;
+	return ! Err::check();
 }
 
-function uniforce_fw_logs_send(){
+function uniforce_fw_send_logs(){
 
 	$usp = State::getInstance();
 	
@@ -53,7 +53,7 @@ function uniforce_fw_logs_send(){
 	return ! Err::check() ? true : false;
 }
 
-function uniforce_security_logs_send(){
+function uniforce_security_send_logs(){
 
 	$usp = State::getInstance();
 
@@ -68,7 +68,7 @@ function uniforce_security_logs_send(){
 
         if( ! Err::check() ) {
 	        $usp->data->stat->bfp->logs_sent_time = time();
-	        $usp->data->stat->bfp->count = $result;
+	        $usp->data->stat->bfp->count = $result['rows'];
         }
 
     }
@@ -148,8 +148,14 @@ function usp_scanner__launch(){
 }
 
 function usp_scanner__get_signatures() {
-
-	$out = \Cleantalk\Scanner\Controller::action__scanner__get_signatures();
+	
+	$usp = State::getInstance();
+	
+	$scanner_controller = new \Cleantalk\USP\ScannerController(
+		CT_USP_SITE_ROOT,
+		array( $usp->data->db_request_string, $usp->data->db_user, $usp->data->db_password)
+	);
+	$out = $scanner_controller->action__scanner__get_signatures();
 
 	return empty($result['error']) ? $out : true;
 }

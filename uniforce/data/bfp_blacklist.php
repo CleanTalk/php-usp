@@ -1,2 +1,2 @@
 <?php
-	$bad_ips = array ();
+$bad_ips = array ();
