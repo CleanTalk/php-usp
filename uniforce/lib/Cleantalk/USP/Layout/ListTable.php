@@ -7,7 +7,7 @@ use Cleantalk\USP\DB;
 
 class ListTable
 {
-    static $NUMBER_ELEMENTS_TO_VIEW = 20;
+    static $NUMBER_ELEMENTS_TO_VIEW = 100;
 
 	public $args = array(); // Input arguments
 	
