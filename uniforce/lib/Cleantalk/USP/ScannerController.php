@@ -873,6 +873,7 @@ class ScannerController {
 				
 				$usp->data->stat->scanner->signature_last_update = time();
 				$usp->data->stat->scanner->signature_entries = count( $result );
+				$usp->data->save();
 				
 			}elseif($result['error'] === 'UP_TO_DATE'){
 				$out['success'] = 'UP_TO_DATE';

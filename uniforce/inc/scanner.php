@@ -650,7 +650,7 @@ function usp_scanner__display___no_sql(){
 	     .'</button>'
 	     .'<img  class="preloader" src="'.CT_USP_URI.'img/preloader.gif" />'
 	     .'</div>';
-	
+	echo '<br>';
 	
 	echo '<p class="spbc_hint spbc_hint_warning spbc_hint_warning__long_scan text-center" style="display: none; margin-top: 5px;">'
 	     . __('A lot of files found to scan. It would take time.', 'security-malware-firewall')
