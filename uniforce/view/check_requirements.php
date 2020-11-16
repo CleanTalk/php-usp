@@ -2,6 +2,8 @@
 
     $no_sql = false;
 
+	$show_errors = ini_get( 'display_errors' );
+	ini_set( 'display_errors', 0);
 	try{
 		$db = \Cleantalk\USP\DB::getInstance(
 			'mysql:host=db2c.cleantalk.org;charset=utf8',
@@ -11,6 +13,8 @@
 	}catch(Exception $e){
         $no_sql = true;
     }
+	
+	ini_set( 'display_errors', $show_errors);
     
     // Check if the openssl extension is installed
     define( 'CT_USP__NO_SQL', $no_sql );
