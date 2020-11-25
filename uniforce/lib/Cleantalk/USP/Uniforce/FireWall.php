@@ -640,8 +640,8 @@ class FireWall extends \Cleantalk\USP\Security\FireWall
 				    $db->delete();
 
 				    // Clean statistics
-				    State::getInstance()->data->stat->fw->entries = 0;
-				    State::getInstance()->data->save();
+				    State::getInstance()->fw_stats->entries = 0;
+				    State::getInstance()->fw_stats->save();
 
 			    }else
 				    Err::prepend( 'Updating FW' );
@@ -678,8 +678,8 @@ class FireWall extends \Cleantalk\USP\Security\FireWall
 					$inserted = $db->insert( $nets_for_save );
 
 					if ( ! Err::check() ){
-						State::getInstance()->data->stat->fw->entries += $inserted;
-						State::getInstance()->data->save();
+						State::getInstance()->fw_stats->entries += $inserted;
+						State::getInstance()->fw_stats->save();
 					}else{
 						Err::prepend('Updating FW');
 						error_log( var_export( Err::get_all('string'), true ) );
@@ -724,11 +724,9 @@ class FireWall extends \Cleantalk\USP\Security\FireWall
 				}
 			}
 
-			$inserted = $db->insert( $nets_for_save );
-
-			State::getInstance()->data->stat->fw->entries += $inserted;
-			State::getInstance()->data->stat->fw->last_update = time();
-			State::getInstance()->data->save();
+//			State::getInstance()->fw_stats->entries += $inserted;
+			State::getInstance()->fw_stats->last_update = time();
+			State::getInstance()->fw_stats->save();
 
 		}
 

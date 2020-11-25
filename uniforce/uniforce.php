@@ -86,7 +86,7 @@ if ( $usp->settings->fw || $usp->settings->waf || $usp->settings->bfp ) {
     }
 
     // Spam FireWall check
-    if( $usp->key && $usp->data->stat->fw->entries ) {
+    if( $usp->key && $usp->fw_stat->entries ) {
         $firewall->ip__test();
     }
     // WebApplication FireWall check

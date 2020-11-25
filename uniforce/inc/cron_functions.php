@@ -44,8 +44,9 @@ function uniforce_fw_send_logs(){
 			Err::add( $result['error'] );
 		
 		if( ! Err::check() ) {
-			$usp->data->stat->fw->logs_sent_time = time();
-			$usp->data->stat->fw->count = 0;
+			$usp->fw_stats->logs_sent_time = time();
+			$usp->fw_stats->count = 0;
+			$usp->fw_stats->save();
         }
 
 	}

@@ -518,8 +518,9 @@ function usp_do_save_settings() {
 		// Send FW logs
 		$result = FireWall::logs__send( $usp->settings->key );
 		if( empty( $result['error'] ) && ! Err::check() ) {
-			$usp->data->stat->fw->logs_sent_time = time();
-			$usp->data->stat->fw->logs_sent_amount = $result['rows'];
+			$usp->fw_stats->logs_sent_time = time();
+			$usp->fw_stats->logs_sent_amount = $result['rows'];
+			$usp->fw_stats->save();
 		}
 		
 		// Cleaning up Firewall data

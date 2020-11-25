@@ -16,16 +16,16 @@ function ctusp_settings__show_modified_files(){
 function usp_settings__show_fw_statistics( $out = '' )
 {
 	$usp = State::getInstance();
-	$stat = State::getInstance()->data->stat;
+	$stat = State::getInstance()->fw_stats;
 
 	if( $usp->settings->fw || $usp->settings->waf ) {
-		echo 'Security FireWall was updated: ' . ( $stat->fw->last_update
-				? date('M d Y H:i:s', $stat->fw->last_update)
+		echo 'Security FireWall was updated: ' . ( $stat->last_update
+				? date('M d Y H:i:s', $stat->last_update)
 				: 'never'
 			) . '<br>';
-		echo 'Security FireWall contains: ' . ( $stat->fw->entries ? $stat->fw->entries : 'no' ). ' entires.<br>';
-		echo 'Security FireWall logs were sent: ' . ( $stat->fw->logs_sent_time
-				? date('M d Y H:i:s', $stat->fw->logs_sent_time)
+		echo 'Security FireWall contains: ' . ( $stat->entries ? $stat->entries : 'no' ). ' entires.<br>';
+		echo 'Security FireWall logs were sent: ' . ( $stat->logs_sent_time
+				? date('M d Y H:i:s', $stat->logs_sent_time)
 				: 'never.'
 			) . '<br>';
 		echo '<br>';
