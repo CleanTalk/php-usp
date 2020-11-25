@@ -176,8 +176,7 @@ function spbc_tbl__sort__listen(){
 
 // Shows/hides full text
 function usp_showHide__listen(){
-    jQuery('.spbcShortText')
-        .on('mouseover', function(){  jQuery(this).next().show(); })
+    jQuery('.spbcShortText').on('mouseover', function(){ jQuery(this).next().show(); })
     jQuery('.spbcFullText').on('mouseout',   function(){ jQuery(this).hide();  });
 }
 
