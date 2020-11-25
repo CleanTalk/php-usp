@@ -90,7 +90,12 @@ class File{
     public static function clean_file_full($file_path ) {
         file_put_contents( $file_path, "<?php\n" );
     }
-
+	
+	/**
+	 * @param string $file_path File path
+	 * @param string $variable Variable name
+	 * @param mixed $value Value of variable
+	 */
 	public static function replace__variable( $file_path, $variable, $value ){
 		$injection = "\n\t\$$variable = " . var_export( $value, true ) . ";";
 		$needle = '\s*\$' . $variable . '\s?=[\S\s]*?;';
