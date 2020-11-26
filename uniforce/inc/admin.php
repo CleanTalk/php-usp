@@ -295,9 +295,10 @@ function usp_uninstall(){
 	$usp->delete( 'remote_calls' );
 	$usp->delete( 'scan_result' );
 	$usp->delete( 'signatures' );
+	$usp->delete( 'fw_stats' );
 
 	// Deleting cron tasks
-	File::replace__variable( CT_USP_CRON_FILE, 'uniforce_tasks', array() );
+	unlink( CT_USP_CRON_FILE );
 
 	// Deleting any logs
     usp_uninstall_logs();

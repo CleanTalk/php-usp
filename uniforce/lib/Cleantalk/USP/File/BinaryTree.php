@@ -142,5 +142,8 @@ class BinaryTree {
 		ftruncate( $this->stream, 0 );
 		// Drop insert position
 		$this->insert_position = 0;
+		
+		// Delete file
+		unlink( $this->file_path );
 	}
 }

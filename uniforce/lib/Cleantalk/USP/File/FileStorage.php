@@ -283,6 +283,9 @@ class FileStorage {
 		// Null additional data
 		$this->meta->rows = 0;
 		$this->meta->save();
+		
+		// Delete file with data
+		unlink( $this->data_file );
 	}
 
 	private function get_data__by_index( $cols, $offset, $limit ) {

@@ -257,6 +257,9 @@ class BTree {
 		// Drop insert position
 		$this->insert_position = $this->link_size;
 		$this->set_root( $this->link_size );
+		
+		// Delete file
+		unlink( $this->file_path );
 	}
 
 	private function set_root( $new_root ){
