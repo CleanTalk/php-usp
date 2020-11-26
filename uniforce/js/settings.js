@@ -188,12 +188,8 @@ function uspSettingsDependencies(settingsIDs, enable){
 
     settingsIDs.forEach(function(settingID, i, arr){
 
-        console.log(settingID);
-
         settingID = settingID.indexOf( 'spbc_setting_' ) !== -1 || settingID.indexOf( 'ctusp_field_' ) !== -1
             ? 'spbc_setting_'+settingID : settingID;
-
-        console.log(settingID);
 
         var elem = document.getElementById(settingID),
             do_disable = function(){elem.setAttribute('disabled', 'disabled');},
