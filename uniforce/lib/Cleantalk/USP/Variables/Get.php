@@ -21,12 +21,11 @@ class Get extends SuperGlobalVariables{
 	 * @return mixed|string
 	 */
 	protected function get_variable( $name ){
-
+		
 		// Return from memory. From $this->variables
-		if(isset(static::$instance->variables[$name])){
+		if(isset(static::$instance->variables[$name]))
 			return static::$instance->variables[$name];
-		}
-
+		
 		if( function_exists( 'filter_input' ) )
 			$value = filter_input( INPUT_GET, $name );
 		
