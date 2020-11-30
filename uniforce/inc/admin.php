@@ -196,7 +196,7 @@ function usp_install($files, $api_key, $cms, $exclusions ){
 					// Addition to index.php Bottom (JavaScript test)
 					File::inject__code(
 						$file,
-						"\t\nob_end_flush();\n"
+						"\t\nif(ob_get_contents()){\nob_end_flush();\n}\n"
 						."\tif(isset(\$_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower(\$_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest'){\n"
 						."\t\tdie();\n"
 						."\t}",
