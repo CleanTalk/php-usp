@@ -4,7 +4,6 @@ namespace Cleantalk\USP;
 
 use Cleantalk\USP\Common\Err;
 use Cleantalk\USP\Common\State;
-use Cleantalk\USP\Scanner\Common;
 use Cleantalk\USP\Scanner\Scanner;
 use Cleantalk\USP\Uniforce\API;
 use Cleantalk\USP\Uniforce\Helper;
