@@ -89,22 +89,28 @@ function uniforce_attach_js( $buffer ){
             1
         );
     }
-
-    if( State::getInstance()->settings->bfp && FireWall::is_logged_in( State::getInstance()->detected_cms ) ) {
-        if( Cookie::get('spbct_authorized' ) ) {
-            setcookie( 'spbct_authorized', md5( State::getInstance()->key ), 0, '/' );
-            FireWall::security__update_auth_logs( 'login' );
-            FireWall::security__logs__send( State::getInstance()->key );
-        }
-    } else {
-        if( ! empty( Cookie::get('spbct_authorized') ) ) {
-            FireWall::security__update_auth_logs( 'logout' );
-            setcookie( 'spbct_authorized', md5( State::getInstance()->key ), time()-3600, '/' );
-        } else {
-            if( Post::get('spbct_login_form') ) {
-                FireWall::security__update_auth_logs( 'auth_failed' );
-            }
-        }
+    
+    if( State::getInstance()->settings->bfp && State::getInstance()->detected_cms ){
+    	
+	    if( \Cleantalk\USP\Uniforce\Firewall\BFP::is_logged_in( State::getInstance()->detected_cms ) ) {
+	    	
+		    if( ! Cookie::get( 'spbct_authorized' ) ){
+			    setcookie( 'spbct_authorized', md5( State::getInstance()->key ), 0, '/' );
+			    \Cleantalk\USP\Uniforce\Firewall\BFP::update_log( 'login' );
+			    \Cleantalk\USP\Uniforce\Firewall\BFP::send_log( State::getInstance()->key );
+		    }
+		    
+	    }else{
+	    	
+		    if( Cookie::get('spbct_authorized') ) {
+			    \Cleantalk\USP\Uniforce\Firewall\BFP::update_log( 'logout' );
+			    setcookie( 'spbct_authorized', md5( State::getInstance()->key ), time()-3600, '/' );
+		    }
+			 
+		    if( Post::get( 'spbct_login_form' ) )
+			    \Cleantalk\USP\Uniforce\Firewall\BFP::update_log( 'auth_failed' );
+		    
+	    }
     }
 
     return $buffer;
