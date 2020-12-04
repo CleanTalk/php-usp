@@ -23,7 +23,9 @@ function usp_settings__show_fw_statistics( $out = '' )
 				? date('M d Y H:i:s', $stat->last_update)
 				: 'never'
 			) . '<br>';
-		echo 'Security FireWall contains: ' . ( $stat->entries ? $stat->entries : 'no' ). ' entires.<br>';
+		echo 'Security FireWall contains: ' . ( $stat->entries ? $stat->entries : 'no' ). ' entires. '
+		     . ( State::getInstance()->fw_stats->updating ? '<b>Under updating now: ' . State::getInstance()->fw_stats->update_percent. '%</b>' : '' )
+		     . '<br>';
 		echo 'Security FireWall logs were sent: ' . ( $stat->logs_sent_time
 				? date('M d Y H:i:s', $stat->logs_sent_time)
 				: 'never.'
