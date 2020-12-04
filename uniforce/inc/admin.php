@@ -296,6 +296,9 @@ function usp_uninstall(){
 	$usp->delete( 'scan_result' );
 	$usp->delete( 'signatures' );
 	$usp->delete( 'fw_stats' );
+	
+	$usp->delete( 'bfp_blacklist' );
+	$usp->delete( 'bfp_blacklist_fast' );
 
 	// Deleting cron tasks
 	unlink( CT_USP_CRON_FILE );
