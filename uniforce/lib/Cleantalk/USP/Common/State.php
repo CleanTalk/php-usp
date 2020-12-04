@@ -144,7 +144,7 @@ class State extends \Cleantalk\USP\Common\Storage{
 		'2fa_keys'          => array(),
 	);
 
-	public $def_remote_calls = array(
+	public $default_remote_calls = array(
 
 	// Common
 		'close_renew_banner'       => array('last_call' => 0,),
@@ -177,6 +177,12 @@ class State extends \Cleantalk\USP\Common\Storage{
 		'scanner__send_results'            => array( 'last_call' => 0, 'cooldown' => 0 ),
 	);
 
+	private $default_fw_stats = array(
+		'entries'        => 0,
+		'updating'       => false,
+		'update_percent' => 0,
+	);
+	
 	public function __construct( ...$options )
 	{
 		// Default options to get
@@ -189,14 +195,14 @@ class State extends \Cleantalk\USP\Common\Storage{
 
 			$option = $this->get( $option_name );
 
-			// Default options
-			if ( $option_name === 'settings' ) {
-				$option = is_array( $option ) ? array_merge( $this->default_settings, $option ) : $this->default_settings;
-			}
+			// @todo Check default option
+			$def_option_name = 'default_' . $option_name;
+			$option = is_array( $option )
+				? array_merge( $this->$def_option_name, $option )
+				: $this->$def_option_name;
 			
-			// Default data
+			// Generating salt
 			if($option_name === 'data'){
-				$option = is_array( $option ) ? array_merge( $this->default_data, $option ) : $this->default_data;
 
 				// Generate during construction if unset
 				if(empty($option['salt']))
@@ -204,16 +210,6 @@ class State extends \Cleantalk\USP\Common\Storage{
 				if(empty($option['security_key']))
 					$option['security_key'] = md5( isset($_SERVER['SERVER_NAME']) ? $_SERVER['SERVER_NAME'] : '' );
 
-			}
-			
-			// Default errors
-			if ( $option_name === 'errors' ) {
-				$option = is_array( $option ) ? array_merge( $this->def_errors, $option ) : $this->def_errors;
-			}
-			
-			// Default remote calls
-			if ( $option_name === 'remote_calls' ) {
-				$option = is_array( $option ) ? array_merge( $this->def_remote_calls, $option ) : $this->def_remote_calls;
 			}
 
 			$this->$option_name = $this->convertToStorage( $option_name, $option );
