@@ -249,7 +249,7 @@ class FileStorage {
 			Err::add( $err['message'] );
 			return false;
 		} else {
-			$inserted = $res / ( $this->meta->line_length );
+			$inserted = $res / $this->meta->line_length;
 			$this->meta->rows += $inserted;
 			$this->meta->save();
 			return $inserted;
@@ -498,7 +498,7 @@ class FileStorage {
 			if(
 				$this->insert__check_data_format( $datum ) &&
 				$this->insert__create_index( ++$number, $datum, $indexes, $columns_name ) &&
-				$this->insert__convert_data_to_storage_format( $datum, $columns_name )
+				$this->insert__convert_data_to_storage_format( $datum, $this->meta->cols )
 			){
 				$data_raw .= $datum . "\n";
 			}else{
@@ -518,17 +518,16 @@ class FileStorage {
 		}
 	}
 
-	private function insert__convert_data_to_storage_format( &$data, $columns_name ) {
-
+	private function insert__convert_data_to_storage_format( &$data, $columns ) {
 		$tmp = '';
 		foreach ( $data as $name => $col ) {
 			$tmp .= str_pad(
 				substr(
 					$col,
 					0,
-					$this->meta->cols[ $columns_name [ $name ] ]['length']
+					$this->meta->cols[ $name ]['length']
 				),
-				$this->meta->cols[ $columns_name [ $name ] ]['length'],
+				$this->meta->cols[ $name ]['length'],
 				"\x00",
 				STR_PAD_LEFT
 			);
@@ -544,13 +543,13 @@ class FileStorage {
 
 			switch ( $this->meta->indexes[ $index ]['type'] ){
 				case 'hash':
-					$result = $this->index__create__hash( $data[ $index ], $number, $data[ array_search( $index, $columns_name ) ]  );
+					$result = $this->index__create__hash( $data[ $index ], $number, $data[ $index ]  );
 					break;
 				case 'binary_tree':
-					$result = $this->index__create__bin_tree( $index, $number, $data[ array_search( $index, $columns_name ) ] );
+					$result = $this->index__create__bin_tree( $index, $number, $data[ $index ] );
 					break;
 				case 'b_tree':
-					$result = $this->index__create__b_tree( $index, $number, $data[ array_search( $index, $columns_name ) ] );
+					$result = $this->index__create__b_tree( $index, $number, $data[ $index ] );
 					break;
 				default:
 					$result = false;
