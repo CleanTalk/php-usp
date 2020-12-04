@@ -870,25 +870,34 @@ class Helper{
 	}
 	
 	/**
-	 * Get MIME type of anything
+	 * Get mime type from file or data
 	 *
-	 * @param $data
+	 * @param string $data Path to file or data
+	 * @param string $type Default mime type. Returns if we failed to detect type
 	 *
 	 * @return string
 	 */
-	static function get_mime_type( $data )
+	static function get_mime_type( $data, $type = '' )
 	{
-		if( @file_exists( $data ) ){
-			$mime = mime_content_type( $data );
-		}else{
+		if( @file_exists( $data )){
+			$type = mime_content_type( $data );
+		}elseif( function_exists('finfo_open' ) ){
 			$finfo = finfo_open(FILEINFO_MIME_TYPE);
-			$mime = finfo_buffer($finfo, $data);
+			$type = finfo_buffer($finfo, $data);
 			finfo_close($finfo);
 		}
-		return $mime;
+		return $type;
 	}
 	
-	static function buffer__csv__parse( $buffer ){
+	/**
+	 * Parse Comma-separated values
+	 *
+	 * @param $buffer
+	 *
+	 * @return false|string[]
+	 */
+	
+	static function buffer__parse__csv( $buffer ){
 		$buffer = explode( "\n", $buffer );
 		$buffer = self::buffer__trim_and_clear_from_empty_lines( $buffer );
 		foreach($buffer as &$line){
@@ -897,6 +906,18 @@ class Helper{
 		return $buffer;
 	}
 	
+	/**
+	 * Parse Newline-separated values
+	 *
+	 * @param $buffer
+	 *
+	 * @return false|string[]
+	 */
+	static function buffer__parse__nsv( $buffer ){
+		$buffer = str_replace( array( "\r\n", "\n\r", "\r", "\n" ), "\n", $buffer );
+		$buffer = explode( "\n", $buffer );
+		return $buffer;
+	}
 	
 	/**
 	 * Pops line from buffer without formatting
