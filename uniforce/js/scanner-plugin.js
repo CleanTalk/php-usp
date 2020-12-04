@@ -141,6 +141,10 @@ class spbc_Scanner{
 
     };
 
+    additional_error(){
+      this.end();
+    };
+
     errorOutput( msg ){
         alert( msg );
     };
@@ -157,7 +161,6 @@ class spbc_Scanner{
         };
 
         var params = {
-            additional_error: this.end,
             data: data,
             type: 'GET',
             successCallback: this.successCallback,
