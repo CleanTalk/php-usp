@@ -51,7 +51,7 @@ class ScannerController {
 	function __construct( $root_dir, $db_params = null ){
 		
 		if( $db_params ){
-			@$this->db = \Cleantalk\USP\DB::getInstance(
+			@$this->db = DB::getInstance(
 				$db_params[0],
 				$db_params[1],
 				$db_params[2]

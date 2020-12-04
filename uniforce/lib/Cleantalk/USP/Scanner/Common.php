@@ -3,11 +3,8 @@
 
 namespace Cleantalk\USP\Scanner;
 
-
-use Cleantalk\USP\Common\DB;
-use Cleantalk\USP\Common\State;
+use Cleantalk\USP\DB;
 use Cleantalk\USP\Scanner\Helper as ScannerHelper;
-use Cleantalk\USP\Variables\Get;
 
 class Common {
 	
@@ -18,9 +15,9 @@ class Common {
 		
 		if( $db_config ){
 			list( $username, $password, $options ) = $db_config;
-			$this->db = \Cleantalk\USP\DB::getInstance( $username, $password, $options );
+			$this->db = DB::getInstance( $username, $password, $options );
 		}else{
-			$this->db = \Cleantalk\USP\DB::getInstance();
+			$this->db = DB::getInstance();
 		}
 		
 	}

@@ -479,7 +479,7 @@ class ListTable
 		$args = self::stripslashes__array($_POST['args']);
 		$args['pagination']['page'] = $page;
 		$table = new ListTable(
-            \Cleantalk\USP\DB::getInstance(
+            DB::getInstance(
                 $usp->data->db_request_string,
                 $usp->data->db_user,
                 $usp->data->db_password

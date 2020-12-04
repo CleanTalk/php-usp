@@ -2,9 +2,6 @@
 
 namespace Cleantalk\USP\Scanner;
 
-use Cleantalk\USP\DB;
-use Cleantalk\USP\Templates\Singleton as Singleton;
-
 class Helper {
 	
 	const signatures_version_file_url = 'https://s3-us-west-2.amazonaws.com/cleantalk-security/security_signatures/version.txt';
@@ -63,7 +60,7 @@ class Helper {
 								
 								if($data !== false){
 									
-									$lines = \Cleantalk\USP\Uniforce\Helper::buffer__csv__parse($data);
+									$lines = \Cleantalk\USP\Uniforce\Helper::buffer__parse__csv($data);
 									
 									$out = array();
 									foreach($lines as $line){
@@ -119,7 +116,7 @@ class Helper {
 					
 					if ( $data !== false ) {
 						
-						$lines = \Cleantalk\USP\Uniforce\Helper::buffer__csv__parse($data);
+						$lines = \Cleantalk\USP\Uniforce\Helper::buffer__parse__csv($data);
 						
 						if( count( $lines ) > 0 ) {
 							

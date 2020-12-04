@@ -1,10 +1,7 @@
 <?php
 
-use Cleantalk\USP\Common\File;
 use Cleantalk\USP\Common\State;
-use Cleantalk\USP\Uniforce\FireWall;
 use Cleantalk\USP\Variables\Cookie;
-use Cleantalk\USP\Variables\Get;
 use Cleantalk\USP\Variables\Post;
 use Cleantalk\USP\Variables\Server;
 

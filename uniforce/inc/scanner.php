@@ -1,13 +1,12 @@
 <?php
 
 use Cleantalk\USP\Common\State;
+use Cleantalk\USP\DB;
 use Cleantalk\USP\Layout\ListTable;
 use Cleantalk\USP\Scanner\Scanner;
 use Cleantalk\USP\Uniforce\API;
 use Cleantalk\USP\Uniforce\Helper;
-use Cleantalk\USP\Variables\Get;
 use Cleantalk\USP\Variables\Post;
-use Cleantalk\USP\Variables\Request;
 
 function spbc_scanner_file_send( $file_id ){
 	
@@ -15,7 +14,7 @@ function spbc_scanner_file_send( $file_id ){
 		return spbc_scanner_file_send___no_sql( $file_id );
 	
 	$usp = State::getInstance();
-	$db  = \Cleantalk\USP\DB::getInstance(
+	$db  = DB::getInstance(
 		$usp->data->db_request_string,
 		$usp->data->db_user,
 		$usp->data->db_password
@@ -110,7 +109,7 @@ function spbc_scanner_file_delete( $file_id ){
 		return spbc_scanner_file_delete___no_sql( $file_id );
 	
 	$usp = State::getInstance();
-	$db  = \Cleantalk\USP\DB::getInstance(
+ 	$db  = DB::getInstance(
 		$usp->data->db_request_string,
 		$usp->data->db_user,
 		$usp->data->db_password
@@ -176,7 +175,7 @@ function spbc_scanner_file_view( $file_id = null ){
 
 	$file_id = $file_id ?: Post::get('file_id');
 	$usp = State::getInstance();
-	$db  = \Cleantalk\USP\DB::getInstance(
+	$db  = DB::getInstance(
 		$usp->data->db_request_string,
 		$usp->data->db_user,
 		$usp->data->db_password
@@ -420,7 +419,7 @@ function usp_scanner__display(){
 	
 	if( $usp->data->stat->scanner->last_scan ){
 		
-		$db = Cleantalk\USP\DB::getInstance(
+		$db = DB::getInstance(
 			$usp->data->db_request_string,
 			$usp->data->db_user,
 			$usp->data->db_password
