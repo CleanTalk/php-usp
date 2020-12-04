@@ -3,7 +3,7 @@ $fw_nets_meta = array (
   'line_length' => 27,
   'cols' => 
   array (
-    'net' => 
+    'network' => 
     array (
       'type' => 'int',
       'length' => 11,
@@ -27,7 +27,7 @@ $fw_nets_meta = array (
   'description' => 'Test',
   'indexes' => 
   array (
-    'net' => 
+    'network' => 
     array (
       'status' => false,
       'type' => 'b_tree',
@@ -35,5 +35,5 @@ $fw_nets_meta = array (
   ),
   'cols_num' => 4,
   'rows' => 0,
-  'median' => 5000000000.0,
+  'median' => 5000000000,
 );

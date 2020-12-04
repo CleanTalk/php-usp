@@ -16,104 +16,61 @@ if( ! $usp->key )
 // Helper functions
 require_once( CT_USP_INC . 'functions.php' );
 
-// Security FireWall
-if ( $usp->settings->fw || $usp->settings->waf || $usp->settings->bfp ) {
+if( $usp->settings->fw || $usp->settings->waf || $usp->settings->bfp ){
 
-    $params = array(
-        'bfp_enabled'       => $usp->settings->bfp,
-        'waf_enabled'       => $usp->settings->waf,
-        'waf_xss_check'     => $usp->settings->waf_xss_check,
-        'waf_sql_check'     => $usp->settings->waf_sql_check,
-        'waf_exploit_check' => $usp->settings->waf_exploit_check,
-    );
-
-    $firewall = new FireWall( $params );
-
-    // BruteForce protection.
-    if( $usp->settings->bfp ) {
-        // @ToDo If the login form is on front page?!?!?
-        if( ($usp->settings->bfp_admin_page && Server::has_string('REQUEST_URI', $usp->settings->bfp_admin_page ) ) ||
-            ( defined( 'USP_DASHBOARD' ) && Post::get( 'login' ) )
-        ) {
-
-            // Catching buffer and doing protection
-            ob_start( 'uniforce_attach_js' );
-
-            if( ! empty( $_POST ) && isset( $_POST['spbct_login_form'] ) ) {
-
-                try {
-                    $bfp_result = $firewall->bfp_check();
-                } catch ( Exception $exception ) {
-                    error_log( var_export( $exception->getMessage(), 1 ));
-                }
-
-                if( ! $bfp_result ) {
-	                ++$usp->data->stat->bfp->counter;
-	                $usp->data->save();
-                    $firewall->update_logs( $firewall->blocked_ip, $firewall->result );
-                    $firewall->_die( $usp->data->account_name_ob, $firewall->result );
-                }
-
-            }
-
-        }
-    }
-
-
-    // Skip the check
-    // Set skip test cookie
-    if(!empty($_GET['access'])){
-
-        if( Get::get('access') === $usp->key ) {
-	        setcookie( 'spbc_firewall_pass_key', md5( Server::get( 'REMOTE_ADDR' ) . $usp->key ), time() + 1200, '/' );
-            return;
-        }
-    }
-
-    //Pass the ckeck if cookie is set.
-    foreach( $firewall->ip_array as $spbc_cur_ip ){
-	    if ( ! empty( Cookie::get( 'spbc_firewall_pass_key' ) ) && Cookie::get( 'spbc_firewall_pass_key' ) == md5( $spbc_cur_ip . $usp->key ) ) {
-            return;
-        }
-    }
-
-    // Log authorized users actions
-    if( ! empty( Cookie::get('spbct_authorized') ) ) {
-        FireWall::security__update_auth_logs( 'view' );
-    }
-
-    // Spam FireWall check
-    if( $usp->key && $usp->fw_stat->entries ) {
-        $firewall->ip__test();
-    }
-    // WebApplication FireWall check
-    if( $usp->settings->waf ) {
-        $firewall->waf__test();
-    }
-
-    if( strpos( $firewall->result, 'DENY') !== false ){
-        if( Get::is_set('spbc_remote_call_token', 'spbc_remote_call_action', 'plugin_name' ) ) {
-            $resolved = gethostbyaddr($firewall->blocked_ip);
-            if( $resolved && preg_match('/cleantalk\.org/', $resolved) === 1 || $resolved === 'back' ){
-                $firewall->result = 'PASS_BY_TRUSTED_NETWORK';
-                $firewall->passed_ip = $firewall->blocked_ip;
-            }
-        }
-    }
-
-    // Blacklisted in DB
-    if( strpos($firewall->result, 'DENY') !== false ){
-        $firewall->update_logs( $firewall->blocked_ip, $firewall->result, $firewall->waf_pattern );
-        $firewall->_die( $usp->data->account_name_ob, $firewall->result, $firewall->waf_result );
-    // Whitelisted in DB
-    }elseif( strpos($firewall->result, 'PASS') !== false ){
-        $firewall->update_logs( $firewall->passed_ip, $firewall->result );
-        if( ! headers_sent() ){
-            setcookie ('spbc_firewall_pass_key', md5($firewall->passed_ip.$usp->key), 300, '/');
-        }
-    }
-
+	// Security FireWall
+	$firewall = new \Cleantalk\USP\Uniforce\Firewall();
+	
+	if( $usp->settings->fw && ! $usp->fw_stats->updating && $usp->fw_stats->entries )
+		$firewall->module__load( new \Cleantalk\USP\Uniforce\Firewall\FW(
+			array(
+				'state'   => $usp,
+				'api_key' => $usp->key,
+			)
+		) );
+	
+	if( $usp->settings->waf )
+		$firewall->module__load( new \Cleantalk\USP\Uniforce\Firewall\WAF(
+			array(
+				'waf_xss_check'     => true,
+				'waf_sql_check'     => true,
+				'waf_file_check'    => true,
+				'waf_exploit_check' => true,
+			)
+		) );
+	
+	if( $usp->settings->bfp ){
+		
+		$firewall->module__load( new \Cleantalk\USP\Uniforce\Firewall\BFP(
+			array(
+				'is_login_page' => ( $usp->settings->bfp_admin_page && Server::has_string( 'REQUEST_URI', $usp->settings->bfp_admin_page ) ) ||
+				                   ( defined( 'USP_DASHBOARD' ) && Post::get( 'login' ) ),
+				'is_logged_in'  => \Cleantalk\USP\Uniforce\Firewall\BFP::is_logged_in( $usp->detected_cms ),
+				'do_check'      => Cookie::get( 'spbct_authorized' ) !== md5( State::getInstance()->key ) &&
+				                   Post::get( 'spbct_login_form' ),
+				'state'         => $usp,
+			)
+		) );
+	}
+	
+	//Pass the check if cookie is set.
+	foreach( $firewall->ip_array as $spbc_cur_ip ) {
+		if( Cookie::get( 'spbc_firewall_pass_key' ) == md5( $spbc_cur_ip . $usp->key ) )
+			return;
+	}
+	
+	if( $firewall->module__is_loaded__any() ){
+		$firewall->run();
+	}
+	
 }
+
+// Catching buffer and doing protection
+ob_start( 'uniforce_attach_js' );
+
+// Log authorized users actions
+if( Cookie::get('spbct_authorized') )
+    \Cleantalk\USP\Uniforce\Firewall\BFP::update_log( 'view' );
 
 function uniforce_attach_js( $buffer ){
 
