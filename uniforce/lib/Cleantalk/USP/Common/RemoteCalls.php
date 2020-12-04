@@ -2,6 +2,7 @@
 
 namespace Cleantalk\USP\Common;
 
+use Cleantalk\USP\Uniforce\Firewall\FW;
 use Cleantalk\USP\Variables\Get;
 
 class RemoteCalls
@@ -88,9 +89,7 @@ class RemoteCalls
 
 	static function action__update_security_firewall() {
 		
-		$result = \Cleantalk\USP\Uniforce\FireWall::action__update_security_firewall(
-			State::getInstance()->key
-		);
+		$result = FW::update( State::getInstance()->key );
 		
 		die(empty($result['error']) ? 'OK' : 'FAIL '.json_encode(array('error' => $result['error'])));
 	}
