@@ -31,7 +31,7 @@ class DB extends \PDO implements \Cleantalk\USP\Common\DB {
 			$dsn      = $params[0];
 			$username = $params[1];
 			$password = $params[2];
-			$options  = $params[3] ? $params[3] : array(
+			$options  = isset( $params[3] ) ? $params[3] : array(
 				\PDO::ATTR_ERRMODE            => \PDO::ERRMODE_EXCEPTION, // Handle errors as an exceptions
 				\PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,        // Set default fetch mode as associative array
 				\PDO::MYSQL_ATTR_SSL_CA => CT_USP_DATA_SSL_CERT . 'ca.pem',
