@@ -6,6 +6,8 @@ define( 'USP_DASHBOARD', true );
 
 require_once 'inc' . DIRECTORY_SEPARATOR . 'common.php';  // Common stuff
 
+require_once 'uniforce.php';
+
 require_once 'inc' . DIRECTORY_SEPARATOR . 'actions.php'; // Actions
 
 // URL ROUTING
