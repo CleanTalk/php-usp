@@ -560,7 +560,7 @@ class ScannerController {
 						$result_db !== false       ? $out['scanned']++ : $out['scanned'];
 						
 					}else
-						 return $result;
+						 return array( 'error' => 'Signature scan: ' . $result['error']);
 					
 					$out['processed']++;
 				}
@@ -639,7 +639,7 @@ class ScannerController {
 					$result_db !== false       ? $out['scanned']++ : $out['scanned'];
 					
 				}else
-					return $result;
+					return array( 'error' => 'Heuristic scan: ' . $result['error']);
 
 				$out['processed']++;
 
@@ -950,9 +950,8 @@ class ScannerController {
 							
 						}
 						
-					}else{
-						// @todo Add exception Notice level
-					}
+					}else
+						return array( 'error' => 'Signature scan: ' . $result['error']);
 					
 					$out['processed']++;
 				}
@@ -1023,9 +1022,8 @@ class ScannerController {
 							
 						}
 						
-					}else{
-						// @todo Add exception Notice
-					}
+					}else
+						return array( 'error' => 'Heuristic scan: ' . $result['error']);
 					
 					$out['processed']++;
 					
