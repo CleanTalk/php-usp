@@ -7,7 +7,7 @@ use Cleantalk\USP\Common\File;
 use Cleantalk\USP\Uniforce\Helper;
 use Cleantalk\USP\Variables\Server;
 
-function uniforce_sfw_update( $immediate = false ){
+function uniforce_fw_update( $immediate = false ){
 	
 	$usp = State::getInstance();
 	
@@ -38,7 +38,7 @@ function uniforce_fw_send_logs(){
 	if( $usp->key && $usp->settings->fw ){
 
 		// Send SFW logs
-		$result = FireWall::logs__send( $usp->key );
+		$result = \Cleantalk\USP\Uniforce\Firewall\FW::send_log( $usp->key );
 		
 		if( ! empty( $result['error'] ) )
 			Err::add( $result['error'] );
@@ -62,7 +62,7 @@ function uniforce_security_send_logs(){
     if( $usp->key && $usp->settings->bfp ){
 
         // Send SFW logs
-        $result = FireWall::security__logs__send( $usp->key );
+        $result = \Cleantalk\USP\Uniforce\Firewall\BFP::send_log( $usp->key );
 
         if( ! empty( $result['error'] ) )
             Err::add( $result['error'] );

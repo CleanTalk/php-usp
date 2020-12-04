@@ -263,7 +263,7 @@ function usp_install_config($modified_files, $api_key, $cms, $exclusions ){
  */
 function usp_install_cron(){
 
-	Cron::addTask( 'sfw_update', 'uniforce_sfw_update', 86400, time() + 10 );
+	Cron::addTask( 'sfw_update', 'uniforce_fw_update', 86400, time() + 10 );
 	Cron::addTask( 'security_send_logs', 'uniforce_security_send_logs', 3600 );
     Cron::addTask( 'fw_send_logs', 'uniforce_fw_send_logs', 3600 );
     Cron::addTask( 'clean_black_lists', 'uniforce_clean_black_lists', 86400 );
@@ -460,24 +460,15 @@ function usp_do_save_settings() {
 	$usp->data->key_is_ok = usp_check_account_status();
     
     // BFP actions
-    if( $usp->settings->bfp && $usp->settings->key ){
-        if( $usp->settings->bfp ) {
+    if( $usp->settings->key ){
 
             // Send BFP logs
-            $result = FireWall::security__logs__send( $usp->settings->key );
+            $result = \Cleantalk\USP\Uniforce\Firewall\BFP::send_log( $usp->settings->key );
             if( empty( $result['error'] ) && ! Err::check() ) {
                 $usp->data->stat->bfp->logs_sent_time = $result['rows'];
                 $usp->data->stat->bfp->logs_sent_amount = time();
                 $usp->data->stat->bfp->count = 0;
             }
-
-        // Cleaning up Bruteforce protection data
-        } else {
-	        usp_uninstall_logs();
-	        Cron::removeTask( 'fw_send_logs' );
-	        Cron::removeTask( 'fw_send_logs' );
-        }
-
     }
 	
 	if( $new_key_is_set ){
@@ -488,13 +479,17 @@ function usp_do_save_settings() {
 	}
     
     // Update signatures
-    if( $usp->settings->scanner_signature_analysis && $usp->data->db_request_string ){
-	    $scanner_controller = new \Cleantalk\USP\ScannerController(
-		    CT_USP_SITE_ROOT,
-		    array( $usp->data->db_request_string, $usp->data->db_user, $usp->data->db_password)
-	    );
-	    if($scanner_controller->db)
-	        $scanner_controller->action__scanner__get_signatures();
+    if( $usp->settings->scanner_signature_analysis ){
+    	if( $usp->data->db_request_string ){
+		    $scanner_controller = new \Cleantalk\USP\ScannerController(
+			    CT_USP_SITE_ROOT,
+			    array( $usp->data->db_request_string, $usp->data->db_user, $usp->data->db_password )
+		    );
+		    if( $scanner_controller->db )
+			    $scanner_controller->action__scanner__get_signatures();
+	    }else{
+    	    \Cleantalk\USP\ScannerController::action__scanner__get_signatures___no_sql();
+	    }
     }
 	
 	$usp->data->save();
@@ -517,7 +512,8 @@ function usp_do_save_settings() {
 		);
 		
 		// Send FW logs
-		$result = FireWall::logs__send( $usp->settings->key );
+		$result = \Cleantalk\USP\Uniforce\Firewall\FW::send_log( $usp->settings->key );
+		
 		if( empty( $result['error'] ) && ! Err::check() ) {
 			$usp->fw_stats->logs_sent_time = time();
 			$usp->fw_stats->logs_sent_amount = $result['rows'];
