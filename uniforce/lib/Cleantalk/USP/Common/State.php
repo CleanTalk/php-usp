@@ -130,6 +130,7 @@ class State extends \Cleantalk\USP\Common\Storage{
 			'moderate'            => false,
 			'service_id'          => 0,
 			'license_trial'       => false,
+			'account_name'        => 'unknown',
 			'account_name_ob'     => 'unknown',
 			'ip_license'          => false,
 

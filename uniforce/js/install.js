@@ -9,6 +9,7 @@ var key_check_timer = 0,
     email = null,
     user_token = null,
     account_name_ob = null;
+    account_name = null;
 
 jQuery(document).ready(function($) {
 
@@ -119,7 +120,8 @@ function key_validate( value, field ){
 
                     $('.btn-setup').prop('disabled', false);
 
-                    user_token = result.user_token ? result.user_token : null;
+                    user_token      = result.user_token ? result.user_token : null;
+                    account_name    = result.account_name ? result.account_name : null;
                     account_name_ob = result.account_name_ob ? result.account_name_ob : null;
 
                     if(do_install)
@@ -150,6 +152,7 @@ function install(){
             email: email,
             user_token: user_token,
             account_name_ob: account_name_ob,
+            account_name: account_name,
         },
         function(result, data, params, obj) {
             if(result.success){
