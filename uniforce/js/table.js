@@ -87,50 +87,42 @@ function spbc_tbl__row_actions__callback( result, data, obj ){
 
 // TABLE PAGINATION ACTIONS
 function spbc_tbl__pagination__listen(){
-    var data = {action: 'spbc_tbl-pagination',};
-    var params = {callback: spbc_tbl__pagination__callback, notJson: true,};
-    jQuery('.tbl-pagination--button').on('click', function(){
-        jQuery(this).parents('.tbl-root').find('.tbl-pagination--button').attr('disabled', 'disabled');
-    });
+
+    var spbc_tbl__pagination__listen_handler = function( button, action ){
+            var params = {
+                data: {
+                    action: 'spbc_tbl-pagination',
+                    page:   button.parents('.tbl-pagination--wrapper').attr( action + '_page' ),
+                    args:   window[ 'args_' + button.parents('.tbl-root').attr('id') ],
+                },
+                successCallback: spbc_tbl__pagination__callback,
+                dataType: 'html',
+                type:     'POST',
+                obj:      button.parents('.tbl-root'),
+                spinner:  button.siblings('.tbl-preloader--small'),
+            };
+
+            // Get num for GO action from input
+            if( action === 'go')
+                params.data.page = button.siblings('.tbl-pagination--curr_page').val()
+
+            ctAJAX( params );
+        };
     jQuery('.tbl-pagination--go').on('click', function(){
-        var self = jQuery(this);
-        var obj = self.parents('.tbl-root');
-        data.page = self.siblings('.tbl-pagination--curr_page').val();
-        data.args = eval('args_'+obj.attr('id'));
-        params.spinner = self.siblings('.tbl-preloader--small');
-        usp_AJAX(data, params, obj);
+        spbc_tbl__pagination__listen_handler( jQuery(this), 'go' );
+        ctAJAX( params );
     });
     jQuery('.tbl-pagination--prev').on('click', function(){
-        var self = jQuery(this);
-        var obj = self.parents('.tbl-root');
-        data.page=self.parents('.tbl-pagination--wrapper').attr('prev_page');
-        data.args=eval('args_'+obj.attr('id'));
-        params.spinner = self.siblings('.tbl-preloader--small');
-        usp_AJAX(data, params, obj);
+        spbc_tbl__pagination__listen_handler( jQuery(this), 'prev' );
     });
     jQuery('.tbl-pagination--next').on('click', function(){
-        var self = jQuery(this);
-        var obj = self.parents('.tbl-root');
-        data.page=self.parents('.tbl-pagination--wrapper').attr('next_page');
-        data.args=eval('args_'+obj.attr('id'));
-        params.spinner = self.siblings('.tbl-preloader--small');
-        usp_AJAX(data, params, obj);
+        spbc_tbl__pagination__listen_handler( jQuery(this), 'next' );
     });
     jQuery('.tbl-pagination--end').on('click', function(){
-        var self = jQuery(this);
-        var obj = self.parents('.tbl-root');
-        data.page=self.parents('.tbl-pagination--wrapper').attr('last_page');
-        data.args=eval('args_'+obj.attr('id'));
-        params.spinner = self.siblings('.tbl-preloader--small');
-        usp_AJAX(data, params, obj);
+        spbc_tbl__pagination__listen_handler( jQuery(this), 'last' );
     });
     jQuery('.tbl-pagination--start').on('click', function(){
-        var self = jQuery(this);
-        var obj = self.parents('.tbl-root');
-        data.page=1;
-        data.args=eval('args_'+obj.attr('id'));
-        params.spinner = self.siblings('.tbl-preloader--small');
-        usp_AJAX(data, params, obj);
+        spbc_tbl__pagination__listen_handler( jQuery(this), 'start' );
     });
 }
 
@@ -143,8 +135,7 @@ function spbc_scanner__switch_table(obj, table){
 }
 
 // Callback for TABLE PAGINATION ACTIONS
-function spbc_tbl__pagination__callback(result, data, params, obj){
-
+function spbc_tbl__pagination__callback(result, data, obj){
     jQuery(obj)
         .html(result)
         .find('.tbl-pagination--button').removeAttr('disabled');

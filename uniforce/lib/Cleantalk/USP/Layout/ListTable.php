@@ -4,10 +4,11 @@ namespace Cleantalk\USP\Layout;
 
 use Cleantalk\USP\Common\State;
 use Cleantalk\USP\DB;
+use Cleantalk\USP\Variables\Post;
 
 class ListTable
 {
-    static $NUMBER_ELEMENTS_TO_VIEW = 100;
+    static $NUMBER_ELEMENTS_TO_VIEW = 20;
 
 	public $args = array(); // Input arguments
 	
@@ -270,11 +271,12 @@ class ListTable
 	{
 		if(!empty($this->pagination) && $this->items_total > $this->pagination['per_page']){
 			$next_page = $this->pagination['page']+1>ceil($this->items_total / $this->pagination['per_page']) ? $this->pagination['page']: $this->pagination['page']+1;
-			echo "<div class='tbl-pagination--wrapper'
-				prev_page='".($this->pagination['page']-1?$this->pagination['page']-1:1)."'
-				next_page='$next_page'
-				last_page='".ceil($this->items_total / $this->pagination['per_page'])."'
-			>";
+			echo '<div class="tbl-pagination--wrapper"
+				start_page="1"
+				prev_page="' . ($this->pagination['page']-1?$this->pagination['page']-1:1) . '"
+				next_page="' . $next_page . '"
+				last_page="' . ceil($this->items_total / $this->pagination['per_page']) . '"
+			>';
 				echo "<span class='tbl-pagination--total'>{$this->items_total} Entries</span>";
 				echo '<button type="button" class="tbl-button tbl-pagination--button tbl-pagination--start"><i class="icon-to-start"></i></button>';
 				echo '<button type="button" class="tbl-button tbl-pagination--button tbl-pagination--prev"><i class="icon-fast-bw"></i></button>';
@@ -476,7 +478,7 @@ class ListTable
 	    $usp = State::getInstance();
 	    
 		$page = intval($_POST['page']);
-		$args = self::stripslashes__array($_POST['args']);
+		$args = self::stripslashes__array( Post::get( 'args' ) );
 		$args['pagination']['page'] = $page;
 		$table = new ListTable(
             DB::getInstance(
