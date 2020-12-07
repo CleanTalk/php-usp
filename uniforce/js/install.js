@@ -1,15 +1,16 @@
-var key_check_timer = 0,
-    value    = false,
-    is_empty = false,
-    is_email = false,
-    is_key   = false,
-    key_valid = false,
-    do_install = false;
+var key_check_timer   = 0,
+    value             = false,
+    is_empty          = false,
+    is_email          = false,
+    is_key            = false,
+    is_password       = false,
+    key_valid         = false,
+    do_install        = false,
     advan_config_show = false,
-    email = null,
-    user_token = null,
-    account_name_ob = null;
-    account_name = null;
+    email             = null,
+    user_token        = null,
+    account_name_ob   = null,
+    account_name      = null;
 
 jQuery(document).ready(function($) {
 
@@ -19,31 +20,43 @@ jQuery(document).ready(function($) {
     // Checking and Highlighting access key onchange
     $('input[name="access_key_field"]').on('input', function(){
 
-        clearInterval(key_check_timer);
+        clearTimeout(key_check_timer);
 
         var field = $(this);
+        var value = field.val().trim();
 
-        value = field.val().trim(),
-            is_empty = value == '' ? true : false,
-            is_email = value.search(/^\S+@\S+\.\S+$/) == 0 ? true : false,
-            is_key   = value.search(/^[0-9a-zA-Z]*$/) == 0 ? true : false;
-        if(is_empty){
-            $('.btn-setup').prop('disabled', true);
-            return;
-        }
-        if(!is_key && !is_email){
-            $('.btn-setup').prop('disabled', true);
-            return;
-        }
-        if(is_email){
-            $('.btn-setup').prop('disabled', false);
-            return;
-        }
+        is_empty = value == '' ? true : false,
+        is_email = value.search(/^\S+@\S+\.\S+$/) == 0 ? true : false,
+        is_key   = value.search(/^[0-9a-zA-Z]*$/) == 0 ? true : false;
+
+        validate_installation();
+
         if(is_key && value.length > 7){
             key_check_timer = setTimeout(function(){
                 // field.addClass('loading');
                 key_validate( value, field );
             }, do_install ? 5 : 2000);
+        }
+    });
+
+    // Checking and Highlighting access key onchange
+    $('input[name="admin_password"]').on('input', function(){
+
+        var field = $(this),
+            value = $(this).val();
+
+        is_password =  value.length >= 4  && value.search(/^[^\s]*$/) == 0;
+
+        validate_installation();
+
+        if( is_password ){
+            $('#password_requirements').hide();
+            field.css('border', '1px solid #04B66B');
+            field.css('box-shadow', '0 0 8px #04B66B');
+        }else{
+            $('#password_requirements').show();
+            field.css('box-shadow', '0 0 8px #F44336');
+            field.css('border', '1px solid #F44336');
         }
     });
 
@@ -72,6 +85,19 @@ jQuery(document).ready(function($) {
     });
 
 });
+
+function validate_installation(){
+
+    if(is_empty || !is_password)
+        $('.btn-setup').prop('disabled', true);
+
+    if(!is_key && !is_email || !is_password)
+        $('.btn-setup').prop('disabled', true);
+
+    if(is_email && is_password)
+        $('.btn-setup').prop('disabled', false);
+
+}
 
 function get_key(){
 

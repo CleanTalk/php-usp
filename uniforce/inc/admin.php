@@ -240,16 +240,13 @@ function usp_install_config($modified_files, $api_key, $cms, $exclusions ){
 
 	if( Post::get( 'user_token' ) )
 		$usp->data->user_token = trim( Post::get( 'user_token' ) );
-
-	if( Post::get( 'account_name' ) )
-		$usp->data->account_name =  trim( Post::get( 'account_name' ) );
 	
 	// Sending password
-	if( Post::get( 'account_name' ) && Post::get( 'admin_password' ) ){
+	if( trim( Post::get( 'email' ) ) && Post::get( 'admin_password' ) ){
 		mail(
-			Post::get( 'account_name' ),
+			trim( Post::get( 'email' ) ),
 			'UniForce dashboard password',
-			'Login is ' . ( Post::get( 'account_name' ) ? Post::get( 'account_name' ) : $api_key ) . '<br>'
+			'Login is ' . ( trim( Post::get( 'email' ) ) ) . '<br>'
 			.'Admin password is ' . Post::get( 'admin_password' ) . '<br>'
 		);
 	}
@@ -592,7 +589,6 @@ function usp_check_account_status( $key = null ){
 		$usp->data->moderate        = isset( $result['moderate'] ) ? $result['moderate'] : 0;
 		$usp->data->service_id      = isset( $result['service_id'] ) ? $result['service_id'] : 0;
 		$usp->data->license_trial   = isset( $result['license_trial'] ) ? $result['license_trial'] : 0;
-		$usp->data->account_name    = isset( $result['account_name'] ) ? $result['account_name'] : '';
 		$usp->data->account_name_ob = isset( $result['account_name_ob'] ) ? $result['account_name_ob'] : '';
 		$usp->data->ip_license      = isset( $result['ip_license'] ) ? $result['ip_license'] : 0;
 		$usp->data->valid           = isset( $result['valid'] ) ? $result['valid'] : 0;

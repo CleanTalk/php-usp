@@ -36,7 +36,9 @@ $usp = \Cleantalk\USP\Common\State::getInstance();
                         <br />
                         <p>Enter your <a class="underlined" href="https://cleantalk.org/my/">CleanTalk dashboard</a> to view statistics.</p>
                         <br />
-                        <p>You can manage settings <?php echo '<a href="' . CT_USP_URI . '">here</a>'; ?>.</p>
+                        <p>UniForce dashboard is <?php echo '<a href="' . CT_USP_URI . '">here</a>'; ?>.</p>
+                        <br />
+                        <p>Password was sent to your email.</p>
                     </div>
                     <!-- End Success box -->
 
@@ -58,9 +60,11 @@ $usp = \Cleantalk\USP\Common\State::getInstance();
                     <!-- Start Installation form -->
                     <form action = 'javascript:void(null);' method="post" id='setup-form'>
                         <div style="text-align: center">
-                            <input type="text" placeholder="Access key or e-mail" class="input-field" name="access_key_field" required style="display: inline;"/>
+                            <input type="text" placeholder="E-mail" class="input-field" name="access_key_field" required style="display: inline;"/>
                             <img class="preloader" src="img/preloader.gif" style="display: none;" alt="">
                         </div>
+                        <input type="password" name="admin_password" class="input-field" placeholder="Password" />
+                        <p class="text-center --hide" id='password_requirements'><small>Password requirements are 4 symbols minimum, and no spaces.</small></p>
                         <p>
                             <button type="button" class="btn" id="show_more_btn" style="background-color:transparent">
                                 Advanced configuration (optional)
@@ -68,10 +72,6 @@ $usp = \Cleantalk\USP\Common\State::getInstance();
                             </button>
                         </p>
                         <div class ="advanced_conf">
-                            <p class="text-center"><small>Set admin password</small>
-                                <img data-toggle="tooltip" data-placement="top" src="img/help_icon.png" title="If leave is blank you will have to use your API-key to authenticate to the settings page." style="width:10px; height:10px;" alt="">
-                            </p>
-                            <input type="password" name="admin_password" class="input-field" placeholder="Password" />
                             <p><small>Additional scripts</small>&nbsp
                                 <img data-toggle="tooltip" data-placement="top" src="img/help_icon.png" title="Universal Security plugin will write protection code to index.php file by default. If your contact or registration contact forms are located in different files/scripts, list them here separated by commas. Example: register.php, contact.php" style="width:10px; height:10px;" alt="">
                             </p>
