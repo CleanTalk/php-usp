@@ -65,13 +65,13 @@ class Helper {
 									$out = array();
 									foreach($lines as $line){
 										$out[] = array(
-											'id' => !isset($line[0]) ? '' : $line[0],
-											'name' => !isset($line[1]) ? '' : $line[1],
-											'body' => !isset($line[2]) ? '' : stripcslashes($line[2]),
-											'type' => !isset($line[3]) ? '' : $line[3],
-											'attack_type' => !isset($line[4]) ? '' : $line[4],
-											'submitted' => !isset($line[5]) ? '' : $line[5],
-											'cci' => !isset($line[6]) ? '' : stripcslashes($line[6]),
+											'id'          => ! isset( $line[0] ) ? '' : $line[0],
+											'name'        => ! isset( $line[1] ) ? '' : $line[1],
+											'body'        => ! isset( $line[2] ) ? '' : stripcslashes( $line[2] ),
+											'type'        => ! isset( $line[3] ) ? '' : $line[3],
+											'attack_type' => ! isset( $line[4] ) ? '' : $line[4],
+											'submitted'   => ! isset( $line[5] ) ? '' : $line[5],
+											'cci'         => ! isset( $line[6] ) ? '' : stripcslashes( $line[6] ),
 										);
 									}
 									return $out;

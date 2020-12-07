@@ -13,11 +13,15 @@ class Storage extends \ArrayObject {
 	 */
 	public $storage_name;
 	public $directory = CT_USP_DATA;
+	private $type = 'php';
+	private $map;
 
-	public function __construct( $name, $data = array(), $directory = null ) {
-
+	public function __construct( $name, $data = array(), $directory = null, $type = 'php', $map = array() ) {
+		
 		$this->directory = $directory ? $directory : $this->directory;
-		$data = $data === null ? $this->get( $name ) : $data; // Get data from directory if it's unset
+		$this->type = $type;
+		$this->map = $map;
+		$data = ! $data ? $this->get( $name ) : $data; // Get data from directory if it's unset
 		parent::__construct( $data, \ArrayObject::STD_PROP_LIST|\ArrayObject::ARRAY_AS_PROPS );
 		$this->storage_name = $name;
 	}
@@ -70,11 +74,23 @@ class Storage extends \ArrayObject {
 	 */
 	protected function get($option_name)
 	{
-		$filename = $this->directory . $option_name . '.php';
-		if ( file_exists( $filename ) ){
-			require $filename;
+		$filename = $this->directory . $option_name . '.' . $this->type;
+		
+		if( file_exists( $filename ) ){
+			
+			switch( $this->type ){
+				case 'php':
+					require $filename;
+					$out = isset( $$option_name ) ? $$option_name : array();
+					break;
+				case 'csv':
+					$data = file_get_contents( $filename );
+					$out = \Cleantalk\USP\Uniforce\Helper::buffer__csv__to_array( $data, $this->map );
+					break;
+			}
 		}
-		return isset($$option_name) ? $$option_name : array();
+		
+		return $out ? $out : array();
 	}
 
 
@@ -85,13 +101,26 @@ class Storage extends \ArrayObject {
 	 */
 	public function save()
 	{
-		$filename = $this->directory . $this->storage_name . '.php';
-		file_put_contents( $filename , "<?php\n");
-		\Cleantalk\USP\Common\File::inject__variable(
-			$this->directory . $this->storage_name . '.php',
-			$this->storage_name,
-			$this->convertToArray()
-		);
+		$filename = $this->directory . $this->storage_name . '.' . $this->type;
+		
+		switch( $this->type ){
+			
+			case 'php':
+				file_put_contents( $filename , "<?php\n");
+				\Cleantalk\USP\Common\File::inject__variable(
+					$filename,
+					$this->storage_name,
+					$this->convertToArray()
+				);
+				break;
+				
+			case 'csv':
+				$fp = fopen( $filename, 'w' );
+				foreach( $this->convertToArray() as $field )
+					fputcsv( $fp, $field, ',', '\'' );
+				fclose( $fp );
+				break;
+		}
 	}
 
 	/**
@@ -113,9 +142,12 @@ class Storage extends \ArrayObject {
 		}
 
 		// Delete file with option
-		$filename = $this->directory . $option_name . '.php';
-		if ( file_exists( $filename ) ){
-			unlink( $filename );
+		$filenames[] = $this->directory . $option_name . '.php';
+		$filenames[] = $this->directory . $option_name . '.csv';
+		$filenames[] = $this->directory . $option_name . '.gz';
+		foreach( $filenames as $filename){
+			if ( file_exists( $filename ) )
+				unlink( $filename );
 		}
 	}
 

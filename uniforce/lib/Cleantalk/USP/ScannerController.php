@@ -4,6 +4,7 @@ namespace Cleantalk\USP;
 
 use Cleantalk\USP\Common\Err;
 use Cleantalk\USP\Common\State;
+use Cleantalk\USP\Common\Storage;
 use Cleantalk\USP\Scanner\Scanner;
 use Cleantalk\USP\Uniforce\API;
 use Cleantalk\USP\Uniforce\Helper;
@@ -282,27 +283,12 @@ class ScannerController {
 			
 			if(empty($result['error'])){
 				
-				$signatures = new \Cleantalk\USP\Common\Storage( 'signatures', $result );
+				$signatures = new \Cleantalk\USP\Common\Storage( 'signatures', $result, '', 'csv' );
 				$signatures->save();
 				
 				$usp->data->stat->scanner->signature_last_update = time();
 				$usp->data->stat->scanner->signature_entries = count( $result );
 				$usp->data->save();
-				
-				$path = CT_USP_DATA . 'signatures.php';
-				
-				$this->db->query('INSERT INTO '. self::table__scanner___files
-                    .' (path, full_hash, fast_hash, mtime, size, perms, checked_signature, checked_heuristic, status, severity)'
-					.' VALUES ("' . addslashes('\uniforce\data\signatures.php') .'", "' . md5_file( $path ) . '", "'. md5('\uniforce\data\signatures.php') .'", '. filemtime( $path ) .', '. filesize( $path ) .', '. fileperms( $path ) .', 1, 1, "APPROVED", NULL)'
-					.' ON DUPLICATE KEY UPDATE'
-						.' full_hash = VALUES(`full_hash`),'
-						.' mtime = '. filemtime( $path ) .','
-						.' size = '. filesize( $path ) .','
-						.' perms = '. fileperms( $path ) .','
-						.' status = "APPROVED",'
-						.' severity = NULL,'
-						.' weak_spots = NULL'
-				);
 				
 			}elseif($result['error'] === 'UP_TO_DATE'){
 				$out['success'] = 'UP_TO_DATE';
@@ -535,7 +521,17 @@ class ScannerController {
 				// Initialing results
 				foreach ( $files_to_check as $file ) {
 					
-					$result = Scanner::file__scan__for_signatures( $this->root, $file, State::getInstance()->signatures->array_values() );
+					$signatures = new Storage('signatures', null, '', 'csv', array(
+						'id',
+						'name',
+						'body',
+						'type',
+						'attack_type',
+						'submitted',
+						'cci'
+					) );
+					$signatures = $signatures->convertToArray();
+					$result = Scanner::file__scan__for_signatures( $this->root, $file, $signatures );
 					
 					if ( empty( $result['error'] ) ) {
 						
@@ -867,7 +863,7 @@ class ScannerController {
 			
 			if(empty($result['error'])){
 				
-				$signatures = new \Cleantalk\USP\Common\Storage( 'signatures', $result );
+				$signatures = new \Cleantalk\USP\Common\Storage( 'signatures', $result, '', 'csv' );
 				$signatures->save();
 				
 				$usp->data->stat->scanner->signature_last_update = time();

@@ -934,7 +934,7 @@ class Helper{
 	}
 
 	/**
-	 * Pops line from the csv buffer and fromat it by map to array
+	 * Pops line from the csv buffer and format it by map to array
 	 *
 	 * @param $csv
 	 * @param array $map
@@ -943,10 +943,26 @@ class Helper{
 	 */
 	static public function buffer__csv__pop_line_to_array( &$csv, $map = array() ){
 		$line = trim( static::buffer__csv__pop_line( $csv ) );
-		$line = explode( ',', $line );
-		if( $map )
+		$line = str_getcsv( $line, ',', '\'' );
+		if( $map );
 			$line = array_combine( $map, $line );
 		return $line;
+	}
+	
+	/**
+	 * Create an array from csv string according to map
+	 *
+	 * @param string $csv
+	 * @param array $map
+	 *
+	 * @return array
+	 */
+	static public function buffer__csv__to_array( &$csv, $map = array() ){
+		$out = array();
+		while( $csv !== '' ){
+			$out[] = static::buffer__csv__pop_line_to_array( $csv, $map );
+		}
+		return $out;
 	}
 	
 	static function buffer__trim_and_clear_from_empty_lines( $buffer ){
