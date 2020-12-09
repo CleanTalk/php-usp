@@ -944,8 +944,10 @@ class Helper{
 	static public function buffer__csv__pop_line_to_array( &$csv, $map = array() ){
 		$line = trim( static::buffer__csv__pop_line( $csv ) );
 		$line = str_getcsv( $line, ',', '\'' );
-		if( $map );
+		
+		if( $map )
 			$line = array_combine( $map, $line );
+		
 		return $line;
 	}
 	
