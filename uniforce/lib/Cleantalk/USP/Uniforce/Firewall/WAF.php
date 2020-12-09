@@ -3,6 +3,7 @@
 namespace Cleantalk\USP\Uniforce\Firewall;
 
 use Cleantalk\USP\Common\State;
+use Cleantalk\USP\Common\Storage;
 use Cleantalk\USP\Uniforce\Helper;
 use Cleantalk\USP\Variables\Server;
 use Cleantalk\USP\Scanner\ScannerH;
@@ -117,8 +118,18 @@ class WAF extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 	}
 	
 	private function signatures__get(){
-		$signatures = array();
-		foreach( State::getInstance()->signatures->array_values() as $signature ){
+		
+		$signatures = new Storage('signatures', null, '', 'csv', array(
+			'id',
+			'name',
+			'body',
+			'type',
+			'attack_type',
+			'submitted',
+			'cci'
+		) );
+		
+		foreach( $signatures->convertToArray() as $signature ){
 			if( $signature['type'] === 'WAF_RULE' )
 				$signatures[] = $signature;
 		}

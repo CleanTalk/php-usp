@@ -531,6 +531,7 @@ class ScannerController {
 						'cci'
 					) );
 					$signatures = $signatures->convertToArray();
+					
 					$result = Scanner::file__scan__for_signatures( $this->root, $file, $signatures );
 					
 					if ( empty( $result['error'] ) ) {
@@ -923,9 +924,20 @@ class ScannerController {
 				
 				// Initialing results
 				
+				$signatures = new Storage('signatures', null, '', 'csv', array(
+					'id',
+					'name',
+					'body',
+					'type',
+					'attack_type',
+					'submitted',
+					'cci'
+				) );
+				$signatures = $signatures->convertToArray();
+				
 				foreach ( $files_to_check as $file ) {
 					
-					$result = Scanner::file__scan__for_signatures( CT_USP_SITE_ROOT, $file, $usp->signatures->array_values() );
+					$result = Scanner::file__scan__for_signatures( CT_USP_SITE_ROOT, $file, $signatures );
 					
 					if ( empty( $result['error'] ) ) {
 						
