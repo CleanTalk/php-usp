@@ -1,9 +1,5 @@
 <?php
 
-/**
-Version: 3.1.0
-*/
-
 use Cleantalk\USP\Common\State;
 use Cleantalk\USP\Variables\Cookie;
 use Cleantalk\USP\Variables\Post;
