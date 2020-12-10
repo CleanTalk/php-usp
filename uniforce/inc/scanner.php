@@ -140,13 +140,13 @@ function spbc_scanner_file_delete( $file_id ){
 						$response = Helper::http__request(
 							CT_USP_URI,
 							array(),
-							'dont_split_to_array',
+							'dont_split_to_array get',
 							array( CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_2_0, )
 						);
 						
 						if( empty( $response['error'] ) ){
 							
-							if( Helper::http__request(CT_USP_URI, array(), 'get get_code') && ! Helper::search_page_errors($response) ){
+							if( Helper::http__request__get_response_code( CT_USP_URI ) && ! Helper::search_page_errors( $response ) ){
 								// Deleting row from DB
 								$db->query('DELETE FROM scanner_files WHERE fast_hash = "'.$file_id.'"');
 							}else{
@@ -155,8 +155,11 @@ function spbc_scanner_file_delete( $file_id ){
 								$output['error'] .= $result === false ? ' REVERT_FAILED' : ' REVERT_OK';
 							}
 							$output = array('success' => true);
-						}else
+						}else{
 							$output = $response;
+							$result = file_put_contents( $file_path, $remeber );
+							$output['error'] .= $result === false ? ' REVERT_FAILED' : ' REVERT_OK';
+						}
 					}else
 						$output = array('error' =>'FILE_COULDNT_DELETE');
 				}else
