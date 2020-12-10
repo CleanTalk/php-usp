@@ -273,11 +273,11 @@ function usp_install_config($modified_files, $api_key, $cms, $exclusions ){
  */
 function usp_install_cron(){
 
-	Cron::addTask( 'sfw_update', 'uniforce_fw_update', 86400, time() + 10 );
+	Cron::addTask( 'sfw_update', 'uniforce_fw_update', 86400, time() + 20 );
 	Cron::addTask( 'security_send_logs', 'uniforce_security_send_logs', 3600 );
     Cron::addTask( 'fw_send_logs', 'uniforce_fw_send_logs', 3600 );
     Cron::addTask( 'clean_black_lists', 'uniforce_clean_black_lists', 86400 );
-    Cron::addTask( 'update_signatures', 'usp_scanner__get_signatures', 60 );
+    Cron::addTask( 'update_signatures', 'usp_scanner__get_signatures', 86400, time() + 10 );
 
 }
 
@@ -493,16 +493,8 @@ function usp_do_save_settings() {
     
     // Update signatures
     if( $usp->settings->scanner_signature_analysis ){
-    	if( $usp->data->db_request_string ){
-		    $scanner_controller = new \Cleantalk\USP\ScannerController(
-			    CT_USP_SITE_ROOT,
-			    array( $usp->data->db_request_string, $usp->data->db_user, $usp->data->db_password )
-		    );
-		    if( $scanner_controller->db )
-			    $scanner_controller->action__scanner__get_signatures();
-	    }else{
-    	    \Cleantalk\USP\ScannerController::action__scanner__get_signatures___no_sql();
-	    }
+	    $scanner_controller = new \Cleantalk\USP\ScannerController( CT_USP_SITE_ROOT );
+	    $scanner_controller->action__scanner__get_signatures();
     }
 	
 	$usp->data->save();

@@ -268,9 +268,6 @@ class ScannerController {
 	
 	public function action__scanner__get_signatures(){
 		
-		if( ! $this->db )                           return array('error' => 'DB_NOT_PROVIDED');
-		if( $this->db instanceof Cleantalk\USP\DB ) return array('error' => 'DB_BAD_CONNECTION');
-		
 		$usp = State::getInstance();
 		
 		$out = array(
@@ -850,39 +847,8 @@ class ScannerController {
 		);
 	}
 	
-	public static function action__scanner__get_signatures___no_sql() {
-		
-		$usp = State::getInstance();
-		
-		$out = array(
-			'success' => true,
-		);
-		
-		if ( $usp->settings->scanner_signature_analysis ) {
-			
-			$result = ScannerHelper::get_hashes__signature($usp->data->stat->scanner->signature_last_update);
-			
-			if(empty($result['error'])){
-				
-				$signatures = new \Cleantalk\USP\Common\Storage( 'signatures', $result, '', 'csv' );
-				$signatures->save();
-				
-				$usp->data->stat->scanner->signature_last_update = time();
-				$usp->data->stat->scanner->signature_entries = count( $result );
-				$usp->data->save();
-				
-			}elseif($result['error'] === 'UP_TO_DATE'){
-				$out['success'] = 'UP_TO_DATE';
-			}else
-				$out['updated'] = count($result);
-		}else
-			Err::add('Signatures scan is disabled');
-		
-		$out['end'] = 1;
-		
-		return Err::check()
-			? Err::check_and_output()
-			: $out;
+	public function action__scanner__get_signatures___no_sql() {
+		return $this->action__scanner__get_signatures();
 	}
 	
 	public static function action__scanner__signature_analysis___no_sql( $offset = 0, $amount = 10, $path = CT_USP_SITE_ROOT ){
