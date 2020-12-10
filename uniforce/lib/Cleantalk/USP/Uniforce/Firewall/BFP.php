@@ -234,7 +234,7 @@ class BFP extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 					if( strval( $log[8] ) > 0 ){
 						for( $i = 0; strval( $log[8] ) > $i; $i ++ ){
 							$data[] = array(
-								'datetime'      => strval( date( 'Y-m-d H:i:s', (int) $log[2] ) ),
+								'datetime'      => strval( $log[2] ),
 								'user_login'    => null,
 								'event'         => strval( $log[0] ),
 								'auth_ip'       => strpos( ':', $log[1] ) === false ? (int) sprintf( '%u', ip2long( $log[1] ) ) : (string) $log[1],
@@ -245,7 +245,7 @@ class BFP extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 						}
 					}else{
 						$data[] = array(
-							'datetime'      => strval( date( 'Y-m-d H:i:s', (int) $log[2] ) ),
+							'datetime'      => strval( $log[2] ),
 							'user_login'    => null,
 							'event'         => strval( $log[0] ),
 							'auth_ip'       => strpos( ':', $log[1] ) === false ? (int) sprintf( '%u', ip2long( $log[1] ) ) : (string) $log[1],
