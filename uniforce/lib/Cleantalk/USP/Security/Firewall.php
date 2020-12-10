@@ -138,17 +138,21 @@ class Firewall
 		
 		// Write log. Each module use their own log system
 		$curr_module = $this->fw_modules[ $result['module'] ];
-		$curr_module::update_log( $result );
 		
-		// Do finish action - die or set cookies
-		// Blocked
-		if( strpos( $result['status'], 'DENY' ) !== false ){
-			$this->fw_modules[ $result['module'] ]->actions_for_denied( $result );
-			$this->fw_modules[ $result['module'] ]->_die( $result );
+		if( $curr_module ){
+		
+			$curr_module::update_log( $result );
 			
-		// Allowed
-		}else{
-			$this->fw_modules[ $result['module'] ]->actions_for_passed( $result );
+			// Do finish action - die or set cookies
+			// Blocked
+			if( strpos( $result['status'], 'DENY' ) !== false ){
+				$this->fw_modules[ $result['module'] ]->actions_for_denied( $result );
+				$this->fw_modules[ $result['module'] ]->_die( $result );
+				
+			// Allowed
+			}else
+				$this->fw_modules[ $result['module'] ]->actions_for_passed( $result );
+		
 		}
 		
 	}
