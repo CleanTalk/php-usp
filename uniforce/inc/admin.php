@@ -45,8 +45,6 @@ function usp_get_key() {
         'uniforce'
     );
 
-    $result['email'] = Post::get( 'email' );
-
     if( ! empty( $result['exists'] ) ){
         $result['error'] = 'This website already registered!';
     }

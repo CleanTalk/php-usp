@@ -1,6 +1,5 @@
 var key_check_timer   = 0,
     value             = false,
-    is_empty          = false,
     is_email          = false,
     is_key            = false,
     is_password       = false,
@@ -25,11 +24,7 @@ jQuery(document).ready(function($) {
         var field = $(this);
         var value = field.val().trim();
 
-        is_empty = value == '' ? true : false,
-        is_email = value.search(/^\S+@\S+\.\S+$/) == 0 ? true : false,
-        is_key   = value.search(/^[0-9a-zA-Z]*$/) == 0 ? true : false;
-
-        validate_installation();
+        is_key   = value.search(/^[0-9a-zA-Z]*$/) === 0;
 
         if(is_key && value.length > 7){
             key_check_timer = setTimeout(function(){
@@ -40,12 +35,20 @@ jQuery(document).ready(function($) {
     });
 
     // Checking and Highlighting access key onchange
+    $('input[name="email_field"]').on('input', function(){
+
+        is_email = $(this).val().trim().search(/^\S+@\S+\.\S+$/) === 0;
+
+        validate_installation();
+    });
+
+    // Checking and Highlighting access key onchange
     $('input[name="admin_password"]').on('input', function(){
 
         var field = $(this),
             value = $(this).val();
 
-        is_password =  value.length >= 4  && value.search(/^[^\s]*$/) == 0;
+        is_password =  value.length >= 4  && value.search(/^[^\s]*$/) === 0;
 
         validate_installation();
 
@@ -78,9 +81,9 @@ jQuery(document).ready(function($) {
 
     // Install button
     $('.btn-setup').on('click', function(event){
-        if(is_email)
+        if( ! key_valid )
             get_key();
-        if(!is_email && is_key && key_valid)
+        else
             install();
     });
 
@@ -88,20 +91,16 @@ jQuery(document).ready(function($) {
 
 function validate_installation(){
 
-    if(is_empty || !is_password)
-        $('.btn-setup').prop('disabled', true);
-
-    if(!is_key && !is_email || !is_password)
-        $('.btn-setup').prop('disabled', true);
-
-    if(is_email && is_password)
-        $('.btn-setup').prop('disabled', false);
+    $('.btn-setup').prop(
+        'disabled',
+        ! ( is_email && is_password )
+    );
 
 }
 
 function get_key(){
 
-    let field = $('input[name="access_key_field"]');
+    let field = $('input[name="email_field"]');
 
     ctAJAX({
         data: {
@@ -110,16 +109,15 @@ function get_key(){
             security: uniforce_security,
         },
         successCallback: function(result) {
-                if(result.auth_key){
-                    do_install = true;
-                    field.val(result.auth_key);
-                    field.trigger('input');
-                    email = result.email ? result.email : null;
-                }else{
-                    $('#setup-form').hide();
-                    $('.setup-links').hide();
-                }
-            },
+            if(result.auth_key){
+                do_install = true;
+                $('input[name="access_key_field"]').val(result.auth_key)
+                    .trigger('input');
+            }else{
+                $('#setup-form').hide();
+                $('.setup-links').hide();
+            }
+        },
         spinner: function(){field.toggleClass('loading')}
     });
 }
@@ -141,10 +139,11 @@ function key_validate( value, field ){
 
                     key_valid = true;
 
+                    validate_installation();
+
+
                     field.css('border', '1px solid #04B66B');
                     field.css('box-shadow', '0 0 8px #04B66B');
-
-                    $('.btn-setup').prop('disabled', false);
 
                     user_token      = result.user_token ? result.user_token : null;
                     account_name    = result.account_name ? result.account_name : null;
@@ -175,10 +174,9 @@ function install(){
             addition_scripts: $('input[name="addition_scripts"]').val().trim(),
             admin_password : $('input[name="admin_password"]').val().trim(),
             no_sql : $('input[name="no_sql"]').length,
-            email: email,
+            email: $('input[name="email_field"]').val().trim(),
             user_token: user_token,
             account_name_ob: account_name_ob,
-            account_name: account_name,
         },
         function(result, data, params, obj) {
             if(result.success){

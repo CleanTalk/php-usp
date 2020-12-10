@@ -25,6 +25,7 @@ $usp = \Cleantalk\USP\Common\State::getInstance();
                 <div class="logo">
                     <h3><strong> - UniForce - </strong></h3>
                     <h3> - Universal Security Plugin - </h3>
+                    <h4> - Installation - </h4>
                 </div>
                 <hr />
 
@@ -59,11 +60,12 @@ $usp = \Cleantalk\USP\Common\State::getInstance();
 
                     <!-- Start Installation form -->
                     <form action = 'javascript:void(null);' method="post" id='setup-form'>
+                        <p class="text-center">Please, enter your e-mail and password to protect UniForce dashboard</></p>
                         <div style="text-align: center">
-                            <input type="text" placeholder="E-mail" class="input-field" name="access_key_field" required style="display: inline;"/>
+                            <input type="text" placeholder="E-mail" class="input-field" name="email_field" required style="display: inline;"/>
                             <img class="preloader" src="img/preloader.gif" style="display: none;" alt="">
                         </div>
-                        <input type="password" name="admin_password" class="input-field" placeholder="Password" />
+                        <input type="password" name="admin_password" class="input-field" placeholder="New password" />
                         <p class="text-center --hide" id='password_requirements'><small>Password requirements are 4 symbols minimum, and no spaces.</small></p>
                         <p>
                             <button type="button" class="btn" id="show_more_btn" style="background-color:transparent">
@@ -72,6 +74,9 @@ $usp = \Cleantalk\USP\Common\State::getInstance();
                             </button>
                         </p>
                         <div class ="advanced_conf">
+                            <p class="text-center"><small>If you already have an access key, you could use it here</small></p>
+                            <input type="text" placeholder="Access key" class="input-field" name="access_key_field" required style="display: inline;"/>
+                            <img class="preloader" src="img/preloader.gif" style="display: none;" alt="">
                             <p><small>Additional scripts</small>&nbsp
                                 <img data-toggle="tooltip" data-placement="top" src="img/help_icon.png" title="Universal Security plugin will write protection code to index.php file by default. If your contact or registration contact forms are located in different files/scripts, list them here separated by commas. Example: register.php, contact.php" style="width:10px; height:10px;" alt="">
                             </p>
