@@ -253,6 +253,7 @@ class FW extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 				State::getInstance()->fw_stats->updating       = true;
 				State::getInstance()->fw_stats->update_percent = 0;
 				State::getInstance()->fw_stats->entries        = 0;
+				State::getInstance()->fw_stats->update_start   = time();
 				State::getInstance()->fw_stats->save();
 				
 				Helper::http__request(
@@ -318,6 +319,7 @@ class FW extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 				State::getInstance()->fw_stats->updating       = false;
 				State::getInstance()->fw_stats->update_percent = 0;
 				State::getInstance()->fw_stats->last_update    = time();
+				State::getInstance()->fw_stats->updated_in     = time() - State::getInstance()->fw_stats->update_start;
 				State::getInstance()->fw_stats->save();
 
 			}else
@@ -416,7 +418,7 @@ class FW extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 				
 				for(
 					$i = 0, $nets_for_save = array();
-					$i < 1000 && $data !== '';
+					$i < 2500 && $data !== '';
 					$i++
 				){
 					
