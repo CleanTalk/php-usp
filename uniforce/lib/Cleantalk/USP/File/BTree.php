@@ -3,75 +3,136 @@
 namespace Cleantalk\USP\File;
 
 use Cleantalk\USP\Common\Err;
-use Cleantalk\USP\Common\Storage;
 
 class BTree {
-
-	const BT_PATH = CT_USP_ROOT . 'data' . DIRECTORY_SEPARATOR;
-
-	// Node structure
-	public $max_elems_in_node = 100;
-	public $key_size          = 10;
-	public $val_size          = 6;
-	public $link_size         = 8;
-	public $eod               = "\xffend_of_data";
-	public $end_of_node       = "\n";
-	public $elem_size         = 1;
-	public $node_size         = 2;
-
-	public $node_params = array(
-		'max_elems_in_node' => 100,
-		'key_size'          => 10,
-		'val_size'          => 6,
+	
+	/**
+	 * Length of BTree meta data in the start of the file
+	 * @var int
+	 */
+	private $meta_length = 181;
+	private $meta_param_length = 20;
+	
+	private $default_tree_meta = array(
+		'max_elems_in_node' => 51,
+		'key_size'          => 11,
+		'val_size'          => 11,
 		'link_size'         => 8,
 		'eod'               => "\xffend_of_data",
 		'end_of_node'       => "\n",
+		'root_link'         => 181,
+		'elem_size'         => 0,
+		'leaf_size'         => 0,
 	);
+	
+	private $leaf_params = array();
+	
+	// Leaf structure
+	private $max_elems_in_node;
+	private $key_size;
+	private $val_size;
+	private $link_size;
+	private $eod;
+	private $end_of_node;
+	
+	// Misc
+	private $elem_size;
+	private $leaf_size;
+	
+	/**
+	 * Link to start of the BTree
+	 * @var int
+	 */
+	private $root_link;
+	
 	// File
 	private $file_path;
 	private $stream;
 	private $seek_position = 0;
-	private $insert_position = 0;
+	private $insert_position;
 
 	// Current state
-	private $root_link = 0;
 
 	/**
-	 * @var BTree_node
+	 * @var BTreeLeaf
 	 */
-	public $parent  = null;
+	public $parentLeaf  = null;
 	
 	/**
 	 *
-	 * @var BTree_node
+	 * @var BTreeLeaf
 	 */
-	public $current = null;
+	public $currentLeaf = null;
+	
+	public function __construct( $file_path ) {
 
-	public function __construct( $file_name ) {
-
-		$this->file_path = self::BT_PATH . $file_name;
-
+		$this->file_path = $file_path;
 		$this->stream = fopen( $this->file_path, 'c+b' );
-
-		$this->node_params['elem_size'] = $this->key_size + $this->val_size + $this->link_size;
-		$this->node_params['node_size'] =
-			$this->link_size * 2 +
-            $this->max_elems_in_node * $this->node_params['elem_size'] +
-            strlen( $this->eod ) +
-            strlen( $this->end_of_node );
-		$this->node_params['stream'] = $this->stream;
-		$this->elem_size = $this->node_params['elem_size'];
-		$this->node_size = $this->node_params['node_size'];
-
-
+		
 		if ( $this->stream ){
-
-			$fsize = filesize( $this->file_path );
-			$this->insert_position = $fsize ? $fsize : $this->link_size;
-			$this->root_link = (int)fread( $this->stream, $this->link_size);
-
+		
+			// Set default meta if BTree file is empty
+			if( ! filesize( $this->file_path ) )
+				$this->setBTreeMeta();
+			
+			$this->getBTreeMeta();
+			
+			$this->insert_position = $this->getInsertPosition();
+			
 		}else
 			Err::add( 'Failed to open file' );
+		
+	}
+	
+	private function getBTreeMeta(){
+		
+		fseek( $this->stream, 0 );
+		$raw_meta = fread( $this->stream, $this->meta_length );
+		foreach( $this->default_tree_meta as $meta_name => $val ){
+			
+			$meta_value__sanitized = str_replace( "\x00", '', substr( $raw_meta, 0, $this->meta_param_length ) );
+			$meta_value__sanitized = intval( $meta_value__sanitized ) || $meta_value__sanitized === '0'
+				? intval( $meta_value__sanitized )
+				: $meta_value__sanitized;
+			$this->$meta_name = $meta_value__sanitized;
+			$this->leaf_params[ $meta_name ] = $meta_value__sanitized;
+			
+			// Erasing what we have read already
+			$raw_meta = substr( $raw_meta, $this->meta_param_length );
+		}
+		
+		$this->leaf_params['stream'] = $this->stream;
+		
+	}
+	
+	private function setBTreeMeta(){
+		
+		fseek( $this->stream, 0 );
+		
+		$raw_meta = '';
+		foreach( $this->default_tree_meta as $meta_name => &$meta_value ){
+			
+			if( $meta_name === 'elem_size')
+				$meta_value = $this->default_tree_meta['key_size'] +
+				              $this->default_tree_meta['val_size'] +
+				              $this->default_tree_meta['link_size'];
+			
+			if( $meta_name === 'leaf_size')
+				$meta_value = $this->default_tree_meta['link_size'] * 2 +
+				              $this->default_tree_meta['max_elems_in_node'] * $this->default_tree_meta['elem_size'] +
+				              strlen( $this->default_tree_meta['eod'] ) +
+				              strlen( $this->default_tree_meta['end_of_node'] );
+			
+			$meta_value = isset( $this->$meta_name ) ? $this->$meta_name : $meta_value;
+			
+			$raw_meta .= str_pad( $meta_value, $this->meta_param_length, "\x00" );
+			
+		}
+		
+		$raw_meta .= "\n";
+		
+		fwrite( $this->stream, $raw_meta, $this->meta_length );
+		
 	}
 	
 	/**
@@ -79,199 +140,239 @@ class BTree {
 	 *
 	 * @param $key
 	 * @param $val
+	 * @param $link
 	 *
 	 * @return bool|false|int
 	 */
-	public function insert( $key, $val ){
-
-		$this->current = null;
+	public function insert( $key, $val, $link = null ){
 		
-		$elem = $this->get_elem( $key );
-		
-		// Key already exists
-//		if( $elem )
-//			return true;
-		
-		// If we are in the root
-		if( ! $this->current )
-			$this->current = new BTree_node( $this->node_params, $this->root_link );
-
+		// Find the right node to insert in
+		if( $this->isCurrentLeafEmpty() )
+			$this->currentLeaf = $this->getLeafToInsertIn( $key );
+			
 		// Insert in current node
-		$this->current->insert( $key, $val );
-		$this->current->link_parent = $this->parent ? $this->parent->link : '';
-
-		// Recursively rebuild tree
-		$result = $this->traverse_up();
-
-		unset( $this->current, $this->parent );
-
+		$this->currentLeaf->insert( $key, $val, $link );
+		if( $this->currentLeaf->getSize() <= $this->max_elems_in_node )
+			$result = $this->currentLeaf->save(); // Element hasn't reached maximum size
+		else
+			$result = $this->rebuildTree(); // Larger than maximum. Recursively rebuild tree
+		
+		$this->unsetCurrentLeaf();
+		
 		return $result;
 	}
-
-	private function traverse_up(){
-//
-		// Element hasn't reached maximum size
-		if( $this->current->getSize() <= $this->max_elems_in_node ){
-
-			fseek( $this->stream, $this->current->link );
-			$result = fwrite( $this->stream, $this->current->serialize() );
-			$this->insert_position = $this->insert_position == $this->link_size
-				? $this->insert_position + $this->node_size
-				: $this->insert_position;
-
-		// Larger than maximum
-		}else{
-
-			if( ! $this->parent || $this->parent->is_empty() )
-				$this->parent = null;
-
-			$nodes = $this->current->split();
-
-
-			// Left. Write it
-			// To the current place
-			$nodes['left'] = new BTree_node( $this->node_params, $nodes['left'] );
-			$nodes['left']->link = $this->current->link;
-			$nodes['left']->link_left = $this->current->link_left;
-			$nodes['left']->link_parent = $this->parent
-				? $this->parent->link
-				: $this->insert_position + $this->node_size;
-
-			fseek( $this->stream, $this->current->link );
-			$result = fwrite( $this->stream, $nodes['left']->serialize() );
-
-			// Right. Write it
-			// To the insert position
-			$nodes['right']            = new BTree_node( $this->node_params, $nodes['right'] );
-			$nodes['right']->link_left = current( $nodes['middle'] )['link']; // set left link from middle elem
-			$nodes['right']->link      = $this->insert_position;
-			$nodes['right']->link_parent = $this->parent
-				? $this->parent->link
-				: $this->insert_position + $this->node_size;
-
-			fseek( $this->stream, $this->insert_position );
-			$result = $result + fwrite( $this->stream, $nodes['right']->serialize() );
-			$this->insert_position += $this->node_size;
-
-
-			// Middle
-			$key = key( $nodes['middle'] );
-
-			// Traverse up
-			// Insert middle element
-			if ( isset( $this->parent ) ) {
-
-				$this->parent->insert(
-					$key,
-					$nodes['middle'][ $key ]['val'],
-					$nodes['right']->link
-				);
-
-				$this->current = $this->parent;
-				$this->parent  = new BTree_node( $this->node_params, $this->parent->link_parent );
-				$result = $result + $this->traverse_up();
-
-			}else{
-				$this->parent = new BTree_node( $this->node_params, array() );
-
-				$this->parent->link_left = $this->current->link;
-				$this->parent->insert(
-					$key,
-					current( $nodes['middle'] )['val'],
-					$nodes['right']->link
-				);
-
-				fseek( $this->stream, $this->insert_position );
-				$result = $result + fwrite( $this->stream, $this->parent->serialize() );
-
-
-				$this->set_root( $this->insert_position );
-				$this->insert_position += $this->node_size;
-
-
+	
+	private function rebuildTree(){
+		
+		$nodes = $this->currentLeaf->split();
+		
+		$parent_link = $this->currentLeaf->link_parent
+			? $this->currentLeaf->link_parent
+			: $this->insert_position + $this->leaf_size;
+		
+		// Changing link in daughter leafs in right nodes
+		foreach( $nodes['right'] as $node ){
+			if( $node['link'] ){
+				$node = new BTreeLeaf( $this->leaf_params, (int) $node['link'] );
+				$node->link_parent = (int) $this->insert_position;
+				$node->save();
 			}
 		}
-
+		
+		// Changing link in daughter leafs in middle node
+		if( current( $nodes['middle'] )['link'] ){
+			$node              = new BTreeLeaf( $this->leaf_params, (int) current( $nodes['middle'] )['link'] );
+			$node->link_parent = (int) $this->insert_position;
+			$node->save();
+		}
+		
+		// Left. Write it
+		// To the current place
+		$nodes['left']              = new BTreeLeaf( $this->leaf_params, $nodes['left'] );
+		$nodes['left']->link        = $this->currentLeaf->link;
+		$nodes['left']->link_left   = $this->currentLeaf->link_left;
+		$nodes['left']->link_parent = $parent_link;
+		$result = $nodes['left']->save();
+		
+		// Right. Write it
+		// To the insert position
+		$nodes['right']              = new BTreeLeaf( $this->leaf_params, $nodes['right'] );
+		$nodes['right']->link_left   = current( $nodes['middle'] )['link']; // set left link from middle elem
+		$nodes['right']->link        = $this->insert_position;
+		$nodes['right']->link_parent = $parent_link;
+		$result += $nodes['right']->save();
+		$this->insert_position = $this->insert_position + $this->leaf_size;
+		
+		// Middle value to traverse
+		$key = key( $nodes['middle'] );
+		
+		// Traverse up insert middle element
+		// Insert in parent if it exists
+		if ( $this->currentLeaf->link_parent ){
+			
+			$this->currentLeaf = new BTreeLeaf( $this->leaf_params, $this->currentLeaf->link_parent );
+			$result            += $this->insert( $nodes['middle'][ $key ]['key'], $nodes['middle'][ $key ]['val'], $nodes['right']->link );
+			
+		// Insert in new node and make it ROOT
+		}else{
+			
+			$this->currentLeaf = new BTreeLeaf(
+				array_merge( $this->leaf_params, array( 'link' => $this->insert_position, 'link_left' => $this->currentLeaf->link ) ),
+				array(
+					array(
+						'key'  => $nodes['middle'][ $key ]['key'],
+						'val'  => $nodes['middle'][ $key ]['val'],
+						'link' => $nodes['right']->link
+					)
+				)
+			);
+			
+			$result += $this->currentLeaf->save();
+			$this->insert_position = $this->insert_position + $this->leaf_size;
+			
+			$this->setRootLink( $this->currentLeaf->link );
+			
+		}
+		
 		return $result;
+	}
+	
+	/**
+	 * @param mixed $key
+	 * @param int $link
+	 * @param BTreeLeaf $previous_leaf
+	 *
+	 * @return BTreeLeaf
+	 */
+	private function getLeafToInsertIn( $key, $link = 0, $previous_leaf = null ){
+		
+		$leaf = new BTreeLeaf( $this->leaf_params, $link ? $link : $this->root_link );
+		
+		$elements = $leaf->searchForElement( $key );
+		$element = $elements[0];
+		
+		if( $element->link )
+			return $this->getLeafToInsertIn( $key, $element->link, $leaf );
+		
+		return $leaf;
 	}
 	
 	/**
 	 * Recursively search for element in index
 	 *
-	 * @param $key Key to search for
-	 * @param null $link
+	 * @param mixed $key to search for
+	 * @param int $link to the supposed leaf with an element
 	 *
-	 * @return mixed|null
+	 * @return array of BTreeLeafNode
 	 */
-	public function get_elem( $key, $link = null ){
+	public function getElementFromTree( $key, int $link = 0 ){
 		
-		$link = $link ? $link : $this->root_link;
+		$out = array();
 		
-		// Get tree node
-		$this->get_node( $link  );
+		$this->setCurrentLeaf( new BTreeLeaf( $this->leaf_params,$link ? $link : $this->root_link ) );
 		
-		// No node was found
-		if( ! $this->current )
-			return null;
-
-		// Search in node
-		$result = $this->current->search( $key );
+		// Empty tree
+		if( $this->isCurrentLeafEmpty() )
+			$out[] = new BTreeLeafNode();
 		
-		// Searched key found
-		if( $result['type'] == 'found' )
-			return $result['elem'];
-
-		// Search in child.
-		if( $result['type'] == 'child' && $result['link'] )
-			return $this->get_elem( $key, $result['link'] );
-
-		// Searched not exists
-		if( $result['type'] == 'child' && ! $result['link'] )
-			return null;
-
+		else{
+			
+			// Search in node
+			$elements = $this->currentLeaf->searchForElement( $key );
+			
+			if( $elements ){
+				
+				foreach( $elements as $element ){
+				
+					// Found
+					if( $element->value )
+						$out[] = $element;
+					
+					// Search in child
+					if( $element->link )
+						$out = array_merge( $out, $this->getElementFromTree( $key, $element->link ) );
+					
+					// Search in child on the left
+					if( $element->link_left )
+						$out = array_merge( $out, $this->getElementFromTree( $key, $element->link_left ) );
+					
+				}
+				
+			// Searched not exists
+			}else
+				$out[] = new BTreeLeafNode();
+			
+		}
+		
 		return $out;
 		
 	}
-
-	public function get_node( $link = 0 ){
-
-		// Set parent if exists
-		if( $this->current )
-			$this->parent = $this->current;
-
-		// Get node
-		$node = new BTree_node( $this->node_params, $link );
-
-		// Empty element
-		if( $node->is_empty() )
-			return null;
-
-		$this->current = $node;
-	}
-
-	public function clear_tree(){
+	
+	public function clearTree(){
 
 		// Delete all data
 		ftruncate( $this->stream, 0 );
-
+		
 		// Drop insert position
 		$this->insert_position = $this->link_size;
-		$this->set_root( $this->link_size );
+		$this->setRootLink( $this->link_size );
 		
 		// Delete file
 		unlink( $this->file_path );
 	}
-
-	private function set_root( $new_root ){
+	
+	private function setRootLink( $new_root ){
 		$this->root_link = $new_root;
-		fseek( $this->stream, 0 );
-		fwrite( $this->stream, str_pad( $this->root_link, $this->link_size, "\x00" ) );
+		$this->setBTreeMeta();
 	}
-
+	
 	/**
-	 * @return false|resource
+	 * @return false|int
 	 */
-	public function getStream() {
-		return $this->stream;
+	public function getInsertPosition(){
+		$insert_position = filesize( $this->file_path );
+		$insert_position = $insert_position ? $insert_position : $this->meta_length + $this->leaf_size;
+		return $insert_position;
 	}
+	
+	/**
+	 * @param BTreeLeaf $currentLeaf
+	 *
+	 * @return BTreeLeaf
+	 */
+	public function setCurrentLeaf( BTreeLeaf $currentLeaf ){
+		$this->currentLeaf = $currentLeaf;
+		return $this->currentLeaf;
+	}
+	
+	/**
+	 * @param BTreeLeaf $currentLeaf
+	 *
+	 * @return BTreeLeaf
+	 */
+	public function setParentLeaf( BTreeLeaf $currentLeaf ){
+		$this->parentLeaf = $currentLeaf;
+		return $this->parentLeaf;
+	}
+	
+	public function isLeafEmpty( BTreeLeaf $leaf ){
+		return ! (bool) $leaf;
+	}
+	
+	/**
+	 * @param BTreeLeaf $currentLeaf
+	 */
+	public function unsetCurrentLeaf(){
+		$this->currentLeaf = null;
+	}
+	
+	/**
+	 * Check if the current leaf is set
+	 *
+	 * @return bool
+	 */
+	public function isCurrentLeafEmpty(){
+		return ! (bool) $this->currentLeaf;
+	}
+	
 }

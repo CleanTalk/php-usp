@@ -1,6 +1,6 @@
 <?php
 $fw_nets_meta = array (
-  'line_length' => 27,
+  'line_length' => 26,
   'cols' => 
   array (
     'network' => 
@@ -35,5 +35,4 @@ $fw_nets_meta = array (
   ),
   'cols_num' => 4,
   'rows' => 0,
-  'median' => 5000000000,
 );

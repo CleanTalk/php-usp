@@ -90,10 +90,10 @@ class FileStorage {
 //					$result = $this->index__create__hash( $data[ $index ] );
 					break;
 				case 'binary_tree':
-					$this->indexes[ $name ] = new BinaryTree( "{$this->name}_{$name}_{$index['type']}" );
+					$this->indexes[ $name ] = new BinaryTree( self::FS_PATH . "{$this->name}_{$name}_{$index['type']}" );
 					break;
 				case 'b_tree':
-					$this->indexes[ $name ] = new BTree( "{$this->name}_{$name}_{$index['type']}" );
+					$this->indexes[ $name ] = new BTree( self::FS_PATH . "{$this->name}_{$name}_{$index['type']}" );
 					break;
 			}
 		}
@@ -195,11 +195,13 @@ class FileStorage {
 
 		return $this;
 	}
-
+	
 	/**
+	 * @param string $type
+	 *
 	 * @return array|bool
 	 */
-	public function select() {
+	public function select( $type = 'index' ) {
 
 //		$query = is_string( $query ) ? $this->parse_query() : $query;
 
@@ -208,29 +210,22 @@ class FileStorage {
 
 		// Going on...
 		// Indexes exist and correct. Getting data by indexes.
-		if ( $this->where && $this->check__column_index( $this->where ) ) {
-            // @ToDo temporary solution. The index sometimes is wrong. And we have to check the network by alternative getting data way
+		if ( $this->where && $this->check__column_index( $this->where ) && $type === 'index' ){
             $data = $this->get_data__by_index(
                 $this->columns,
                 $this->offset,
                 $this->amount
             );
-            if( $data == null ) {
-                $data = $this->get_data__by_bruteforce(
-                    $this->columns,
-                    $this->offset,
-                    $this->amount
-                );
-            }
-            return $data;
-			// No index. Bruteforce solution.
+		// No index. Bruteforce solution.
 		} else {
-			return $this->get_data__by_bruteforce(
+			$data = $this->get_data__by_bruteforce(
 				$this->columns,
 				$this->offset,
 				$this->amount
 			);
 		}
+		
+		return $data;
 	}
 
 	/**
@@ -249,7 +244,7 @@ class FileStorage {
 			Err::add( $err['message'] );
 			return false;
 		} else {
-			$inserted = $res / $this->meta->line_length;
+			$inserted = $res / ( $this->meta->line_length + strlen( $this->row_separator ) );
 			$this->meta->rows += $inserted;
 			$this->meta->save();
 			return $inserted;
@@ -273,7 +268,7 @@ class FileStorage {
 						$this->indexes[ $column_name ]->clear_tree();
 						break;
 					case 'b_tree':
-						$this->indexes[ $column_name ]->clear_tree();
+						$this->indexes[ $column_name ]->clearTree();
 						break;
 				}
 				$column['status'] = false;
@@ -297,11 +292,11 @@ class FileStorage {
 			switch ( $this->index_type ){
 				case 'binary_tree':
 					foreach ( $values as $value )
-						$addresses[] = $this->indexes[ $this->indexed_column ]->node__get_by_key( $value )->link;
+						$addresses = $this->indexes[ $this->indexed_column ]->node__get_by_key( $value )->link;
 					break;
 				case 'b_tree':
 					foreach ( $values as $value )
-						$addresses[] = $this->indexes[ $this->indexed_column ]->get_elem( $value )['val'];
+						$addresses = array_merge( $addresses, $this->get_data__by_index__btree( $value ) );
 					break;
 			}
 		}
@@ -318,7 +313,21 @@ class FileStorage {
 
 		return $this->buffer_output;
 	}
-
+	
+	
+	/**
+	 * @param $key
+	 *
+	 * @return array
+	 */
+	private function get_data__by_index__btree( $key ){
+		$out = array();
+		$elements = $this->indexes[ $this->indexed_column ]->getElementFromTree( $key );
+		foreach( $elements as $element )
+			$out[] = $element->value;
+		return $out;
+	}
+	
 	private function get_data__by_bruteforce( $cols, $offset = 0, $amount = 0 ) {
 
 		$this->get_rows_range__to_buffer( $offset, $amount );
@@ -365,7 +374,7 @@ class FileStorage {
 		    if( ! $address )
 		        continue;
 
-			$byte_offset = ($address - 1)  * ( $this->meta->line_length );
+			$byte_offset = ( $address - 1 ) * $this->meta->line_length + $address - 1;
 			$byte_amount = $this->meta->line_length;
 
 			// Set needed position
@@ -397,7 +406,8 @@ class FileStorage {
 	 */
 	private function buffer__pop_line_to_array( $cols ){
 
-		$this->buffer_row = $this->buffer__pop_line();
+		$this->buffer_row = substr( $this->buffer, 0, $this->meta->line_length );
+		$this->buffer     = substr( $this->buffer, $this->meta->line_length );
 
 		$read_line_offset = 0;
 		foreach ( $this->meta->cols as $name => $col ){
@@ -521,9 +531,24 @@ class FileStorage {
 	private function insert__convert_data_to_storage_format( &$data, $columns ) {
 		$tmp = '';
 		foreach ( $data as $name => $col ) {
+			
+			// Converting data to the column type
+			switch( $this->meta->cols[ $name ]['type'] ){
+				case 'int':
+					$val = intval( $col );
+					break;
+				case 'string':
+					$val = (string) $col;
+					break;
+				default:
+					$val = $col;
+			}
+			
+			//@todo make type check
+			
 			$tmp .= str_pad(
 				substr(
-					$col,
+					$val,
 					0,
 					$this->meta->cols[ $name ]['length']
 				),
