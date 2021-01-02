@@ -274,7 +274,8 @@ class BFP extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 					if( $result['rows'] == count( $data ) ){
 						
 						foreach( $log_files as $log_file ){
-							unlink( $log_dir_path . DS . $log_file );
+							if( file_exists( $log_dir_path . DS . $log_file ) )
+								unlink( $log_dir_path . DS . $log_file );
 						}
 						
 						return $result;
