@@ -90,7 +90,7 @@ class Storage extends \ArrayObject {
 			}
 		}
 		
-		return $out ? $out : array();
+		return isset( $out ) ? $out : array();
 	}
 
 
