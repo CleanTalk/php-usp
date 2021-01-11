@@ -203,7 +203,10 @@ class BFP extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 			isset($log[8]) ? intval( $log[8] ) + 1 : 1,
 		);
 		
-		file_put_contents( $log_path, implode(',', $log), LOCK_EX );
+		$fd = fopen( $log_path, 'w' );
+		flock( $fd, LOCK_EX );
+		fputcsv( $fd, $log );
+		fclose( $fd );
 		
 	}
 	
@@ -228,8 +231,9 @@ class BFP extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 				$data = array();
 				
 				foreach( $log_files as $log_file ){
+					
 					$log = file_get_contents( $log_dir_path . DS . $log_file );
-					$log = explode( ',', $log );
+					$log = str_getcsv( $log );
 					
 					if( strval( $log[8] ) > 0 ){
 						for( $i = 0; strval( $log[8] ) > $i; $i ++ ){

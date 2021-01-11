@@ -73,7 +73,7 @@ class FirewallModule extends \Cleantalk\USP\Security\Firewall\FirewallModule {
 		if( file_exists( $log_path ) ){
 			
 			$log = file_get_contents($log_path);
-			$log = explode(',', $log);
+			$log = str_getcsv( $log );
 			
 			$all_entries = isset($log[5]) ? $log[5] : 0;
 			
@@ -107,7 +107,10 @@ class FirewallModule extends \Cleantalk\USP\Security\Firewall\FirewallModule {
 			
 		}
 		
-		file_put_contents( $log_path, implode(',', $log), LOCK_EX );
+		$fd = fopen( $log_path, 'w' );
+		flock( $fd, LOCK_EX );
+		fputcsv( $fd, $log );
+		fclose( $fd );
 	}
 	
 	/**

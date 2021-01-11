@@ -164,7 +164,7 @@ class FW extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 			foreach ( $log_files as $log_file ){
 				
 				$log = file_get_contents( $log_dir_path . DS . $log_file );
-				$log = explode( ',', $log );
+				$log = str_getcsv( $log );
 				
 				//Compile log
 				$to_data = array(
