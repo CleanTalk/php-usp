@@ -535,6 +535,13 @@ class Helper{
 							$opts[CURLOPT_CAINFO] = CLEANTALK_CASERT_PATH;
 						break;
 					
+					case 'get_file':
+						$opts[CURLOPT_CUSTOMREQUEST] = 'GET';
+						$opts[CURLOPT_POST] = false;
+						$opts[CURLOPT_POSTFIELDS] = null;
+						$opts[CURLOPT_HEADER] = false;
+						break;
+						
 					default:
 						
 						break;
@@ -664,6 +671,26 @@ class Helper{
 			Err::add( 'Bad HTTP response from file location' );
 
 		return $data;
+	}
+	
+	public static function http__download_remote_file( $url, $tmp_folder ){
+		
+		$result = self::http__request( $url, array(), 'get_file' );
+		
+		if( empty( $result['error'] ) ){
+			
+			$file_name = basename( $url );
+			
+			if( ! is_dir( $tmp_folder ) )
+				mkdir( $tmp_folder );
+			
+			if( ! file_exists( $tmp_folder . $file_name ) ){
+				file_put_contents( $tmp_folder . $file_name, $result );
+				return $tmp_folder . $file_name;
+			}else
+				return array( 'error' => 'File already downloaded');
+		}else
+			return $result;
 	}
 	
 	/**
