@@ -158,7 +158,7 @@ function usp_scanner__get_signatures() {
 }
 
 function usp_get_latest_version(){
-	$updater = new \Cleantalk\USP\Updater\Updater();
+	$updater = new \Cleantalk\USP\Updater\Updater( CT_USP_ROOT );
 	State::getInstance()->plugin_meta->version = $updater->getLatestVersion();
 	State::getInstance()->plugin_meta->save();
 }
