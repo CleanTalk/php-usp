@@ -20,6 +20,7 @@ namespace Cleantalk\USP\Common;
  * @property Storage data
  * @property Storage remote_calls
  * @property Storage scan_result
+ * @property Storage plugin_meta
  *
  */
 class State extends \Cleantalk\USP\Common\Storage{
@@ -80,7 +81,6 @@ class State extends \Cleantalk\USP\Common\Storage{
 		'is_installed'   => false,
 		'detected_cms'   => 'Unknown',
 		'modified_files' => array(),
-		'plugin_version' => 1,
 
 		//Security
 		'salt'         => '',
@@ -181,6 +181,12 @@ class State extends \Cleantalk\USP\Common\Storage{
 		'entries'        => 0,
 		'updating'       => false,
 		'update_percent' => 0,
+	);
+	
+	private $default_plugin_meta = array(
+		'version' => '1.0.0',
+		'latest_version' => '1.0.0',
+		'is_installed' => false,
 	);
 	
 	public function __construct( ...$options )

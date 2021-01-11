@@ -61,6 +61,20 @@ if( Post::is_set('action', 'security') ) {
 				State::getInstance()->data->no_sql ? spbc_scanner_file_view___no_sql() : spbc_scanner_file_view();
 				break;
 
+			case 'update':
+				$updater = new \Cleantalk\USP\Updater\Updater( CT_USP_ROOT );
+				$result = $updater->update(
+					State::getInstance()->plugin_meta->version,
+					State::getInstance()->plugin_meta->latest_version
+				);
+				if( empty( $result['error'] ) ){
+					State::getInstance()->plugin_meta->previous_version = State::getInstance()->plugin_meta->version;
+					State::getInstance()->plugin_meta->version          = State::getInstance()->plugin_meta->latest_version;
+					State::getInstance()->plugin_meta->save();
+				}
+				die(json_encode( $result, true ));
+				break;
+				
 			default:
 				die(Err::add('Unknown action')->get_last( 'as_json' ));
 				break;

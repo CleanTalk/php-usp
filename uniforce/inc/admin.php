@@ -257,13 +257,15 @@ function usp_install_config($modified_files, $api_key, $cms, $exclusions ){
 	$usp->data->detected_cms = $cms['name'];
 	$usp->data->is_installed  = true;
 	$usp->data->no_sql  = (boolean)Post::get( 'no_sql' );
+	$usp->data->save();
 
     $usp->settings->bfp_admin_page =  $cms['admin_page'];
 	$usp->settings->key  = $api_key;
-
-	$usp->data->save();
 	$usp->settings->save();
 
+	$usp->plugin_meta->is_installed  = true;
+	$usp->plugin_meta->version = SPBCT_VERSION;
+	$usp->plugin_meta->save();
 }
 
 /**

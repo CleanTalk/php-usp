@@ -1,14 +1,17 @@
 jQuery(document).ready(function() {
 
+    // Save settings
     $('#btn-save-settings').on('click', function(event) {
         save_settings();
     });
+
+    // Logout
     $("#btn-logout").on('click', function(event){
         if(confirm('Are you sure you want to logout?'))
             logout();
     });
 
-    // Uninstall button
+    // Uninstall
     $("#ctusp_field---uninstall_confirmation").on('input', function(event){
 
         let val = $(event.target).val(),
@@ -18,6 +21,12 @@ jQuery(document).ready(function() {
     $("#ctusp_field---uninstall").on('click', function(event){
         if(confirm('Are you sure you want to uninstall the plugin?'))
             uninstall();
+    });
+
+    // Update
+    // Logout
+    $("#btn-update").on('click', function(event){
+        update();
     });
 
     jQuery('.ctusp_tab_navigation').on('click', '.ctusp_tab_navigation-title', function (event) {
@@ -158,6 +167,35 @@ function uninstall(){
         }
     );
 
+}
+
+function update(){
+    ctAJAX({
+        data: { action: 'update'},
+        button: $('#btn-update'),
+        spinner: $('#btn-update+.preloader'),
+        successCallback: function(result, data, params, obj) {
+            if (result.success) {
+                $("body").overhang({
+                    type: "success",
+                    message: "Update was successful",
+                    duration: 3,
+                    overlay: true,
+                    easing: 'linear'
+                });
+            }
+        },
+        errorOutput: function( msg ) {
+            $("body").overhang({
+                type: "error",
+                message: 'Error during update: ' + msg,
+                duration: 43200,
+                overlay: true,
+                closeConfirm: true,
+                easing: 'linear'
+            })
+        },
+    });
 }
 
 // Hightlights element
