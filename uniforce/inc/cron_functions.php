@@ -1,7 +1,6 @@
 <?php
 
 use Cleantalk\USP\Common\State;
-use Cleantalk\USP\Uniforce\FireWall;
 use Cleantalk\USP\Common\Err;
 use Cleantalk\USP\Common\File;
 use Cleantalk\USP\Uniforce\Helper;
@@ -156,4 +155,10 @@ function usp_scanner__get_signatures() {
 	$out = $scanner_controller->action__scanner__get_signatures();
 
 	return empty($result['error']) ? $out : true;
+}
+
+function usp_get_latest_version(){
+	$updater = new \Cleantalk\USP\Updater\Updater();
+	State::getInstance()->plugin_meta->version = $updater->getLatestVersion();
+	State::getInstance()->plugin_meta->save();
 }

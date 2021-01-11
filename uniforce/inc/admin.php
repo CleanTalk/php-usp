@@ -278,6 +278,7 @@ function usp_install_cron(){
     Cron::addTask( 'fw_send_logs', 'uniforce_fw_send_logs', 3600 );
     Cron::addTask( 'clean_black_lists', 'uniforce_clean_black_lists', 86400 );
     Cron::addTask( 'update_signatures', 'usp_scanner__get_signatures', 86400, time() + 10 );
+    Cron::addTask( 'check_for_updates', 'usp_get_latest_version', 86400, 86400 );
 
 }
 
