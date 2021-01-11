@@ -184,4 +184,91 @@ class File{
 	public static function tag__php__end( $tag ){
 		return '//' . self::$plugin . "/$tag/end";
 	}
+	
+	/**
+	 * Recursive
+	 * Copying folder or file
+	 *
+	 * @param string $from Path of the folder to copy
+	 * @param string $to Path to copy in
+	 * @param array $exceptions
+	 *
+	 * @return bool
+	 */
+	public static function copy( $from, $to, $exceptions = array() ){
+		
+		$out = true;
+		
+		if( is_dir( $from ) ){
+			
+			if( ! is_dir( $to ) && ! mkdir( $to ) ){
+				error_log( var_export( $to, true ) );
+				return false;
+			}
+			$dd = dir( $from );
+			while( ( $entry = $dd->read() ) !== false ){
+				if( ! in_array( $entry, array_merge( $exceptions, array( '.', '..' ) ) ) )
+					if( ! self::copy( $from . DS . $entry, $to . DS . $entry, $exceptions ) ){
+						$out = false;
+						break;
+					}
+			}
+			$dd->close();
+			
+		}else
+			$out = copy( $from, $to );
+		
+		return $out;
+	}
+	
+	/**
+	 * Recursive
+	 * Deleting folder or file
+	 *
+	 * @param string $path Path of the folder to delete
+	 * @param array $exceptions
+	 *
+	 * @return bool
+	 */
+	public static function delete( $path, $exceptions = array() ){
+		
+		$out = true;
+		
+		// Not exists
+		if( ! file_exists( $path ) )
+			return $out;
+		
+		// Directory
+		elseif( is_dir( $path ) ){
+			$dd = dir( $path );
+			while( ( $entry = $dd->read() ) !== false ){
+				if( ! in_array( $entry, array_merge( $exceptions, array( '.', '..' ) ) ) ){
+					if( ! self::delete( $path . DS . $entry ) ){
+						$out = false;
+						break;
+					}
+				}
+			}
+			$dd->close();
+			
+			if( self::isFolderEmpty( $path ) )
+				$out = rmdir( $path );
+			
+			// File
+		}else
+			$out = unlink( $path );
+		
+		return $out;
+	}
+	
+	/**
+	 * Checks if the folder is empty or not
+	 *
+	 * @param $path
+	 *
+	 * @return bool
+	 */
+	public static function isFolderEmpty( $path ){
+		return ! count( glob( $path . '/*' ) );
+	}
 }
