@@ -28,27 +28,27 @@ function usp_settings__plugin_state(){
 function usp_settings__show_fw_statistics( $out = '' )
 {
 	$usp = State::getInstance();
-	$stat = State::getInstance()->fw_stats;
+	$fw_stats  = State::getInstance()->fw_stats;
+	$bfp_stats = State::getInstance()->data->stat->bfp;
 
 	if( $usp->settings->fw || $usp->settings->waf ) {
-		echo 'Security FireWall was updated: ' . ( $stat->last_update
-				? date('M d Y H:i:s', $stat->last_update)
+		echo 'Security FireWall was updated: ' . ( $fw_stats->last_update
+				? date('M d Y H:i:s', $fw_stats->last_update)
 				: 'never'
 			) . '<br>';
-		echo 'Security FireWall contains: ' . ( $stat->entries ? $stat->entries : 'no' ). ' entires. '
+		echo 'Security FireWall contains: ' . ( $fw_stats->entries ? $fw_stats->entries : 'no' ). ' entires. '
 		     . ( State::getInstance()->fw_stats->updating ? '<b>Under updating now: ' . State::getInstance()->fw_stats->update_percent. '%</b>' : '' )
 		     . '<br>';
-		echo 'Security FireWall logs were sent: ' . ( $stat->logs_sent_time
-				? date('M d Y H:i:s', $stat->logs_sent_time)
+		echo 'Security FireWall logs were sent: ' . ( $fw_stats->logs_sent_time
+				? date('M d Y H:i:s', $fw_stats->logs_sent_time)
 				: 'never.'
 			) . '<br>';
 		echo '<br>';
 	}
 	if( $usp->settings->bfp ) {
-		$bfp_send_logs_time = $stat->bfp->logs_sent_time ?  : 'never.';
-		echo 'BruteForce Protection was triggered: ' . $stat->bfp->count . ' times.<br>';
-		echo 'BruteForce Protection logs were sent: ' . ( $stat->bfp->logs_sent_time
-				? date( 'M d Y H:i:s', $stat->bfp->logs_sent_time )
+		echo 'BruteForce Protection was triggered: ' . $bfp_stats->count . ' times.<br>';
+		echo 'BruteForce Protection logs were sent: ' . ( $bfp_stats->logs_sent_time
+				? date( 'M d Y H:i:s', $bfp_stats->logs_sent_time )
 				: 'never'
 			). '<br>';
 		echo '<br>';
