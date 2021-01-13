@@ -116,13 +116,13 @@ class FW extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 						case -4: $result_entry = array_merge( $result_entry, array('status' => 'DENY_BY_SPAM_FW', ) );         break;
 					}
 					
-					$results[ $ip_origin ] = $result_entry;
+					$results[] = $result_entry;
 				}
 				
 				// Not in base
 			}else {
 				
-				$results[ $ip_origin ] = array(
+				$results[] = array(
 					'module' => $this->module_name,
 					'ip' => $current_ip,
 					'is_personal' => false,
