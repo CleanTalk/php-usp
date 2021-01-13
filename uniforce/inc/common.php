@@ -46,7 +46,7 @@ new \Cleantalk\USP\Common\State( 'settings', 'data', 'remote_calls', 'fw_stats' 
 define( 'CT_USP_CRON_FILE', CT_USP_ROOT . 'data' . DS . 'cron.php' );
 $cron = new \Cleantalk\USP\Uniforce\Cron();
 $cron->checkTasks();
-if( ! empty( $cron->tasks_to_run ) )
+if( ! empty( $cron->tasks_to_run ) && ! RemoteCalls::check() )
 	require_once CT_USP_INC . 'cron_functions.php'; // File with cron wrappers
 	$cron->runTasks();
 unset( $cron );
