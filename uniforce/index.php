@@ -1,4 +1,7 @@
 <?php
+/**
+ *	Version: 3.3.0
+ */
 
     // Check PHP requirements
     if( version_compare( phpversion(), '5.6', '<' ) ){ ?>
