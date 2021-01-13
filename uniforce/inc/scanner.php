@@ -1,6 +1,7 @@
 <?php
 
 use Cleantalk\USP\Common\State;
+use Cleantalk\USP\Common\Storage;
 use Cleantalk\USP\DB;
 use Cleantalk\USP\Layout\ListTable;
 use Cleantalk\USP\Scanner\Scanner;
@@ -38,7 +39,16 @@ function spbc_scanner_file_send( $file_id ){
 		}
 		
 		// Signature
-		$signatures = $usp->signatures->array_values();
+		$signatures = new Storage('signatures', null, '', 'csv', array(
+			'id',
+			'name',
+			'body',
+			'type',
+			'attack_type',
+			'submitted',
+			'cci'
+		) );
+		$signatures = $signatures->convertToArray();
 		$result_sign = Scanner::file__scan__for_signatures($root_path, $file_info, $signatures);
 		if(!empty($result['error'])){
 			$output = array('error' =>'RESCACNNING_FAILED');
@@ -240,7 +250,17 @@ function spbc_scanner_file_view( $file_id = null ){
 function spbc_scanner__display__prepare_data__files( &$table ){
 
 	$usp = State::getInstance();
-
+	$signatures = new Storage('signatures', null, '', 'csv', array(
+		'id',
+		'name',
+		'body',
+		'type',
+		'attack_type',
+		'submitted',
+		'cci'
+	) );
+	$signatures = $signatures->convertToArray();
+	
 	if($table->items_count){
 
 		$root = substr(CT_USP_SITE_ROOT, 0, -1);
@@ -276,13 +296,13 @@ function spbc_scanner__display__prepare_data__files( &$table ){
 
 								$index = array_search(
 									$weak_spot,
-									array_column($usp->signatures->convertToArray(), 'id')
+									array_column($signatures, 'id')
 								);
-								$signature = $usp->signatures->$index;
-								$ws_string = '<span class="--red">'. $signature->attack_type .': </span>'
-								             .(strlen($signature->name) > 30
-										? substr($signature->name, 0, 30).'...'
-										: $signature->name);
+								$signature = $signatures[ $index ];
+								$ws_string = '<span class="--red">'. $signature['attack_type'] .': </span>'
+								             .(strlen($signature['name']) > 30
+										? substr($signature['name'], 0, 30).'...'
+										: $signature['name']);
 							}
 						}
 					}elseif(!empty($weak_spots['CRITICAL'])){
@@ -496,6 +516,16 @@ function usp_scanner__display__get_data__files___no_sql( $offset = 0, $limit = 2
 function usp_scanner__display__prepare_data__files___no_sql( &$table ){
 	
 	$usp = State::getInstance();
+	$signatures = new Storage('signatures', null, '', 'csv', array(
+		'id',
+		'name',
+		'body',
+		'type',
+		'attack_type',
+		'submitted',
+		'cci'
+	) );
+	$signatures = $signatures->convertToArray();
 	
 	if($table->items_count){
 		
@@ -532,13 +562,13 @@ function usp_scanner__display__prepare_data__files___no_sql( &$table ){
 								
 								$index = array_search(
 									$weak_spot,
-									array_column($usp->signatures->convertToArray(), 'id')
+									array_column($signatures, 'id')
 								);
-								$signature = $usp->signatures->$index;
-								$ws_string = '<span class="--red">'. $signature->attack_type .': </span>'
-								             .(strlen($signature->name) > 30
-										? substr($signature->name, 0, 30).'...'
-										: $signature->name);
+								$signature = $signatures[ $index ];
+								$ws_string = '<span class="--red">'. $signature['attack_type'] .': </span>'
+								             .(strlen($signature['name']) > 30
+										? substr($signature['name'], 0, 30).'...'
+										: $signature['name']);
 							}
 						}
 					}elseif(!empty($weak_spots['CRITICAL'])){
