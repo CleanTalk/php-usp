@@ -312,7 +312,7 @@ class BFP extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 				return isset( $user->uid ) && $user->uid != 0;
 				break;
 			case 'Drupal8' :
-				return class_exists('Drupal') && !! \Drupal::currentUser()->id;
+				return class_exists('Drupal') && !! \Drupal::currentUser()->id();
 				break;
 			case 'Bitrix' :
 				return class_exists( 'CUser') && \CUser::IsAuthorized();
