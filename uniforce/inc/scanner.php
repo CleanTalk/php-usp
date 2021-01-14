@@ -268,11 +268,11 @@ function spbc_scanner__display__prepare_data__files( &$table ){
 		foreach($table->rows as $key => $row){
 
 			// Filtering row actions
-			if($row->last_sent > $row->mtime || $row->size == 0 || $row->size > 1048570)
+			if( ( isset( $row->last_sent ) && $row->last_sent > $row->mtime ) || $row->size == 0 || $row->size > 1048570)
 				unset($row->actions['send']);
-			if(!$row->severity)
+			if( ! isset( $row->severity ) )
 				unset($row->actions['view_bad']);
-			if($row->status === 'quarantined')
+			if( isset( $row->status ) && $row->status === 'quarantined' )
 				unset($row->actions['quarantine']);
 			
 			$table->items[] = array(
@@ -534,11 +534,11 @@ function usp_scanner__display__prepare_data__files___no_sql( &$table ){
 		foreach($table->rows as $key => $row){
 			
 			// Filtering row actions
-			if($row->last_sent > $row->mtime || $row->size == 0 || $row->size > 1048570)
+			if( ( isset( $row->last_sent ) && $row->last_sent > $row->mtime ) || $row->size == 0 || $row->size > 1048570)
 				unset($row->actions['send']);
-			if(!$row->severity)
+			if( ! isset( $row->severity ) )
 				unset($row->actions['view_bad']);
-			if($row->status === 'quarantined')
+			if( isset( $row->status ) && $row->status === 'quarantined' )
 				unset($row->actions['quarantine']);
 			
 			$table->items[] = array(

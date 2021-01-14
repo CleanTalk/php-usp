@@ -175,7 +175,7 @@ class Storage extends \ArrayObject {
 	 */
 	public function __get( $name )
 	{
-		if($this[$name])
+		if( isset( $this[$name] ) )
 			return $this[$name];
 
 		$value = $this->get( $name )

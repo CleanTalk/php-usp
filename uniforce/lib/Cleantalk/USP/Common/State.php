@@ -181,6 +181,8 @@ class State extends \Cleantalk\USP\Common\Storage{
 		'entries'        => 0,
 		'updating'       => false,
 		'update_percent' => 0,
+		'logs_sent_time' => 0,
+		'last_update'    => 0,
 	);
 	
 	private $default_plugin_meta = array(
