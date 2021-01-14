@@ -247,6 +247,7 @@ class FW extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 		if( ! $multifile_url ){
 			
 			$result = self::update__get_multifiles( $api_key );
+			usleep( 500000 );
 			
 			if( empty( $result['error'] ) ){
 				
@@ -280,6 +281,7 @@ class FW extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 			$url_file_to_wrtie = str_replace( 'multifiles', $current_file_num, $multifile_url );
 			
 			$result = self::update__write_to_db( $url_file_to_wrtie );
+			usleep( 500000 );
 			
 			if( empty( $result['error'] ) ){
 				
@@ -311,7 +313,8 @@ class FW extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 		}else{
 			
 			$result = self::update__write_to_db__exclusions();
-
+			usleep( 500000 );
+			
 			if( empty( $result['error'] ) ){
 				
 				//Increment firewall entries
