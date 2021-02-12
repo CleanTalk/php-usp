@@ -29,7 +29,7 @@ switch (true){
 	    	'scanner-plugin',
 	    	'scanner',
 		    'table',
-		    'http://cdn.polyfill.io/v1/polyfill.js?features=es6',
+		    'https://cdn.polyfill.io/v1/polyfill.js?features=es6',
 	    );
 	    $additional_css = array(
 		    'settings-scanner',
