@@ -204,10 +204,11 @@ class BFP extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 		);
 		
 		$fd = fopen( $log_path, 'w' );
-		flock( $fd, LOCK_EX );
-		fputcsv( $fd, $log );
-		fclose( $fd );
-		
+		if( $fd ){
+            flock( $fd, LOCK_EX );
+            fputcsv( $fd, $log );
+            fclose( $fd );
+        }
 	}
 	
 	/**
