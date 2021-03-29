@@ -402,7 +402,7 @@ class ScannerController {
 					NULL
 				);";
 			
-			$success = $this->db->query($sql_query);
+			$success = $this->db->execute($sql_query);
 			
 		}else
 			$output  = array('error' => __FUNCTION__ . ' No files to scan',);

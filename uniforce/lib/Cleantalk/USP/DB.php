@@ -2,11 +2,9 @@
 
 namespace Cleantalk\USP;
 
-use \Cleantalk\USP\Templates\Singleton as Singleton;
-
-class DB extends \PDO implements \Cleantalk\USP\Common\DB {
+class DB extends \PDO implements Common\DB {
 	
-	use Singleton;
+	use Templates\Singleton;
 	
 	private static $instance;
 	
@@ -24,8 +22,11 @@ class DB extends \PDO implements \Cleantalk\USP\Common\DB {
 	 * @var int
 	 */
 	public $rows_affected;
-	
-	function init( ...$params ){
+    
+    /**
+     * @param mixed ...$params
+     */
+    public function init( ...$params ){
 		
 		if( $params[0] ){
 			$dsn      = $params[0];
@@ -55,7 +56,7 @@ class DB extends \PDO implements \Cleantalk\USP\Common\DB {
 	 *
 	 * @return bool|\PDOStatement
 	 */
-	function prepare( $query, $param = array() ) {
+	public function prepare( $query, $param = array() ) {
 		return parent::prepare( $query, $param );
 	}
 	
@@ -69,7 +70,7 @@ class DB extends \PDO implements \Cleantalk\USP\Common\DB {
 	 *
 	 * @return false|mixed|\PDOStatement
 	 */
-	function query( $query, $mode = \PDO::ATTR_DEFAULT_FETCH_MODE, $arg3 = null, $ctorargs = array() ){
+	function q( $query, $mode = \PDO::ATTR_DEFAULT_FETCH_MODE ){
 		$this->query = $query;
 		$this->query_result = parent::query( $query );
 		$this->rows_affected = $this->query_result->rowCount();
@@ -81,7 +82,7 @@ class DB extends \PDO implements \Cleantalk\USP\Common\DB {
 	 *
 	 * @return bool|int|void
 	 */
-	function execute( $query ) {
+	public function execute( $query ) {
 		$this->query = $query;
 		$this->rows_affected = parent::exec( $query );
 		return $this->rows_affected;
@@ -97,11 +98,10 @@ class DB extends \PDO implements \Cleantalk\USP\Common\DB {
 	 *
 	 * @return array|object|void|null
 	 */
-	function fetch( $query = '', $response_type = 'array' ) {
+	public function fetch( $query = '', $response_type = 'array' ) {
 		
 		if( $this->query !== $query)
-			
-			$this->query( $query );
+			$this->q( $query );
 		
 		switch( $response_type ){
 			case 'array':
@@ -129,7 +129,7 @@ class DB extends \PDO implements \Cleantalk\USP\Common\DB {
 	 *
 	 * @return array|object|null
 	 */
-	function fetch_all( $query = '', $response_type = 'array' ) {
+	public function fetch_all( $query = '', $response_type = 'array' ) {
 		
 		switch($response_type){
 			case 'array':

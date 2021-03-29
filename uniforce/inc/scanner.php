@@ -87,7 +87,7 @@ function spbc_scanner_file_send( $file_id ){
 								if($result['result']){
 
 									// Updating "last_sent"
-									$sql_result = $db->query('UPDATE scanner_files SET last_sent = ' . time() . ' WHERE fast_hash = "' . $file_id . '"');
+									$sql_result = $db->execute('UPDATE scanner_files SET last_sent = ' . time() . ' WHERE fast_hash = "' . $file_id . '"');
 
 									if($sql_result !== false){
 										$output = array('success' => true, 'result' => $result);
@@ -158,7 +158,7 @@ function spbc_scanner_file_delete( $file_id ){
 							
 							if( Helper::http__request__get_response_code( CT_USP_URI ) && ! Helper::search_page_errors( $response ) ){
 								// Deleting row from DB
-								$db->query('DELETE FROM scanner_files WHERE fast_hash = "'.$file_id.'"');
+								$db->execute('DELETE FROM scanner_files WHERE fast_hash = "'.$file_id.'"');
 							}else{
 								$output = array('error' =>'WEBSITE_RESPONSE_BAD');
 								$result = file_put_contents( $file_path, $remeber );
