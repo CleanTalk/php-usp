@@ -87,7 +87,7 @@ class BFP extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 						'js_on' => $js_on,
 						'count' => ++$bad_ip__details->count,
 					);
-				}elseif( $bfp_blacklist_fast->$current_ip__real ){
+				}elseif( isset( $bfp_blacklist_fast->$current_ip__real ) ){
                     unset( $bfp_blacklist_fast->$current_ip__real );
 					$bfp_blacklist_fast->save();
 				}
