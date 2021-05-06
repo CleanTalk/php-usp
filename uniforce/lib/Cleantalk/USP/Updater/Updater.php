@@ -48,6 +48,10 @@ class Updater {
 	public function getLatestVersion( $version = null, $version_type_to_check = 0 ){
 		
 		$version = $version ? $version : $this->version_current;
+
+        if($version_type_to_check > 2) {
+            return implode( '.', array_slice( $version, 0, 3 ) );
+        }
 		
 		// Increasing current version type to check
 		$version[ $version_type_to_check ]++;
