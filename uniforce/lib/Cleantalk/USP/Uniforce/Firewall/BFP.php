@@ -343,13 +343,16 @@ class BFP extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
         if(mb_strtolower($usp->detected_cms) === 'unknown') {
             if(isset($_POST) && !empty($_POST)) {
                 $number_matches = 0;
+                $number_pass_matches = 0;
 
                 // Markers for searching in field names and request uri
                 $form_field_markers = array(
                     'user',
-                    'pass',
                     'username',
-                    'password'
+                    'login'
+                );
+                $pass_field_markers = array(
+                    'pass', 'password', 'psw'
                 );
 
                 if($usp->settings->bfp_login_form_fields) {
@@ -362,10 +365,16 @@ class BFP extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
                     if(in_array(strtolower($key), $form_field_markers)) {
                         $number_matches++;
                     }
+                    if(in_array(strtolower($key), $pass_field_markers)) {
+                        $number_pass_matches++;
+                    }
                     if(is_array($value)) {
                         foreach ($value as $k => $v) {
                             if(in_array(strtolower($k), $form_field_markers)) {
                                 $number_matches++;
+                            }
+                            if(in_array(strtolower($k), $pass_field_markers)) {
+                                $number_pass_matches++;
                             }
                         }
                     }
@@ -377,6 +386,11 @@ class BFP extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
                         $number_matches++;
                     }
                 }
+                foreach ($pass_field_markers as $marker) {
+                    if(strpos($_SERVER['REQUEST_URI'], $marker) !== false) {
+                        $number_pass_matches++;
+                    }
+                }
 
                 // Search in Reference URI
                 if(isset($_SERVER['HTTP_REFERER']) && $_SERVER['HTTP_REFERER']) {
@@ -386,8 +400,20 @@ class BFP extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
                         }
                     }
                 }
+                if(isset($_SERVER['HTTP_REFERER']) && $_SERVER['HTTP_REFERER']) {
+                    foreach ($pass_field_markers as $marker) {
+                        if(strpos($_SERVER['HTTP_REFERER'], $marker) !== false) {
+                            $number_pass_matches++;
+                        }
+                    }
+                }
 
-                if($number_matches >= 2) {
+                // Results
+                if($usp->settings->bfp_login_form_fields && ($number_matches >= 2 || $number_matches > 0 && $number_pass_matches > 0) ) {
+                    return true;
+                }
+
+                if($number_matches >= 2 && $number_pass_matches > 0) {
                     return true;
                 }
             }
