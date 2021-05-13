@@ -8,6 +8,7 @@ use Cleantalk\USP\Uniforce\API;
 use Cleantalk\USP\Uniforce\Helper;
 use Cleantalk\USP\Variables\Cookie;
 use Cleantalk\USP\Variables\Get;
+use Cleantalk\USP\Variables\Post;
 use Cleantalk\USP\Variables\Server;
 
 class BFP extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
@@ -162,7 +163,7 @@ class BFP extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 		// Updating common firewall log
 		if( is_array( $fw_result ) && $fw_result['status'] !== 'PASS' ){
 			parent::update_log( $fw_result );
-			return;
+//			return;
 		}
 			
 		global $salt;
@@ -326,9 +327,75 @@ class BFP extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 				return Cookie::get( 'authentificated' ) === State::getInstance()->data->security_key;
 				break;
 			default :
-				// @ToDo implement universal logic for cookies checking
-				return true;
+				return false;
 				break;
 		}
 	}
+
+    /**
+     * Checking the post request for markers
+     *
+     * @return bool
+     */
+    public static function is_login_page() {
+        $usp = State::getInstance();
+
+        if(mb_strtolower($usp->detected_cms) === 'unknown') {
+            if(isset($_POST) && !empty($_POST)) {
+                $number_matches = 0;
+
+                // Markers for searching in field names and request uri
+                $form_field_markers = array(
+                    'user',
+                    'pass',
+                    'username',
+                    'password'
+                );
+
+                if($usp->settings->bfp_login_form_fields) {
+                    $usp->settings->bfp_login_form_fields = str_replace(' ', '', $usp->settings->bfp_login_form_fields);
+                    $form_field_markers = explode(',', $usp->settings->bfp_login_form_fields);
+                }
+
+                // Search in POST
+                foreach ($_POST as $key => $value) {
+                    if(in_array(strtolower($key), $form_field_markers)) {
+                        $number_matches++;
+                    }
+                    if(is_array($value)) {
+                        foreach ($value as $k => $v) {
+                            if(in_array(strtolower($k), $form_field_markers)) {
+                                $number_matches++;
+                            }
+                        }
+                    }
+                }
+
+                // Search in Request URI
+                foreach ($form_field_markers as $marker) {
+                    if(strpos($_SERVER['REQUEST_URI'], $marker) !== false) {
+                        $number_matches++;
+                    }
+                }
+
+                // Search in Reference URI
+                if(isset($_SERVER['HTTP_REFERER']) && $_SERVER['HTTP_REFERER']) {
+                    foreach ($form_field_markers as $marker) {
+                        if(strpos($_SERVER['HTTP_REFERER'], $marker) !== false) {
+                            $number_matches++;
+                        }
+                    }
+                }
+
+                if($number_matches >= 2) {
+                    return true;
+                }
+            }
+        } else {
+            return ( $usp->settings->bfp_admin_page && Server::has_string( 'REQUEST_URI', $usp->settings->bfp_admin_page ) ) ||
+                ( defined( 'USP_DASHBOARD' ) && Post::get( 'login' ) );
+        }
+
+        return false;
+    }
 }
