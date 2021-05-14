@@ -228,44 +228,68 @@ function usp_install($files, $api_key, $cms, $exclusions ){
  */
 function usp_install_config($modified_files, $api_key, $cms, $exclusions ){
 
-	$usp = State::getInstance();
+    $usp = State::getInstance();
+    $pass = '';
+    $login = '';
 
-	if( Post::get( 'admin_password' ) )
-		$usp->data->password = hash( 'sha256', trim( Post::get( 'admin_password' ) ) );
+    if( Post::get( 'admin_password' ) ) {
+        $usp->data->password = hash( 'sha256', trim( Post::get( 'admin_password' ) ) );
+        $pass = trim( Post::get( 'admin_password' ) );
+    }
 
-	if( Post::get( 'email' ) )
-		$usp->data->email = trim( Post::get( 'email' ) );
 
-	if( Post::get( 'user_token' ) )
-		$usp->data->user_token = trim( Post::get( 'user_token' ) );
-	
-	// Sending password
-	if( trim( Post::get( 'email' ) ) && Post::get( 'admin_password' ) ){
-		mail(
-			trim( Post::get( 'email' ) ),
-			'UniForce dashboard password',
-			'Login is ' . ( trim( Post::get( 'email' ) ) ) . '<br>'
-			.'Admin password is ' . Post::get( 'admin_password' ) . '<br>'
-		);
-	}
-	
-	if( Post::get( 'account_name_ob' ) )
-		$usp->data->account_name_ob =  trim( Post::get( 'account_name_ob' ) );
+    if( Post::get( 'email' ) ) {
+        $usp->data->email = trim( Post::get( 'email' ) );
+        $login = $usp->data->email;
+    }
 
-	$usp->data->security_key = hash( 'sha256', '~(o_O)~' . $usp->key . $usp->data->salt );
-	$usp->data->modified_files = $modified_files;
-	$usp->data->detected_cms = $cms['name'];
-	$usp->data->is_installed  = true;
-	$usp->data->no_sql  = (boolean)Post::get( 'no_sql' );
-	$usp->data->save();
+
+    if( Post::get( 'user_token' ) )
+        $usp->data->user_token = trim( Post::get( 'user_token' ) );
+
+    $host = $_SERVER['HTTP_HOST'] ?: 'Your Site';
+    $to = trim( Post::get( 'email' ) );
+    $subject = 'UniForce settings password for ' . $host;
+    $message = "Hi,<br><br>
+                Your credentials to get access to settings of Uniforce (Universal security plugin by CleanTalk) are bellow,<br><br>
+                Login: $login<br>
+                Password: $pass <br>
+                Settings URL: https://$host/uniforce/ <br>
+                Dashboard: https://cleantalk.org/my/?cp_mode=security <br><br>
+                --<br>
+                With regards,<br>
+                CleanTalk team.";
+
+    $headers  = 'MIME-Version: 1.0' . "\r\n";
+    $headers .= 'Content-type: text/html; charset=iso-8859-1' . "\r\n";
+
+    // Sending password
+    if( trim( Post::get( 'email' ) ) && Post::get( 'admin_password' ) ){
+        mail(
+            $to,
+            $subject,
+            $message,
+            $headers
+        );
+    }
+
+    if( Post::get( 'account_name_ob' ) )
+        $usp->data->account_name_ob =  trim( Post::get( 'account_name_ob' ) );
+
+    $usp->data->security_key = hash( 'sha256', '~(o_O)~' . $usp->key . $usp->data->salt );
+    $usp->data->modified_files = $modified_files;
+    $usp->data->detected_cms = $cms['name'];
+    $usp->data->is_installed  = true;
+    $usp->data->no_sql  = (boolean)Post::get( 'no_sql' );
+    $usp->data->save();
 
     $usp->settings->bfp_admin_page =  $cms['admin_page'];
-	$usp->settings->key  = $api_key;
-	$usp->settings->save();
+    $usp->settings->key  = $api_key;
+    $usp->settings->save();
 
-	$usp->plugin_meta->is_installed  = true;
-	$usp->plugin_meta->version = SPBCT_VERSION;
-	$usp->plugin_meta->save();
+    $usp->plugin_meta->is_installed  = true;
+    $usp->plugin_meta->version = SPBCT_VERSION;
+    $usp->plugin_meta->save();
 }
 
 /**
