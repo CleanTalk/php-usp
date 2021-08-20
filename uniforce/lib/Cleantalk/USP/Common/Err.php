@@ -14,9 +14,9 @@ class Err{
 	private static $instance;
 	private $errors = [];
 	
-	private function __construct(){}
-    private function __wakeup(){}
-    private function __clone(){}
+	public function __construct(){}
+    public function __wakeup(){}
+    public function __clone(){}
 	
 	/**
 	 * Constructor
