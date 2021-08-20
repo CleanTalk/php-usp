@@ -34,34 +34,31 @@ class Updater {
 		$this->download_path = $root_path . DS . 'downloads' . DS;
 		$this->backup_path = $root_path . DS . 'backup';
 	}
-	
-	/**
-	 * Recursive
-	 * Multiple HTTP requests
-	 * Check URLs for to find latest version. Checking response code from URL.
-	 *
-	 * @param array $version
-	 * @param int $version_type_to_check
-	 *
-	 * @return array|string|null
-	 */
+    
+    /**
+     * Recursive
+     * Multiple HTTP requests
+     * Check URLs for to find latest version. Checking response code from URL.
+     *
+     * @param null $version_to_check
+     * @param int $version_type_to_check
+     *
+     * @return array|string|null
+     */
 	public function getLatestVersion( $version = null, $version_type_to_check = 0 ){
-		
-		$version = $version ? $version : $this->version_current;
-		
-		// Increasing current version type to check
-		$version[ $version_type_to_check ]++;
+        
+        $version = $version ? $version : $this->version_current;
 		
 		switch( $version_type_to_check ){
-			
+		 
 			case 0:
-				$version_to_check = array( $version[0], 0, 0 );
+                $version_to_check = array( $version[0] + 1, 0, 0 );
 				break;
 			case 1:
-				$version_to_check = array( $version[0], $version[1], 0 );
+                $version_to_check = array( $version[0], $version[1] + 1, 0 );
 				break;
 			case 2:
-				$version_to_check = $version;
+                $version_to_check = array( $version[0], $version[1], $version[2] + 1 );
 				break;
 			
 			// Unacceptable version type. We have the latest version. Return it.
@@ -70,27 +67,26 @@ class Updater {
 				break;
 		}
 		
-		$response_code = Helper::http__request__get_response_code( $this->getURLToCheck( $version_to_check ) );
-		
-		if( $response_code == 200 ){
-			
-			// Set lesser version to 0, if greater was increased
-			if( isset( $version[ $version_type_to_check + 1 ] ) )
-				$version[ $version_type_to_check + 1 ] = 0;
-			if( isset( $version[ $version_type_to_check + 2 ] ) )
-				$version[ $version_type_to_check + 2 ] = 0;
-			
-			return $this->getLatestVersion( $version, $version_type_to_check );
-			
-		}else{
-			
-			// Set previous number if no file was found
-			// Checking next version type
-			$version[ $version_type_to_check ]--;
-			return $this->getLatestVersion( $version, $version_type_to_check + 1 );
+		if( $this->isVersionExists( $version_to_check ) ){
+            
+            return $this->getLatestVersion( $version_to_check, $version_type_to_check );
 		}
 		
-	}
+        $version_to_check[ $version_type_to_check ]--;
+		if( isset( $version_to_check[ $version_type_to_check + 1 ] ) &&
+            $this->version_current[ $version_type_to_check ] === $version_to_check[ $version_type_to_check ]
+        ){
+            $version_to_check[ $version_type_to_check + 1 ] = $this->version_current[ $version_type_to_check + 1 ];
+        }
+		
+        return $this->getLatestVersion( $version_to_check, $version_type_to_check + 1 );
+        
+    }
+	
+	private function isVersionExists( $version_to_check ){
+	       
+        return Helper::http__request__get_response_code( $this->getURLToCheck( $version_to_check ) ) == 200;
+    }
 	
 	/**
 	 * Assemble URL to check UniForce version archive
