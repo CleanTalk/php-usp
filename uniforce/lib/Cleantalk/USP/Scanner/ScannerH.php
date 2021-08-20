@@ -2,6 +2,17 @@
 
 namespace Cleantalk\USP\Scanner;
 
+/**
+ * Class SpbcScannerH
+ *
+ * @package Security Plugin by CleanTalk
+ * @subpackage Scanner
+ * @Version 2.1
+ * @author Cleantalk team (welcome@cleantalk.org)
+ * @copyright (C) 2014 CleanTalk team (http://cleantalk.org)
+ * @license GNU/GPL: http://www.gnu.org/copyleft/gpl.html
+ * @see https://github.com/CleanTalk/security-malware-firewall
+ */
 class ScannerH
 {
 	// Constants
@@ -40,6 +51,7 @@ class ScannerH
 	static $bad_constructs = array(
 		'CRITICAL' => array(
 			'eval',
+			'assert',
 		),
 		'DANGER' => array(
 			'system',
@@ -147,7 +159,7 @@ class ScannerH
 	// Getting common info about file|text and it's content
 	function __construct($path, $params = array())
 	{
-		// File as a plain text|array
+		// Exept file as a plain text|array
 		if(isset($params['content'])){
 			
 			$this->is_text = true;
@@ -163,9 +175,10 @@ class ScannerH
 			}else
 				return $this->error = array('error' =>'FILE_SIZE_ZERO');
 			
-		// File as a path
+		// Exept file as a path
 		}elseif(!empty($path)){
 			
+			// Path
 			$this->path     = $path;
 			$this->curr_dir = dirname($this->path);
 			
@@ -286,7 +299,18 @@ class ScannerH
 	// Coverts T_ENCAPSED_AND_WHITESPACE to T_CONSTANT_ENCAPSED_STRING if could
 	public function strings_convert()
 	{
-		for($key = 0,  $current = null, $arr_size = count($this->file_lexems); $key < $arr_size; $key++, $current = isset($this->file_lexems[$key]) ? $this->file_lexems[$key] : null){
+		for(
+			$key = 0,
+			$current = null,
+			$arr_size = count($this->file_lexems);
+			
+			$key < $arr_size;
+			
+			$key++,
+			$current = isset($this->file_lexems[$key]) ? $this->file_lexems[$key] : null
+		){
+			
+			// Delete T_ENCAPSED_AND_WHITESPACE
 			if($current && $current[0] === 'T_ENCAPSED_AND_WHITESPACE'){
 				$next = isset($this->file_lexems[$key+1]) ? $this->file_lexems[$key+1] : null;
 				$prev = isset($this->file_lexems[$key-1]) ? $this->file_lexems[$key-1] : null;
@@ -300,13 +324,66 @@ class ScannerH
 					);
 				}
 			}
+			
+			// Convert chr('\xNN') to 'a'
+			elseif( $current && $current === ')' ){
+				$prev  = isset( $this->file_lexems[ $key - 1 ] ) ? $this->file_lexems[ $key - 1 ] : null;
+				$prev2 = isset( $this->file_lexems[ $key - 2 ] ) ? $this->file_lexems[ $key - 2 ] : null;
+				$prev3 = isset( $this->file_lexems[ $key - 3 ] ) ? $this->file_lexems[ $key - 3 ] : null;
+				if (
+					$prev && is_array( $prev ) && in_array( $prev[0], array( 'T_LNUMBER', 'T_CONSTANT_ENCAPSED_STRING' ) ) &&
+					$prev2 && $prev2 === '(' &&
+					$prev3 && is_array( $prev3 ) && $prev3[0] === 'T_STRING' && $prev3[1] === 'chr'
+				) {
+					unset(
+						$this->file_lexems[ $key - 1 ],
+						$this->file_lexems[ $key - 2 ],
+						$this->file_lexems[ $key - 3 ]
+					);
+					$char_num = (int) trim( $prev[1], '\'"');
+					$this->file_lexems[ $key ] = array(
+						'T_CONSTANT_ENCAPSED_STRING',
+						'\'' . ( chr( $char_num ) ? chr( $char_num ) : '') . '\'',
+						$prev3[2],
+					);
+				}
+			}
+
+			// Convert "\xNN" to 'a'
+			elseif( isset($current, $current[0]) && $current[0] === 'T_CONSTANT_ENCAPSED_STRING' &&
+			        strpos( $current[1], '"') === 0 &&
+			        (
+				        strpos( $current[1], '\x') !== false ||
+				        preg_match( '@\\[\d]{3}@', $current[1] )
+			        )
+			){
+				preg_match( '@(\\[\d]{3}|\\\\x[\d]{2})@', $current[1], $matches );
+
+				unset($matches[0]);
+				$matches = array_values( $matches );
+				$replacements = array_map(function($elem){
+					return eval( "return \"$elem\";");
+				}, $matches);
+				$this->file_lexems[ $key ][1] = str_replace( $matches, $replacements, $current[1] );
+			}
 		}
 	}
 	
 	// Concatenates T_CONSTANT_ENCAPSED_STRING if could
 	public function strings_concatenate()
 	{
-		for($key = 0,  $current = null, $arr_size = count($this->file_lexems); $key < $arr_size; $key++, $current = isset($this->file_lexems[$key]) ? $this->file_lexems[$key] : null){
+		for(
+			$key = 0,
+			$current = null,
+			$arr_size = count($this->file_lexems);
+			
+			$key < $arr_size;
+			
+			$key++,
+			$current = isset($this->file_lexems[$key]) ? $this->file_lexems[$key] : null
+		){
+			
+			// Concatenates simple strings
 			if($current && $current[0] === 'T_ENCAPSED_AND_WHITESPACE'){
 				$next = isset($this->file_lexems[$key+1]) ? $this->file_lexems[$key+1] : null;
 				if($next && $next[0] === 'T_ENCAPSED_AND_WHITESPACE'){
@@ -318,6 +395,8 @@ class ScannerH
 					unset($this->file_lexems[$key]);
 				}
 			}
+			
+			// Concatenates 'a'.'b' and "a"."b" to 'ab'
 			elseif($current && $current === '.'){	
 				$next = isset($this->file_lexems[$key+1]) ? $this->file_lexems[$key+1] : null;
 				$prev = isset($this->file_lexems[$key-1]) ? $this->file_lexems[$key-1] : null;
@@ -454,13 +533,45 @@ class ScannerH
 	// Gets all of the include and require constructs. Checks for file extension and checks the path.
 	public function includes_getAll()
 	{
-		for($key = 0, $current = null, $arr_size = count($this->file_lexems); $key < $arr_size; $key++, $current = isset($this->file_lexems[$key]) ? $this->file_lexems[$key] : null){
-			if(strpos($current[0], 'INCLUDE') !== false || strpos($current[0], 'REQUIRE') !== false){
+		for(
+			$key = 0,
+			$current = null,
+			$arr_size = count($this->file_lexems);
+			
+			$key < $arr_size;
+			
+			$key++,
+			$current = isset($this->file_lexems[$key]) ? $this->file_lexems[$key] : null,
+			$prev_file_exists__key = null,
+			$prev_file_exists      = null
+			
+		){
+			if (
+				! is_null( $current ) &&
+				in_array(
+					$current[0],
+					array( 'T_INCLUDE', 'T_INCLUDE_ONCE', 'T_REQUIRE', 'T_REQUIRE_ONCE' )
+				)
+			){
+				
+				// Get previous "file_exists" function
+				$prev_file_exists__start = $this->lexem_getPrev( $key, 'file_exists' );
+				$prev_file_exists__end = $prev_file_exists__start
+					? $this->lexem_getNext( $prev_file_exists__start, ')' )
+					: null;
+				$prev_file_exists = $prev_file_exists__start && $prev_file_exists__end
+					? $this->lexem_getRange( $prev_file_exists__start, $prev_file_exists__end)
+					: null;
+				
 				$include_end = $this->lexem_getNext($key, ';')-1;
 				if($include_end){
 					$include = $this->lexem_getRange($key+1, $include_end);		
+					if( $prev_file_exists ){
+						$include['file_exists'] = $prev_file_exists;
+					}
 					$this->includes_processsAndSave($include, $key);
 				}
+				
 			}
 		}
 	}
@@ -498,7 +609,15 @@ class ScannerH
 			$not_url  = !filter_var($path, FILTER_VALIDATE_URL) ? true : false; // Checks if it is URL
 			preg_match('/^(((\S:\\{1,2})|(\S:\/{1,2}))|\/)?.*/', $path, $matches);                         // Reconizing if path is absolute.
 			$path     = empty($matches[1]) && $not_url ? $this->curr_dir.'/'.$path : $path;                // Make path absolute
-			$exists   = $this->is_text ? null : (realpath($path) ? true : false);                          // Checks for existence. null if checking text (not file).
+			$exists   =
+				$this->is_text &&
+				! (
+					isset( $include['file_exists'] ) &&
+					$include['file_exists'][2][0] === 'T_CONSTANT_ENCAPSED_STRING' &&
+					$include['file_exists'][2][0] === $path 
+				)
+				? null
+				: (realpath($path) ? true : false); // Checks for existence. null if checking text (not file).
 			preg_match('/.*\.(\S*)$/', $path, $matches2);          // Reconizing extension.
 			$ext      = isset($matches2[1]) ? $matches2[1] : '';   
 			$ext_good = in_array($ext, array('php', 'inc')) || is_dir($path) ? true : false;             // Good extension?
@@ -618,11 +737,20 @@ class ScannerH
 	public function make_verdict()
 	{
 		// Detecting bad functions
-		foreach($this->file_lexems as $lexem){
+		foreach($this->file_lexems as $key => $lexem){
 			if(is_array($lexem)){
 				foreach(self::$bad_constructs as $severity => $set_of_functions){
 					foreach($set_of_functions as $bad_function){
-						if($lexem[1] === $bad_function){
+						if(
+							$lexem[1] === $bad_function &&
+							! (
+								isset(
+									$this->file_lexems[ $key - 1 ],
+									$this->file_lexems[ $key - 1][0]
+								) &&
+								$this->file_lexems[ $key - 1][0] === 'T_OBJECT_OPERATOR' 
+							)
+						){
 							$this->verdict[$severity][$lexem[2]][] = $bad_function;
 						}
 					} unset($bad_function);
@@ -661,7 +789,14 @@ class ScannerH
 		return false;
 	}
 	
-	// Getting prev setted lexem, Search for needle === if needle is set
+	/**
+	 * Getting prev setted lexem, Search for needle === if needle is set
+	 *
+	 * @param int $start
+	 * @param null $needle
+	 *
+	 * @return bool|int
+	 */
 	public function lexem_getPrev($start, $needle = null)
 	{
 		for($i = 0, $key = $start-1; $i < 100 && $key > 0; $i--, $key--){
