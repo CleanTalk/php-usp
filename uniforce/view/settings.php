@@ -135,7 +135,7 @@ usp_localize_script( 'usp',
                     <!-- Start Error box -->
                     <div class="alert alert-danger alert-dismissible fade in" style="<?php if( ! Err::check() ) echo 'display:none'; ?>" role="alert">
                         <button type="button" class="close" > &times;</button>
-                        <p id='error-msg'><?php echo Err::check_and_output()['error']; ?></p>
+                        <p id='error-msg'><?php $error = Err::check_and_output(); echo isset( $error ) ? $error : ''; ?></p>
                     </div>
                     <!-- End Error box -->
 
