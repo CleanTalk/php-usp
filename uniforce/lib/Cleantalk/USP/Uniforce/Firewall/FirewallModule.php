@@ -106,11 +106,13 @@ class FirewallModule extends \Cleantalk\USP\Security\Firewall\FirewallModule {
 			);
 			
 		}
-		
-		$fd = fopen( $log_path, 'w' );
-		flock( $fd, LOCK_EX );
-		fputcsv( $fd, $log );
-		fclose( $fd );
+        
+        $fd = fopen( $log_path, 'w' );
+        if( $fd ){
+            flock( $fd, LOCK_EX );
+            fputcsv( $fd, $log );
+            fclose( $fd );
+        }
 	}
 	
 	/**

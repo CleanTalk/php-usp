@@ -35,6 +35,7 @@ class State extends \Cleantalk\USP\Common\Storage{
 		// Authentication
 		'bfp'                  => 1,
 		'bfp_admin_page'       => '',
+        'bfp_login_form_fields' => '',
 		'block_timer__1_fails' => 3,
 		'block_timer__5_fails' => 10,
 

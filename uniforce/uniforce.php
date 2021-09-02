@@ -42,14 +42,13 @@ if( $usp->settings->fw || $usp->settings->waf || $usp->settings->bfp ){
 	if( $usp->settings->bfp ){
 		
 		$firewall->module__load( new \Cleantalk\USP\Uniforce\Firewall\BFP(
-			array(
-				'is_login_page' => ( $usp->settings->bfp_admin_page && Server::has_string( 'REQUEST_URI', $usp->settings->bfp_admin_page ) ) ||
-				                   ( defined( 'USP_DASHBOARD' ) && Post::get( 'login' ) ),
-				'is_logged_in'  => \Cleantalk\USP\Uniforce\Firewall\BFP::is_logged_in( $usp->detected_cms ),
-				'do_check'      => Cookie::get( 'spbct_authorized' ) !== md5( State::getInstance()->key ) &&
-				                   Post::get( 'spbct_login_form' ),
-				'state'         => $usp,
-			)
+            array(
+                'is_login_page' => \Cleantalk\USP\Uniforce\Firewall\BFP::is_login_page(),
+                'is_logged_in'  => \Cleantalk\USP\Uniforce\Firewall\BFP::is_logged_in( $usp->detected_cms ),
+                'do_check'      => Cookie::get( 'spbct_authorized' ) !== md5( State::getInstance()->key ) ||
+                    Post::get( 'spbct_login_form' ),
+                'state'         => $usp,
+            )
 		) );
 	}
 	

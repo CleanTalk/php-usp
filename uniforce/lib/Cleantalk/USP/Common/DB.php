@@ -23,7 +23,7 @@ interface DB
 	 *
 	 * @return mixed
 	 */
-	function query( $query );
+	function q( $query );
 	
 	/**
 	 * Safely replace place holders

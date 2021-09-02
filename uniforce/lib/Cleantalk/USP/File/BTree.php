@@ -265,7 +265,7 @@ class BTree {
 	 *
 	 * @return array of BTreeLeafNode
 	 */
-	public function getElementFromTree( $key, int $link = 0 ){
+	public function getElementFromTree( $key, $link = 0 ){
 		
 		$out = array();
 		

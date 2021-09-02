@@ -362,7 +362,7 @@ class FileStorage {
 
 		// Get data
 		$this->buffer = fread( $this->stream, $byte_amount);
-		if( ! $this->buffer ){
+		if( $this->buffer === false ){
 			Err::add('Can not read data: '. error_get_last()['message']);
 		}
 	}
@@ -385,7 +385,7 @@ class FileStorage {
 			// Get data
 			$this->buffer .= fread( $this->stream, $byte_amount);
 
-			if( ! $this->buffer ){
+			if( $this->buffer === false ){
 				Err::add('Can not read data: '. error_get_last()['message']);
 			}
 		}
