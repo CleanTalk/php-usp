@@ -69,7 +69,7 @@ class DB extends \PDO implements \Cleantalk\USP\Common\DB {
 	 *
 	 * @return false|mixed|\PDOStatement
 	 */
-	function query( $query, $mode = \PDO::ATTR_DEFAULT_FETCH_MODE, $arg3 = null, $ctorargs = array() ){
+	function query( $query, ?int $fetchMode = null, mixed ...$fetchModeArgs ){
 		$this->query = $query;
 		$this->query_result = parent::query( $query );
 		$this->rows_affected = $this->query_result->rowCount();
