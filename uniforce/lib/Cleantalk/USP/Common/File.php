@@ -202,7 +202,6 @@ class File{
 		if( is_dir( $from ) ){
 			
 			if( ! mkdir( $to ) && ! is_dir( $to ) ){
-				error_log( var_export( $to, true ) );
 				return false;
 			}
 			$dd = dir( $from );

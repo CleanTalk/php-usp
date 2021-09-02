@@ -237,7 +237,7 @@ class FW extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 			return array( 'rows' => 0 );
 	}
 	
-	static public function update( $api_key ){
+	public static function update( $api_key ){
 		
 		$multifile_url    = Get::get( 'multifile_url' );
 		$url_count        = Get::get( 'url_count' );
@@ -408,7 +408,7 @@ class FW extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 	 *
 	 * @return array|bool|int|mixed|string
 	 */
-	static public function update__write_to_db( $file_url ){
+	public static function update__write_to_db( $file_url ){
 		
 		$data = Helper::http__get_data_from_remote_gz( $file_url );
 		
