@@ -77,7 +77,6 @@ class BTreeLeaf {
 		// Sorting elements by key
 		$keys = array_column( $this->elements, 'key' );
 		array_multisort( $keys, SORT_ASC, SORT_NUMERIC, $this->elements );
-		
 	}
 	
 	/**
@@ -88,23 +87,26 @@ class BTreeLeaf {
 	 * @return array of BTreeLeafNode
 	 */
 	public function searchForElement( $key_to_search ){
-		
+	 
 		$first_elem = reset( $this->elements );
 		$last_elem  = end( $this->elements );
-		$found_key  = array_search( $key_to_search, array_column( $this->elements, 'key' ) );
 		
-		// Search for all elements with this key in leaf
-		if ( $found_key !== false ){
-			$out = $this->getIdenticalElementsFromLeaf( $key_to_search );
+		// Leaf is empty
+		if( ! $this->elements ){
+            return array( new BTreeLeafNode( null, null, null, null ) );
+		
+		// Leaf contains the exact key
+        }elseif( in_array( $key_to_search, array_column( $this->elements, 'key' ), true ) ){
+            return $this->getIdenticalElementsFromLeaf( $key_to_search );
 			
 		// No key found in this leaf. Get link to correct child
 		// Check if it's on the right
-		}elseif ( $key_to_search > $last_elem['key'] ){
-			$link =  $last_elem['link'];
+		}elseif( $key_to_search > $last_elem['key'] ){
+            return array( new BTreeLeafNode( null, null, $last_elem['link'], null ) );
 			
 		// Check if it's on the left
 		}elseif( $key_to_search < $first_elem['key'] ){
-			$link = $this->link_left;
+            return array( new BTreeLeafNode( null, null, $this->link_left, null ) );
 			
 		// Get link from the middle
 		}else{
@@ -119,6 +121,7 @@ class BTreeLeaf {
 				
 				if( $this->elements[ $position ]['key'] < $key_to_search )
 					$bot = $position + 1;
+				
 				elseif( $this->elements[ $position ]['key'] > $key_to_search )
 					$top = $position - 1;
 				
@@ -129,13 +132,9 @@ class BTreeLeaf {
 			$link = $this->elements[ $position ]['key'] < $key_to_search
 				? $this->elements[ $position ]['link']
 				: $this->elements[ $position - 1 ]['link'];
+            
+            return array( new BTreeLeafNode( null, null, $link, null ) );
 		}
-		
-		$out = isset( $out )
-			? $out
-			: array( new BTreeLeafNode( null, null, $link, null ) );
-			
-		return $out;
 	}
 	
 	/**

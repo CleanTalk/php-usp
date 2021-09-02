@@ -91,8 +91,8 @@ class BTree {
 		foreach( $this->default_tree_meta as $meta_name => $val ){
 			
 			$meta_value__sanitized = str_replace( "\x00", '', substr( $raw_meta, 0, $this->meta_param_length ) );
-			$meta_value__sanitized = intval( $meta_value__sanitized ) || $meta_value__sanitized === '0'
-				? intval( $meta_value__sanitized )
+			$meta_value__sanitized = (int) $meta_value__sanitized || $meta_value__sanitized === '0'
+				? (int) $meta_value__sanitized
 				: $meta_value__sanitized;
 			$this->$meta_name = $meta_value__sanitized;
 			$this->leaf_params[ $meta_name ] = $meta_value__sanitized;
@@ -112,22 +112,24 @@ class BTree {
 		$raw_meta = '';
 		foreach( $this->default_tree_meta as $meta_name => &$meta_value ){
 			
-			if( $meta_name === 'elem_size')
-				$meta_value = $this->default_tree_meta['key_size'] +
-				              $this->default_tree_meta['val_size'] +
-				              $this->default_tree_meta['link_size'];
+			if( $meta_name === 'elem_size'){
+                $meta_value = $this->default_tree_meta['key_size'] +
+                              $this->default_tree_meta['val_size'] +
+                              $this->default_tree_meta['link_size'];
+            }
 			
-			if( $meta_name === 'leaf_size')
-				$meta_value = $this->default_tree_meta['link_size'] * 2 +
-				              $this->default_tree_meta['max_elems_in_node'] * $this->default_tree_meta['elem_size'] +
-				              strlen( $this->default_tree_meta['eod'] ) +
-				              strlen( $this->default_tree_meta['end_of_node'] );
+			if( $meta_name === 'leaf_size'){
+                $meta_value = $this->default_tree_meta['link_size'] * 2 +
+                              $this->default_tree_meta['max_elems_in_node'] * $this->default_tree_meta['elem_size'] +
+                              strlen( $this->default_tree_meta['eod'] ) +
+                              strlen( $this->default_tree_meta['end_of_node'] );
+            }
 			
 			$meta_value = isset( $this->$meta_name ) ? $this->$meta_name : $meta_value;
 			
 			$raw_meta .= str_pad( $meta_value, $this->meta_param_length, "\x00" );
 			
-		}
+		} unset( $meta_value );
 		
 		$raw_meta .= "\n";
 		
@@ -142,26 +144,41 @@ class BTree {
 	 * @param $val
 	 * @param $link
 	 *
-	 * @return bool|false|int
+     * @return int|false Amount of bytes written or false on error
 	 */
 	public function insert( $key, $val, $link = null ){
 		
 		// Find the right node to insert in
-		if( $this->isCurrentLeafEmpty() )
-			$this->currentLeaf = $this->getLeafToInsertIn( $key );
-			
+		if( $this->isCurrentLeafEmpty() ){
+            $this->currentLeaf = $this->getLeafToInsertIn( $key );
+        }
+		
 		// Insert in current node
 		$this->currentLeaf->insert( $key, $val, $link );
-		if( $this->currentLeaf->getSize() <= $this->max_elems_in_node )
-			$result = $this->currentLeaf->save(); // Element hasn't reached maximum size
-		else
-			$result = $this->rebuildTree(); // Larger than maximum. Recursively rebuild tree
+		
+		/* Check leaf size */
+        
+        // Element hasn't reached maximum size
+		if( $this->currentLeaf->getSize() <= $this->max_elems_in_node ){
+            $result = $this->currentLeaf->save();
+            
+        // Larger than maximum. Recursively rebuild tree
+        }else{
+            $result = $this->rebuildTree();
+        }
 		
 		$this->unsetCurrentLeaf();
 		
 		return $result;
 	}
-	
+    
+    /**
+     * Recursive.
+     *
+     * Rebuilding tree
+     *
+     * @return int|false Amount of bytes written or false on error
+     */
 	private function rebuildTree(){
 		
 		$nodes = $this->currentLeaf->split();
@@ -240,19 +257,18 @@ class BTree {
 	/**
 	 * @param mixed $key
 	 * @param int $link
-	 * @param BTreeLeaf $previous_leaf
 	 *
 	 * @return BTreeLeaf
 	 */
-	private function getLeafToInsertIn( $key, $link = 0, $previous_leaf = null ){
+	private function getLeafToInsertIn( $key, $link = 0 ){
 		
 		$leaf = new BTreeLeaf( $this->leaf_params, $link ? $link : $this->root_link );
 		
 		$elements = $leaf->searchForElement( $key );
-		$element = $elements[0];
 		
-		if( $element->link )
-			return $this->getLeafToInsertIn( $key, $element->link, $leaf );
+		if( $elements[0]->link ){
+            return $this->getLeafToInsertIn( $key, $elements[0]->link );
+        }
 		
 		return $leaf;
 	}
