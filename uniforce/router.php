@@ -1,6 +1,10 @@
 <?php
 
 use Cleantalk\USP\Common\RemoteCalls;
+use Cleantalk\USP\Common\State;
+use Cleantalk\USP\File\FileStorage;
+use Cleantalk\USP\Uniforce\Firewall\BFP;
+use Cleantalk\USP\Uniforce\Firewall\FW;
 
 define( 'USP_DASHBOARD', true );
 
@@ -9,6 +13,45 @@ require_once 'inc' . DIRECTORY_SEPARATOR . 'common.php';  // Common stuff
 require_once 'uniforce.php';
 
 require_once 'inc' . DIRECTORY_SEPARATOR . 'actions.php'; // Actions
+
+//$result = FW::update( State::getInstance()->key );
+
+$data = [
+    [ 'network' => '1',  'mask' => '9', 'status' => '1', 'is_personal' => 0 ],
+    [ 'network' => '2',  'mask' => '9', 'status' => '1', 'is_personal' => 0 ],
+    [ 'network' => '3',  'mask' => '9', 'status' => '1', 'is_personal' => 0 ],
+    [ 'network' => '4',  'mask' => '9', 'status' => '1', 'is_personal' => 0 ],
+    [ 'network' => '5',  'mask' => '9', 'status' => '1', 'is_personal' => 0 ],
+    [ 'network' => '6',  'mask' => '9', 'status' => '1', 'is_personal' => 0 ],
+    [ 'network' => '7',  'mask' => '9', 'status' => '1', 'is_personal' => 0 ],
+    [ 'network' => '8',  'mask' => '9', 'status' => '1', 'is_personal' => 0 ],
+    [ 'network' => '9',  'mask' => '9', 'status' => '1', 'is_personal' => 0 ],
+    [ 'network' => '10', 'mask' => '9', 'status' => '1', 'is_personal' => 0 ],
+];
+
+$db = new \Cleantalk\USP\File\FileDB( 'test' );
+
+if( \Cleantalk\USP\Variables\Request::get( 'db_action' ) === 'delete' ){
+    $db->delete();
+}
+
+if( \Cleantalk\USP\Variables\Request::get( 'db_action' ) === 'insert' ){
+    $db->insert( $data );
+}
+
+if(
+    \Cleantalk\USP\Variables\Request::get( 'db_action' ) === 'get' &&
+    \Cleantalk\USP\Variables\Request::is_set( 'needles'  )
+){
+    $needles = explode( ',', \Cleantalk\USP\Variables\Request::get( 'needles' ) );
+    $db_results = $db
+        ->set_columns( 'network', 'mask', 'status', 'is_personal' )
+        ->set_where( array( 'network' => $needles, ) )
+        ->set_limit( 0, 20 )
+        ->select();
+}
+
+die();
 
 // URL ROUTING
 switch (true){

@@ -10,12 +10,9 @@ class FileStorage {
 //	use \Cleantalk\USP\Templates\FluidInterface;
 //	use \Cleantalk\USP\Templates\Singleton;
 
-	const FS_PATH = CT_USP_ROOT . 'data' . DIRECTORY_SEPARATOR;
-	const FS_MEMORY_CAP = 5 * 1024 * 1024; // 5 MiB
-
-
-	private $salt;
-
+	public const FS_PATH = CT_USP_ROOT . 'data' . DIRECTORY_SEPARATOR;
+	public const FS_MEMORY_CAP = 5 * 1024 * 1024; // 5 MiB
+ 
 	// Name of storage
 	private $name;
 
@@ -71,8 +68,6 @@ class FileStorage {
 			$this->get_indexes();
 
 		$this->stream = fopen( $this->data_file, 'a+b' );
-
-		return $this;
 	}
 
 	public function set_index_median( $median = null ){
@@ -84,16 +79,13 @@ class FileStorage {
 	}
 
 	private function get_indexes() {
-		foreach ( $this->meta->indexes as $name => $index ){
+		foreach ( $this->meta->indexes as $column_name => $index ){
 			switch ( $index['type'] ) {
-				case 'hash':
-//					$result = $this->index__create__hash( $data[ $index ] );
-					break;
 				case 'binary_tree':
-					$this->indexes[ $name ] = new BinaryTree( self::FS_PATH . "{$this->name}_{$name}_{$index['type']}" );
+					$this->indexes[ $column_name ] = new BinaryTree( self::FS_PATH . "{$this->name}_{$column_name}_{$index['type']}" );
 					break;
 				case 'b_tree':
-					$this->indexes[ $name ] = new BTree( self::FS_PATH . "{$this->name}_{$name}_{$index['type']}" );
+					$this->indexes[ $column_name ] = new BTree( self::FS_PATH . "{$this->name}_{$column_name}_{$index['type']}" );
 					break;
 			}
 		}
@@ -102,9 +94,11 @@ class FileStorage {
 	/**
 	 * Getting metadata and creates new file if not exists
 	 */
-	private function get_meta() {
-		$this->meta = new Storage( $this->name . '_meta', null );
-	}
+	private function get_meta(){
+        $this->meta              = new Storage( $this->name . '_meta', null );
+        $this->meta->line_length = array_sum( array_column( $this->meta->cols, 'length' ) );
+        $this->meta->cols_num    = count( $this->meta->cols );
+    }
 
 	/**
 	 * Reset and set metadata
@@ -149,7 +143,12 @@ class FileStorage {
 	public function set_columns( ...$cols ){
 
 		$cols = $cols ? $cols : array_keys( $this->meta->cols );
-
+		
+		// Adding similar data column if it doesn't pass and exists in meta
+        if( ! in_array( $cols['similar_data'], $cols ) && $this->check__column( 'similar_data' ) ){
+            $cols[] = 'similar_data';
+        }
+		
 		$result = $this->check__column( $cols );
 		if ( $result !== true ) {
 			Err::add( 'Unknown column: ' . $result );
@@ -164,12 +163,12 @@ class FileStorage {
 	// Check limits
 	public function set_limit( $offset = 0, $amount = 0 ){
 
-		if ( gettype( $offset ) !== 'integer' && $offset >= 0 ) {
+		if ( ! is_int( $offset ) && $offset >= 0 ) {
 			Err::add( 'Offset value is wrong: ' . $offset );
 			return false;
 		}
 
-		if ( gettype( $amount ) !== 'integer' && $amount > 0 ) {
+		if ( ! is_int( $amount ) && $amount > 0 ) {
 			Err::add( 'Amount value is wrong: ' . $amount );
 			return false;
 		}
@@ -197,35 +196,20 @@ class FileStorage {
 	}
 	
 	/**
-	 * @param string $type
-	 *
 	 * @return array|bool
 	 */
-	public function select( $type = 'index' ) {
-
-//		$query = is_string( $query ) ? $this->parse_query() : $query;
-
-		//
+	public function select() {
+	 
 		if( ! $this->columns ) $this->set_columns();
-
-		// Going on...
-		// Indexes exist and correct. Getting data by indexes.
-		if ( $this->where && $this->check__column_index( $this->where ) && $type === 'index' ){
-            $data = $this->get_data__by_index(
-                $this->columns,
-                $this->offset,
-                $this->amount
-            );
-		// No index. Bruteforce solution.
-		} else {
-			$data = $this->get_data__by_bruteforce(
-				$this->columns,
-				$this->offset,
-				$this->amount
-			);
-		}
+  
+		$results = $this->get_data__by( 'by_index' );
+		foreach( $results as &$result ){
+		    if( isset( $result['similar_data'] ) ){
+                unset( $result['similar_data'] );
+            }
+        }
 		
-		return $data;
+        return $results;
 	}
 
 	/**
@@ -239,14 +223,17 @@ class FileStorage {
 
 		fseek( $this->stream, 0, SEEK_END );
 		$res = fwrite( $this->stream, $data );
+		
 		if ( ! $res ) {
 			$err = error_get_last();
 			Err::add( $err['message'] );
+			
 			return false;
-		} else {
+        }else{
 			$inserted = $res / ( $this->meta->line_length + strlen( $this->row_separator ) );
 			$this->meta->rows += $inserted;
 			$this->meta->save();
+			
 			return $inserted;
 		}
 	}
@@ -283,6 +270,13 @@ class FileStorage {
 		unlink( $this->data_file );
 	}
 
+	private function get_data__by( $search_type = 'by_bruteforce' ){
+        
+        return $search_type === 'by_index' && $this->where && $this->check__column_index( $this->where )
+            ? $this->get_data__by_bruteforce( $this->columns )
+            : $this->get_data__by_index( $this->columns, $this->offset, $this->amount );
+    }
+    
 	private function get_data__by_index( $cols, $offset, $limit ) {
 
 		$addresses = array();
@@ -296,25 +290,56 @@ class FileStorage {
 					break;
 				case 'b_tree':
 					foreach ( $values as $value )
+					    // @todo clear from this greedy construction. Use "$arr[] = $value;" in cycle
 						$addresses = array_merge( $addresses, $this->get_data__by_index__btree( $value ) );
 					break;
 			}
 		}
 		
-		$this->get_rows__to_buffer( $addresses );
-		if( ! $this->buffer )
-			return false;
-
-		while ( $this->buffer ) {
-			$res = $this->buffer__pop_line_to_array( $cols );
-			if( $res )
-				$this->buffer_output[] = $res;
-		}
-
-		return $this->buffer_output;
+		return $this->get_data__by_addresses( $addresses, $cols );
 	}
-	
-	
+    
+    private function get_data__by_bruteforce( $cols, $offset = 0, $amount = 0 ) {
+        
+        $this->get_rows_range__to_buffer( $offset, $amount );
+        if( ! $this->buffer )
+            return false;
+        
+        while ( $this->buffer ) {
+            $res = $this->buffer__pop_line_to_array( $cols );
+            if( $res ){
+                $this->buffer_output[] = $res;
+            }
+        }
+        
+        return $this->buffer_output;
+    }
+    
+    private function get_data__by_addresses( $addresses, $cols ){
+        
+        $this->get_rows__to_buffer( $addresses );
+        if( ! $this->buffer ){
+            return array();
+        }
+        
+        while ( $this->buffer ) {
+            $res = $this->buffer__pop_line_to_array( $cols );
+            if( $res ){
+                $this->buffer_output[] = $res;
+            }
+        }
+    
+        $this->buffer = null;
+    
+        if( isset( $res ) ){
+            foreach( array_column( $this->buffer_output, 'similar_data' ) as $additional_addresses ){
+                $this->get_data__by_addresses( $additional_addresses, $cols );
+            }
+        }
+        
+        return $this->buffer_output;
+    }
+    
 	/**
 	 * @param $key
 	 *
@@ -328,21 +353,6 @@ class FileStorage {
 		return $out;
 	}
 	
-	private function get_data__by_bruteforce( $cols, $offset = 0, $amount = 0 ) {
-
-		$this->get_rows_range__to_buffer( $offset, $amount );
-		if( ! $this->buffer )
-			return false;
-
-		while ( $this->buffer ) {
-			$res = $this->buffer__pop_line_to_array( $cols );
-			if( $res )
-				$this->buffer_output[] = $res;
-		}
-
-		return $this->buffer_output;
-	}
-
 	/**
 	 * @param int $offset
 	 * @param int $amount
@@ -384,7 +394,7 @@ class FileStorage {
 
 			// Get data
 			$this->buffer .= fread( $this->stream, $byte_amount);
-
+   
 			if( $this->buffer === false ){
 				Err::add('Can not read data: '. error_get_last()['message']);
 			}
@@ -514,7 +524,7 @@ class FileStorage {
 			}else{
 				$number--;
 			}
-		}
+		} unset( $datum );
 
 		$data = $data_raw;
 	}
@@ -529,13 +539,15 @@ class FileStorage {
 	}
 
 	private function insert__convert_data_to_storage_format( &$data, $columns ) {
+	 
 		$tmp = '';
+		
 		foreach ( $data as $name => $col ) {
 			
 			// Converting data to the column type
 			switch( $this->meta->cols[ $name ]['type'] ){
 				case 'int':
-					$val = intval( $col );
+					$val = (int) $col;
 					break;
 				case 'string':
 					$val = (string) $col;
@@ -543,8 +555,6 @@ class FileStorage {
 				default:
 					$val = $col;
 			}
-			
-			//@todo make type check
 			
 			$tmp .= str_pad(
 				substr(
@@ -563,18 +573,19 @@ class FileStorage {
 	}
 
 	private function insert__create_index( $number, $data, $indexes, $columns_name ) {
-
+  
 		foreach ( $indexes as $index ){
 
 			switch ( $this->meta->indexes[ $index ]['type'] ){
 				case 'hash':
-					$result = $this->index__create__hash( $data[ $index ], $number, $data[ $index ]  );
+//                    $result = $this->indexes[ $index ]->node__add( $data[ $index ], $number );
+					$result = false;
 					break;
 				case 'binary_tree':
-					$result = $this->index__create__bin_tree( $index, $number, $data[ $index ] );
+                    $result = $this->indexes[ $index ]->add_key( $data[ $index ], $this->meta->rows + $number );
 					break;
 				case 'b_tree':
-					$result = $this->index__create__b_tree( $index, $number, $data[ $index ] );
+					$result = $this->indexes[ $index ]->insert( $data[ $index ], $this->meta->rows + $number );
 					break;
 				default:
 					$result = false;
@@ -597,18 +608,5 @@ class FileStorage {
 			return $out;
 
 		}
-	}
-
-	private function index__create__hash( $index, $number, $key ) {
-//		return $this->indexes[ $index ]->node__add( $key, $this->meta->rows + $number );
-		return false;
-	}
-
-	private function index__create__bin_tree( $index, $number, $key ) {
-		return $this->indexes[ $index ]->add_key( $key, $this->meta->rows + $number );
-	}
-
-	private function index__create__b_tree( $index, $number, $key ) {
-		return $this->indexes[ $index ]->insert( $key, $this->meta->rows + $number );
 	}
 }
