@@ -92,7 +92,7 @@ class BTreeLeaf {
 		$last_elem  = end( $this->elements );
 		
 		// Leaf is empty
-		if( ! $this->elements ){
+		if( $this->isEmpty() ){
             return false;
 		
 		// Leaf contains the exact key
@@ -102,11 +102,11 @@ class BTreeLeaf {
 		// No key found in this leaf. Get link to correct child
 		// Check if it's on the right
 		}elseif( $key_to_search > $last_elem['key'] ){
-            return $last_elem['link'];
+            return $last_elem['link'] ?: false;
 			
 		// Check if it's on the left
-		}elseif( $key_to_search < $first_elem['key'] ){
-            return $this->link_left;
+		}elseif( $key_to_search < $first_elem['key'] && $this->link_left ){
+            return $this->link_left ?: false;
 			
 		// Get link from the middle
 		}else{
@@ -127,9 +127,11 @@ class BTreeLeaf {
 				
 			}
             
-            return $this->elements[ $position ]['key'] < $key_to_search
+            $link = $this->elements[ $position ]['key'] < $key_to_search
                 ? $this->elements[ $position ]['link']
                 : $this->elements[ $position - 1 ]['link'];
+			
+			return $link ?: false;
 		}
 	}
 	

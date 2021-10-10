@@ -90,23 +90,26 @@ class BTree {
      * @param int  $key
      * @param int  $val
      * @param int  $link
-     * @param bool $do_search
+     * @param int $link_to_leaf
      *
      * @return int|false Amount of bytes written or false on error
      */
-	public function put( $key, $val, $link = null, $do_search = false ){
+	public function put( $key, $val, $link = null, $link_to_leaf = null ){
         
-        $this->setCurrentLeaf( new BTreeLeaf( $this->leaf_params, $link ?: $this->root_link ) );
-	    
-	    // Element found
-        if( $do_search && $this->get( $key ) !== false ){
+        // Insert into specific leaf
+        if( $link_to_leaf ){
+            $this->setCurrentLeaf( new BTreeLeaf( $this->leaf_params, $link_to_leaf ) );
+            
+	    // Element already exists. Do nothing.
+        }elseif( $this->get( $key ) !== false ){
+            
             return false;
         }
         
         $this->currentLeaf->insert( $key, $val, $link );
         
 		/* Check leaf size */
-        $result = $this->currentLeaf->getSize() <= $this->max_elems_in_node
+        $result = $this->currentLeaf->getSize() < $this->max_elems_in_node
             ? $this->currentLeaf->save()
             : $this->rebuildTree();
 		
@@ -131,7 +134,7 @@ class BTree {
         
         // Empty tree
         if( $this->isCurrentLeafEmpty() ){
-            return new BTreeLeafNode();
+            return false;
         }
         
         $found = $this->currentLeaf->searchForKey( $key );
@@ -142,10 +145,10 @@ class BTree {
         }
     
         // Link found
-        if( is_int( $found ) ){
+        if( ! $found instanceof BTreeLeafNode ){
             return $this->get( $key, $found );
         }
-    
+        
         // Element found
         return $found;
     }
@@ -215,12 +218,12 @@ class BTree {
 		// Traverse up insert middle element
 		// Insert in parent if it exists
 		if ( $this->currentLeaf->link_parent ){
-		    
             $this->setCurrentLeaf( new BTreeLeaf( $this->leaf_params, $this->currentLeaf->link_parent ) );
             $result += $this->put(
                 $nodes['middle'][ $key ]['key'],
                 $nodes['middle'][ $key ]['val'],
-                $nodes['right']->link
+                $nodes['right']->link,
+                $this->currentLeaf->link_parent
             );
 			
 		// Insert in new node and make it ROOT
@@ -230,11 +233,11 @@ class BTree {
                 array( 'link' => $this->insert_position, 'link_left' => $this->currentLeaf->link )
             );
             
-            $elems = array(
+            $elems = array( array(
                 'key'  => $nodes['middle'][ $key ]['key'],
                 'val'  => $nodes['middle'][ $key ]['val'],
                 'link' => $nodes['right']->link,
-            );
+            ) );
             
             $this->setCurrentLeaf( new BTreeLeaf( $params, $elems ) );
 			
@@ -285,7 +288,7 @@ class BTree {
 	 * @return bool
 	 */
 	private function isCurrentLeafEmpty(){
-		return ! (bool) $this->currentLeaf;
+		return $this->currentLeaf->isEmpty();
 	}
     
     private function getBTreeMeta(){

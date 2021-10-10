@@ -26,8 +26,8 @@ class BTreeLeafNode
     /**
      * @return void
      */
-    public function getValues()
+    public function getValue()
     {
-        $this->value;
+        return $this->value;
     }
 }

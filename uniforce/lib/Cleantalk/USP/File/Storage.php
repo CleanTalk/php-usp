@@ -46,7 +46,7 @@ class Storage {
      *
      * @return bool|float|int
      */
-    public function putRow( $row ) {
+    public function put( $row ) {
         
         if(
             $this->checkRowFormat( $row ) &&
@@ -64,9 +64,14 @@ class Storage {
         return (bool) $res;
     }
     
+    /**
+     * @return bool
+     */
+    public function delete(){
+        return ftruncate( $this->stream, 0 ) && unlink( $this->path );
+    }
+    
     private function checkRowFormat( $data ){
-        
-        var_dump( $data);
         
         if( count( $data ) !== count( $this->cols ) ){
             Err::add( 'Cols number does not match. Given ' . count( $data ) . ', needed: ' . count( $this->cols ) );
@@ -81,7 +86,7 @@ class Storage {
     private function covertRowToRaw( &$row ){
     
         $this->input_buffer = '';
-    var_dump( $this->cols);
+        
         foreach( $row as $name => $col ){
         
             // Converting data to the column type
@@ -106,7 +111,6 @@ class Storage {
             );
         }
         
-        var_dump( $this->input_buffer);
         return (bool) $this->input_buffer;
     }
     
@@ -188,12 +192,4 @@ class Storage {
         return true;
         
     }
-    
-    /**
-     * @return bool
-     */
-    public function delete(){
-        return ftruncate( $this->stream, 0 ) && unlink( $this->path );
-    }
-    
 }

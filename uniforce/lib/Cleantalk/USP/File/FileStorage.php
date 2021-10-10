@@ -468,11 +468,9 @@ class FileStorage {
 					return $result;
 				}
 			}
-		} else {
-			if ( ! isset( $this->meta->cols[ $column ] ) ) {
-				return $column;
-			}
-		}
+		} elseif ( ! isset( $this->meta->cols[ $column ] ) ) {
+            return $column;
+        }
 
 		return true;
 	}
