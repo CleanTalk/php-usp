@@ -95,7 +95,7 @@ class FileDB {
             
             foreach( $this->meta->indexes as &$index ){
                 
-                // @todo crunch
+                // @todo make multiple indexes support
                 $column_to_index = $index['columns'][0];
                 
                 switch( $index['type'] ){
@@ -151,7 +151,7 @@ class FileDB {
      * @return $this|bool
      */
     public function setWhere( $where = array() ){
-    
+        
         $where = $where ?: array_keys( $this->meta->cols );
         
         $result = $this->checkColumn( array_keys( $where ) );
@@ -204,7 +204,7 @@ class FileDB {
         
         // Set what columns to select if it's not
         if( ! $this->columns ){
-            $this->setWhat( $cols );
+            $this->setWhat( ...$cols );
         }
         
         // Set the where if it's not
@@ -213,7 +213,9 @@ class FileDB {
         }
         
         // Check is "where" columns are indexed
-        $this->isWhereIndexed();
+        if( $this->where && $this->where_columns ){
+            $this->isWhereIndexed();
+        }
         
         $result = $this->getData();
         
