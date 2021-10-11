@@ -321,7 +321,7 @@ function usp_uninstall(){
 	}
 
 	// Deleting FW data
-	$db = new \Cleantalk\USP\File\FileStorage( 'fw_nets' );
+	$db = new \Cleantalk\USP\File\FileDB( 'fw_nets' );
 	$db->delete();
 
 	// Deleting options and their files
@@ -556,7 +556,7 @@ function usp_do_save_settings() {
 		// Cleaning up Firewall data
 	} else {
 		// Deleting FW data
-		$db = new \Cleantalk\USP\File\FileStorage( 'fw_nets' );
+		$db = new \Cleantalk\USP\File\FileDB( 'fw_nets' );
 		$db->delete();
 		State::getInstance()->data->save();
 		Cron::removeTask( 'sfw_update' );
