@@ -313,7 +313,9 @@ class BTree {
 	}
 	
 	/**
-	 * @param BTreeLeaf $currentLeaf
+     * Set $this->currentLeaf to null
+     *
+	 * @return void
 	 */
 	private function unsetCurrentLeaf(){
 		$this->currentLeaf = null;
