@@ -44,9 +44,11 @@ class Storage {
     /**
      * @param $row
      *
-     * @return bool|float|int
+     * @return bool|int
      */
     public function put( $row ) {
+        
+        $res = false;
         
         if(
             $this->checkRowFormat( $row ) &&
@@ -56,10 +58,10 @@ class Storage {
             $res = fwrite( $this->stream, $this->input_buffer . $this->row_separator );
         }
         
-            if ( ! $res ){
-                $err = error_get_last();
-                Err::add( $err['message'] );
-            }
+        if ( ! $res ){
+            $err = error_get_last();
+            Err::add( $err['message'] );
+        }
             
         return (bool) $res;
     }
@@ -162,7 +164,8 @@ class Storage {
             return false;
         }
         
-        for( $buffer_read_offset = 0;
+        for( $buffer_read_offset = 0,
+             $read_line_offset = 0;
             
             $buffer_read_offset + 1 < $this->buffer_size;
     
