@@ -14,10 +14,10 @@ class BTree {
 	private $meta_param_length = 20;
 	
 	private $default_tree_meta = array(
-		'max_elems_in_node' => 5,
-		'key_size'          => 3,
-		'val_size'          => 3,
-		'link_size'         => 3,
+		'max_elems_in_node' => 51,
+		'key_size'          => 11,
+		'val_size'          => 11,
+		'link_size'         => 8,
 		'eod'               => "\xffend_of_data",
 		'end_of_node'       => "\n",
 		'root_link'         => 181,
