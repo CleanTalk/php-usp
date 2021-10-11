@@ -175,7 +175,7 @@ class BTreeLeaf {
 
 	private function unserialize( $leaf__raw ){
 		
-		if( ! $leaf__raw )
+		if( strlen( $leaf__raw ) < $this->leaf_size )
 			return null;
 		
 		// Get left link
