@@ -50,7 +50,7 @@ class BTreeLeaf {
 			$this->elements = $link_or_elems;
 
 		}else{
-
+   
 			$this->link = $link_or_elems === '' ? $this->link_size : $link_or_elems;
 
 			// Set position to search
@@ -58,7 +58,7 @@ class BTreeLeaf {
 			
 			// Read node
 			$raw_leaf = fread( $this->stream, $this->leaf_size );
-			
+
 			$this->unserialize( $raw_leaf );
 
 		}
@@ -84,7 +84,7 @@ class BTreeLeaf {
 	 *
 	 * @param $key_to_search
 	 *
-	 * @return false|BTreeLeafNode|int
+	 * @return false|array of BTreeLeafNode
 	 */
 	public function searchForKey( $key_to_search )
     {
@@ -93,24 +93,26 @@ class BTreeLeaf {
 		
 		// Leaf is empty
 		if( $this->isEmpty() ){
-            return false;
+            $out = false;
 		
-		// Leaf contains the exact key
-        }elseif( in_array( $key_to_search, array_column( $this->elements, 'key' ), true ) ){
-            return $this->getNodeByKey( $key_to_search );
+		// Leaf contains the exact key. Get all nodes with this key.
+        }elseif( in_array( $key_to_search, array_column( $this->elements, 'key' ) ) ){
+            $out = $this->getNodesByKey( $key_to_search );
 			
 		// No key found in this leaf. Get link to correct child
 		// Check if it's on the right
-		}elseif( $key_to_search > $last_elem['key'] ){
-            return $last_elem['link'] ?: false;
+		}elseif( $key_to_search > $last_node->key && $last_node->link_right ){
+            $last_node->link = $last_node->link_right;
+            $out = array( $last_node );
 			
 		// Check if it's on the left
-		}elseif( $key_to_search < $first_elem['key'] && $this->link_left ){
-            return $this->link_left ?: false;
+		}elseif( $key_to_search < $first_node->key && $this->link_left ){
+            $first_node->link = $this->link_left;
+            $out = array( $first_node );
 			
 		// Get link from the middle
 		}else{
-			
+   
 			// Binary search
 			$top = $this->size - 1;
 			$bot = 0;
@@ -129,8 +131,16 @@ class BTreeLeaf {
             
             $node       = new BTreeLeafNode( $this->elements[ $position ] );
 			
-			return $link ?: false;
+            $node->link = $node->key < $key_to_search
+                ? $node->link_right
+                : $node->link_left;
+            
+            $out = array( $node );
 		}
+		
+		return isset( $out )
+            ? $out
+            : false;
 	}
 	
 	/**
@@ -138,17 +148,19 @@ class BTreeLeaf {
 	 *
 	 * @param $key
 	 *
-	 * @return BTreeLeafNode|false
+	 * @return false|array of BTreeLeafNode
 	 */
-	private function getNodeByKey( $key ){
-	 
+	private function getNodesByKey( $key ){
+        
+        $out = array();
+	    
 		foreach( $this->elements as $array_key => $element ){
 			if( $element['key'] == $key ){
                 $out[] = new BTreeLeafNode( $element );
             }
 		}
 		
-		return false;
+		return $out ?: false;
 	}
 	
 	public function split(){

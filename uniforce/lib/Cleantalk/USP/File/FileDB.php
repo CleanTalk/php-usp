@@ -275,8 +275,10 @@ class FileDB {
                 case 'btree':
                     foreach ( $values as $value ){
                          $tree_result = $this->indexes[ $this->indexed_column ]->get( $value );
-                         if( $tree_result instanceof BTreeLeafNode ){
-                             $addresses[] = $tree_result->getValue();
+                         if( $tree_result !== false ){
+                             foreach( $tree_result as $node ){
+                                 $addresses[] = $node->getValue();
+                             }
                          }
                     }
                     break;

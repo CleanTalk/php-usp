@@ -63,8 +63,8 @@ class BTree {
 	 * @var BTreeLeaf
 	 */
 	public $currentLeaf = null;
-	
-	public function __construct( $file_path ) {
+    
+    public function __construct( $file_path ) {
 
 		$this->file_path = $file_path;
 		$this->stream = fopen( $this->file_path, 'c+b' );
@@ -95,15 +95,14 @@ class BTree {
      * @return int|false Amount of bytes written or false on error
      */
 	public function put( $key, $val, $link = null, $link_to_leaf = null ){
-        
+	    
         // Insert into specific leaf
         if( $link_to_leaf ){
             $this->setCurrentLeaf( new BTreeLeaf( $this->leaf_params, $link_to_leaf ) );
             
-	    // Element already exists. Do nothing.
-        }elseif( $this->get( $key ) !== false ){
-            
-            return false;
+	    // Insert into leaf
+        }else{
+            $this->setCurrentLeaf( $this->getLeafToInsertIn( $key ) );
         }
         
         $this->currentLeaf->insert( $key, $val, $link );
@@ -117,7 +116,7 @@ class BTree {
 		
 		return $result;
 	}
-    
+	
     /**
      * Recursive.
      *
@@ -126,9 +125,11 @@ class BTree {
      * @param mixed $key to search for
      * @param int $link to the supposed leaf with an element
      *
-     * @return false|BTreeLeafNode
+     * @return false|array of BTreeLeafNode
      */
     public function get( $key, $link = 0 ){
+        
+        $out = array();
         
         $this->setCurrentLeaf( new BTreeLeaf( $this->leaf_params, $link ?: $this->root_link ) );
         
@@ -143,14 +144,32 @@ class BTree {
         if( $found === false ){
             return false;
         }
-    
-        // Link found
-        if( ! $found instanceof BTreeLeafNode ){
-            return $this->get( $key, $found );
+        
+        $leaf_links_to_search = array();
+        foreach( $found as $node ){
+            
+            if( $node->key == $key ){
+                
+                $out[]                  = $node;
+                if( $node->link_right ) $leaf_links_to_search[] = $node->link_right;
+                if( $node->link_left )  $leaf_links_to_search[] = $node->link_left;
+                
+            }elseif( $node->link ){
+                $leaf_links_to_search[] = $node->link;
+            }
+        }
+        $leaf_links_to_search = array_unique( $leaf_links_to_search );
+        
+        foreach( $leaf_links_to_search as $leaf_link_to_search ){
+            
+            $sub_result = $this->get( $key, $leaf_link_to_search );
+            
+            $out = ! $sub_result
+                ? $out
+                : array_merge( $out, $sub_result );
         }
         
-        // Element found
-        return $found;
+        return $out;
     }
     
     public function clear(){
@@ -164,6 +183,25 @@ class BTree {
         
         // Delete file
         unlink( $this->file_path );
+    }
+    
+    /**
+     * @param mixed $key
+     * @param int $link
+     *
+     * @return BTreeLeaf
+     */
+    private function getLeafToInsertIn( $key, $link = 0 ){
+        
+        $leaf = new BTreeLeaf( $this->leaf_params, $link ?: $this->root_link );
+        
+        $leaf_nodes = $leaf->searchForKey( $key );
+        
+        if( $leaf_nodes !== false && $leaf_nodes[0]->link ){
+            return $this->getLeafToInsertIn( $key, $leaf_nodes[0]->link );
+        }
+        
+        return $leaf;
     }
     
     /**
@@ -218,7 +256,6 @@ class BTree {
 		// Traverse up insert middle element
 		// Insert in parent if it exists
 		if ( $this->currentLeaf->link_parent ){
-            $this->setCurrentLeaf( new BTreeLeaf( $this->leaf_params, $this->currentLeaf->link_parent ) );
             $result += $this->put(
                 $nodes['middle'][ $key ]['key'],
                 $nodes['middle'][ $key ]['val'],
