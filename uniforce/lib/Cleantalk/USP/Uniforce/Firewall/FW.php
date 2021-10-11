@@ -9,6 +9,7 @@ use Cleantalk\USP\Uniforce\API;
 use Cleantalk\USP\Uniforce\Helper;
 use Cleantalk\USP\Variables\Get;
 use Cleantalk\USP\Variables\Server;
+use Cleantalk\USP\File\FileDB;
 
 class FW extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 	
@@ -68,7 +69,7 @@ class FW extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 			$ip_type = Helper::ip__validate($current_ip);
 			
 			// IPv4 query
-			if( $ip_type && $ip_type == 'v4' ){
+			if( $ip_type && $ip_type === 'v4' ){
 				
 				$current_ip_v4 = sprintf( "%u", ip2long( $current_ip ) );
 				// Creating IPs to search
@@ -79,16 +80,16 @@ class FW extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 				}
 				$needles = array_unique( $needles );
 				
-				$db = new FileStorage( 'fw_nets' );
+				$db = new FileDB( 'fw_nets' );
 				$db_results = $db
-					->set_columns( 'network', 'mask', 'status', 'is_personal' )
-					->set_where( array( 'network' => $needles, ) )
-					->set_limit( 0, 20 )
-					->select();
-				
+					->setWhere( array( 'network' => $needles, ) )
+					->setLimit( 0, 20 )
+					->select( 'network', 'mask', 'status', 'is_personal' );
+     
 				for( $i = 0; isset( $db_results[ $i ] ); $i ++ ){
-					if( decbin( $db_results[ $i ]['mask'] ) & decbin( $current_ip_v4 ) != decbin( $db_results[ $i ]['network'] ) )
-						unset( $db_results[ $i ] );
+					if( decbin( $db_results[ $i ]['mask'] ) & decbin( $current_ip_v4 ) != decbin( $db_results[ $i ]['network'] ) ){
+                        unset( $db_results[ $i ] );
+                    }
 				}
 			}
 			
@@ -414,7 +415,7 @@ class FW extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 		
 		if ( ! Err::check() ) {
 				
-			$db = new FileStorage( 'fw_nets' );
+			$db = new FileDB( 'fw_nets' );
 			
 			$inserted = 0;
 			while( $data !== '' ){
@@ -488,7 +489,7 @@ class FW extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 			}
 		}
 		
-		$db = new FileStorage( 'fw_nets' );
+		$db = new FileDB( 'fw_nets' );
 		
 		if( isset( $nets_for_save ) ){
 			
@@ -514,7 +515,7 @@ class FW extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 	public static function clear_data() {
 		
 		// Clean current database
-		$db = new FileStorage( 'fw_nets' );
+		$db = new FileDB( 'fw_nets' );
 		$db->delete();
 		
 		return array( 'success' => true, );
