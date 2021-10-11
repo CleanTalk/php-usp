@@ -298,9 +298,7 @@ class BTree {
         foreach( $this->default_tree_meta as $meta_name => $val ){
             
             $meta_value__sanitized = str_replace( "\x00", '', substr( $raw_meta, 0, $this->meta_param_length ) );
-            $meta_value__sanitized = (int) $meta_value__sanitized || $meta_value__sanitized === '0'
-                ? (int) $meta_value__sanitized
-                : $meta_value__sanitized;
+            settype( $meta_value__sanitized, gettype( $val ) );
             $this->$meta_name = $meta_value__sanitized;
             $this->leaf_params[ $meta_name ] = $meta_value__sanitized;
             

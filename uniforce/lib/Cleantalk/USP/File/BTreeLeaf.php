@@ -86,10 +86,10 @@ class BTreeLeaf {
 	 *
 	 * @return false|BTreeLeafNode|int
 	 */
-	public function searchForKey( $key_to_search ){
-	 
-		$first_elem = reset( $this->elements );
-		$last_elem  = end( $this->elements );
+	public function searchForKey( $key_to_search )
+    {
+        $first_node = new BTreeLeafNode( reset( $this->elements ) );
+        $last_node  = new BTreeLeafNode( end(   $this->elements ) );
 		
 		// Leaf is empty
 		if( $this->isEmpty() ){
@@ -127,9 +127,7 @@ class BTreeLeaf {
 				
 			}
             
-            $link = $this->elements[ $position ]['key'] < $key_to_search
-                ? $this->elements[ $position ]['link']
-                : $this->elements[ $position - 1 ]['link'];
+            $node       = new BTreeLeafNode( $this->elements[ $position ] );
 			
 			return $link ?: false;
 		}
@@ -145,15 +143,8 @@ class BTreeLeaf {
 	private function getNodeByKey( $key ){
 	 
 		foreach( $this->elements as $array_key => $element ){
-			if( $element['key'] === $key ){
-                return new BTreeLeafNode(
-                    $element['key'],
-                    $element['val'],
-                    $element['link'],
-                    ! isset( $this->elements[ $array_key - 1 ] )
-                        ? $this->link_left
-                        : null
-                );
+			if( $element['key'] == $key ){
+                $out[] = new BTreeLeafNode( $element );
             }
 		}
 		
@@ -187,14 +178,18 @@ class BTreeLeaf {
 		$leaf__raw = substr( $leaf__raw, $this->link_size * 2, strpos( $leaf__raw, $this->eod ) - $this->link_size * 2 );
 		
 		// Get data from raw and write it to $this->node
-		while ( $leaf__raw ){
-
-			$this->elements[] = array(
-				'key' => str_replace( "\x00", '', substr( $leaf__raw, 0, $this->key_size ) ),
-				'val' => str_replace( "\x00", '', substr($leaf__raw, $this->key_size, $this->val_size ) ),
-				'link' => str_replace( "\x00", '', substr($leaf__raw, $this->key_size + $this->val_size, $this->link_size ) ),
-			);
-			$leaf__raw        = substr( $leaf__raw, $this->elem_size );
+        $previous_link = $this->link_left;
+		while ( $leaf__raw )
+        {
+            $right_link       = str_replace("\x00", '', substr( $leaf__raw, $this->key_size + $this->val_size, $this->link_size ) );
+            $this->elements[] = array(
+                'key'       => str_replace( "\x00", '', substr( $leaf__raw, 0, $this->key_size ) ),
+                'val'       => str_replace( "\x00", '', substr( $leaf__raw, $this->key_size, $this->val_size ) ),
+                'link'      => $right_link,
+                'link_left' => $previous_link,
+            );
+            $previous_link    = $right_link;
+            $leaf__raw        = substr( $leaf__raw, $this->elem_size );
 		}
 
 		$this->size = $this->elements ? count( $this->elements ) : 0;
