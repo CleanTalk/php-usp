@@ -12,8 +12,11 @@ use Cleantalk\USP\Variables\Server;
 use Cleantalk\USP\File\FileDB;
 
 class FW extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
-	
-	public $module_name = 'FW';
+    
+    // Domains which are skipping exclusions
+    private static $test_domains = array( 'lc', 'loc', 'lh', 'test' );
+    
+    public $module_name = 'FW';
 	
 	/**
 	 * @var bool
@@ -414,8 +417,13 @@ class FW extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 		$data = Helper::http__get_data_from_remote_gz( $file_url );
 		
 		if ( ! Err::check() ) {
-				
+		 
 			$db = new FileDB( 'fw_nets' );
+			$networks_to_skip = array();
+			if( in_array( Server::get_domain(), self::$test_domains ) ){
+                $networks_to_skip[] = ip2long( '127.0.0.1' );
+            }
+			
 			
 			$inserted = 0;
 			while( $data !== '' ){
@@ -427,6 +435,9 @@ class FW extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 				){
 					
 					$entry = Helper::buffer__csv__pop_line_to_array( $data );
+                    if( in_array($entry[0], $networks_to_skip ) ){
+                        continue;
+                    }
 					
 					$nets_for_save[] = array(
 						'network'         => $entry[0],
@@ -472,7 +483,7 @@ class FW extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 		if ( Server::get('HTTP_HOST') ) {
 			
 			// Exceptions for local hosts
-			if( ! in_array( Server::get_domain(), array( 'lc', 'loc', 'lh' ) ) ){
+			if( ! in_array( Server::get_domain(), self::$test_domains ) ){
 				$exclusions[] = Helper::dns__resolve( Server::get( 'HTTP_HOST' ) );
 				$exclusions[] = '127.0.0.1';
 			}
