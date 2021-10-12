@@ -74,6 +74,7 @@ class FW extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 			// IPv4 query
 			if( $ip_type && $ip_type === 'v4' ){
 				
+			    $s = microtime( true );
 				$current_ip_v4 = sprintf( "%u", ip2long( $current_ip ) );
 				// Creating IPs to search
 				for ( $needles = array(), $m = 6; $m <= 32; $m ++ ) {
@@ -90,7 +91,10 @@ class FW extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 					->select( 'network', 'mask', 'status', 'is_personal' );
      
 				for( $i = 0; isset( $db_results[ $i ] ); $i ++ ){
-					if( decbin( $db_results[ $i ]['mask'] ) & decbin( $current_ip_v4 ) != decbin( $db_results[ $i ]['network'] ) ){
+                    if( ! Helper::ip__mask_match(
+                        $current_ip,
+                        long2ip( $db_results[ $i ]['network'] ). '/' . Helper::ip__mask__long_to_number( $db_results[ $i ]['mask'] )
+                    ) ){
                         unset( $db_results[ $i ] );
                     }
 				}
