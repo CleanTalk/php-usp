@@ -78,7 +78,23 @@ class Updater {
         
         return array( 'success' => true );
     }
-	
+    
+    /**
+     * @return string|null
+     */
+    private function getCurrentVersion(){
+        $version = defined( 'SPBCT_VERSION' ) ? SPBCT_VERSION : null;
+        return $version
+            ? $this->versionStandardization( $version )
+            : null;
+    }
+    
+    /**
+     * @return mixed
+     */
+    private function getPluginName(){
+        return defined( 'SPBCT_PLUGIN' ) ? SPBCT_PLUGIN : null;
+    }
     
     /**
      * Recursive
@@ -90,40 +106,40 @@ class Updater {
      *
      * @return array|string|null
      */
-	public function getLatestVersion( $version = null, $version_type_to_check = 0 ){
+    public function getLatestVersion( $version = null, $version_type_to_check = 0 ){
         
         $version = $version ? $version : $this->version_current;
-		
-		switch( $version_type_to_check ){
-		 
-			case 0:
+        
+        switch( $version_type_to_check ){
+            
+            case 0:
                 $version_to_check = array( $version[0] + 1, 0, 0 );
-				break;
-			case 1:
+                break;
+            case 1:
                 $version_to_check = array( $version[0], $version[1] + 1, 0 );
-				break;
-			case 2:
+                break;
+            case 2:
                 $version_to_check = array( $version[0], $version[1], $version[2] + 1 );
-				break;
-			
-			// Unacceptable version type. We have the latest version. Return it.
-			default:
-				return implode( '.', array_slice( $version, 0, 3 ) );
-				break;
-		}
-		
-		if( $this->isVersionExists( $version_to_check ) ){
+                break;
+            
+            // Unacceptable version type. We have the latest version. Return it.
+            default:
+                return implode( '.', array_slice( $version, 0, 3 ) );
+                break;
+        }
+        
+        if( $this->isVersionExists( $version_to_check ) ){
             
             return $this->getLatestVersion( $version_to_check, $version_type_to_check );
-		}
-		
+        }
+        
         $version_to_check[ $version_type_to_check ]--;
-		if( isset( $version_to_check[ $version_type_to_check + 1 ] ) &&
+        if( isset( $version_to_check[ $version_type_to_check + 1 ] ) &&
             $this->version_current[ $version_type_to_check ] === $version_to_check[ $version_type_to_check ]
         ){
             $version_to_check[ $version_type_to_check + 1 ] = $this->version_current[ $version_type_to_check + 1 ];
         }
-		
+        
         return $this->getLatestVersion( $version_to_check, $version_type_to_check + 1 );
         
     }
@@ -226,7 +242,7 @@ class Updater {
 	 * @return array|bool
 	 */
 	private function runUpdateActions( $current_version, $new_version ){
-		
+	    
 		$current_version = $this->versionStandardization( $current_version );
 		$new_version     = $this->versionStandardization( $new_version );
 		
@@ -287,10 +303,8 @@ class Updater {
 	
 	private function update_to_3_5_0(){
      
-	    $usp = State::$instance;
-     
 	    // Check if cloud MySQL is accessible
-        $sql_accessible = false;
+        $sql_accessible = true;
         $show_errors = ini_get( 'display_errors' );
         ini_set( 'display_errors', 0);
         try{
@@ -299,14 +313,17 @@ class Updater {
                 'test_user',
                 'oMae9Neid8yi'
             );
-        }catch(Exception $e){
-            $sql_accessible = true;
+        }catch( \Exception $e ){
+            $sql_accessible = false;
         }
         ini_set( 'display_errors', $show_errors);
         
         // Call the method once again if cloud MySQL is accessible
         if( $sql_accessible ){
+         
+	        $usp = State::getInstance();
             $result = API::method__dbc2c_get_info( $usp->key );
+            
             if( empty( $result['error'] ) ){
                 $usp->data->db_request_string = 'mysql:host=' . $result['db_host'] . ';dbname=' . $result['db_name'] . ';charset=utf8';
                 $usp->data->db_user           = $result['db_user'];
