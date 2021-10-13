@@ -404,7 +404,7 @@ function usp_scanner__display(){
 	echo '<p class="spbc_hint text-center">';
 		echo sprintf(
 			__('%sView all scan results for this website%s', 'security-malware-firewall'),
-			'<a target="blank" href="https://cleantalk.org/my/logs_mscan?service='.$usp->service_id.'">',
+			'<a target="blank" href="https://cleantalk.org/my/logs_mscan?service='.$usp->service_id . '&user_token='. Cleantalk\USP\Common\State::getInstance()->user_token .'">',
 			'</a>'
 		);
 	echo '</p>';
@@ -670,7 +670,7 @@ function usp_scanner__display___no_sql(){
 	echo '<p class="spbc_hint text-center">';
 	echo sprintf(
 		__('%sView all scan results for this website%s', 'security-malware-firewall'),
-		'<a target="blank" href="https://cleantalk.org/my/logs_mscan?service='.$usp->service_id.'">',
+		'<a target="blank" href="https://cleantalk.org/my/logs_mscan?service='.$usp->service_id . '&user_token='. Cleantalk\USP\Common\State::getInstance()->user_token .'">',
 		'</a>'
 	);
 	echo '</p>';
