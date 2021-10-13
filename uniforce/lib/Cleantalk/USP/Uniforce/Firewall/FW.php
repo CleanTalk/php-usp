@@ -73,8 +73,7 @@ class FW extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 			
 			// IPv4 query
 			if( $ip_type && $ip_type === 'v4' ){
-				
-			    $s = microtime( true );
+			 
 				$current_ip_v4 = sprintf( "%u", ip2long( $current_ip ) );
 				// Creating IPs to search
 				for ( $needles = array(), $m = 6; $m <= 32; $m ++ ) {

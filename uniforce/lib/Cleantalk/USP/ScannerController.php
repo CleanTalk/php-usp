@@ -310,8 +310,6 @@ class ScannerController {
 		$offset = $offset ?: (int) Get::get('offset');
 		$amount = $amount ?: (int) Get::get('amount');
 		
-		$time_start = microtime(true);
-		
 		$path_to_scan = $path ?: realpath($this->root);
 		$root_path    = realpath($this->root);
 		$init_params = array(
