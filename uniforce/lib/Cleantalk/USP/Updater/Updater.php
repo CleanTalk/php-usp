@@ -322,7 +322,7 @@ class Updater {
         if( $sql_accessible ){
          
 	        $usp = State::getInstance();
-            $result = API::method__dbc2c_get_info( $usp->key );
+            $result = API::method__dbc2c_get_info( $usp->key, true );
             
             if( empty( $result['error'] ) ){
                 $usp->data->db_request_string = 'mysql:host=' . $result['db_host'] . ';dbname=' . $result['db_name'] . ';charset=utf8';
