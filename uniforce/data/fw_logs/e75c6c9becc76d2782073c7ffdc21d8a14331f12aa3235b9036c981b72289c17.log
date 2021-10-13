@@ -1,1 +1,0 @@
-c2ce536a975670e0e8fde23dfeecd8ab,127.0.0.1,1634146896,DENY_BY_WAF_XSS,"{""critical"":""spbct_signature_test__xss""}",11,https://usp.loc/?q=spbct_signature_test__xss,"Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:93.0) Gecko/20100101 Firefox/93.0",GET,
