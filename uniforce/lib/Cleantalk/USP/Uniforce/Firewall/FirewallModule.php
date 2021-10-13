@@ -158,7 +158,7 @@ class FirewallModule extends \Cleantalk\USP\Security\Firewall\FirewallModule {
 				
 				
 				'{REMOTE_ADDRESS}'                 => $result['ip'],
-				'{SERVICE_ID}'                     => $this->state->data['service_id'],
+				'{SERVICE_ID}'                     => $this->state->data->service_id,
 				'{HOST}'                           => Server::get( 'HTTP_HOST' ),
 				'{GENERATED}'                      => '<h2 class="second">The page was generated at '.date("D, d M Y H:i:s"). '</h2>',
 			);

@@ -1,0 +1,1 @@
+28ee8ad043783c84cb1cfaf54e5c93f5,127.0.0.1,1634146919,DENY_BY_WAF_SQL,"{""critical"":""spbct_signature_test__sql""}",1,https://usp.loc/?q=spbct_signature_test__sql,"Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:93.0) Gecko/20100101 Firefox/93.0",GET,

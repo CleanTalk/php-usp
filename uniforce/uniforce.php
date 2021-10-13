@@ -36,6 +36,8 @@ if( $usp->settings->fw || $usp->settings->waf || $usp->settings->bfp ){
 				'waf_sql_check'     => true,
 				'waf_file_check'    => true,
 				'waf_exploit_check' => true,
+                'api_key' => $usp->key,
+                'state'   => $usp,
 			)
 		) );
 	
@@ -48,6 +50,7 @@ if( $usp->settings->fw || $usp->settings->waf || $usp->settings->bfp ){
                 'do_check'      => Cookie::get( 'spbct_authorized' ) !== md5( State::getInstance()->key ) ||
                     Post::get( 'spbct_login_form' ),
                 'state'         => $usp,
+                'api_key' => $usp->key,
             )
 		) );
 	}
