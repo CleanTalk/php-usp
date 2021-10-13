@@ -447,11 +447,7 @@ function usp_do_login($apikey, $password, $email ) {
             setcookie('authentificated', State::getInstance()->data->security_key, 0, '/', null, false, true);
         else
             Err::add('Incorrect login or password');
-
-    // No password is set. Check only login (access key).
-    }elseif( Post::get( 'login' ) == $apikey ){
-	    setcookie('authentificated', State::getInstance()->data->security_key, 0, '/', null, false, true);
-
+        
     // No match
     }else
         Err::add('Incorrect login');
