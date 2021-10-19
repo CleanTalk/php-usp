@@ -1,7 +1,5 @@
 <?php
 
-use Cleantalk\USP\Common\RemoteCalls;
-
 define( 'USP_DASHBOARD', true );
 
 require_once 'inc' . DIRECTORY_SEPARATOR . 'common.php';  // Common stuff

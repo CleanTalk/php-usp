@@ -309,9 +309,8 @@ class ScannerController {
 		
 		$offset = $offset ?: (int) Get::get('offset');
 		$amount = $amount ?: (int) Get::get('amount');
-		
-		$time_start = microtime(true);
-		
+        $time_start = microtime(true);
+        
 		$path_to_scan = $path ?: realpath($this->root);
 		$root_path    = realpath($this->root);
 		$init_params = array(
@@ -471,7 +470,7 @@ class ScannerController {
 	
 	public function action__scanner__signature_analysis( $offset = null, $amount = null, $status = "'UNKNOWN','MODIFIED','OK','INFECTED'" ){
 		
-		if( ! $this->db )                           return array('error' => 'DB_NOT_PROVIDED');
+		if( ! $this->db )                            return array('error' => 'DB_NOT_PROVIDED');
 		if( $this->db instanceof Cleantalk\USP\DB ) return array('error' => 'DB_BAD_CONNECTION');
 		
 		$status = Get::get( 'status' ) ? stripslashes( Get::get( 'status' ) ) : $status;
@@ -481,6 +480,7 @@ class ScannerController {
 		$out = array(
 			'found'     => 0,
 			'processed' => 0,
+			'scanned'   => 0,
 		);
 		
 		if( $offset == 0 ){
@@ -578,6 +578,7 @@ class ScannerController {
 		$out = array(
 			'found'     => 0,
 			'processed' => 0,
+            'scanned'   => 0,
 		);
 		
 		if( $offset == 0 ){

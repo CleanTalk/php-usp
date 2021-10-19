@@ -14,9 +14,9 @@ class Err{
 	private static $instance;
 	private $errors = [];
 	
-	private function __construct(){}
-    private function __wakeup(){}
-    private function __clone(){}
+	public function __construct(){}
+    public function __wakeup(){}
+    public function __clone(){}
 	
 	/**
 	 * Constructor
@@ -56,17 +56,20 @@ class Err{
 	
 	public static function get_last( $output_style = 'bool' ){
 		$out = (bool) self::$instance->errors;
-		if($output_style == 'as_json')
-			$out = json_encode( array('error' => end( self::$instance->errors ) ), true );
-		if($output_style == 'string')
-			$out = array('error' => end( self::$instance->errors ) );
+		if( $output_style === 'as_json'){
+            $out = json_encode( array( 'error' => end( self::$instance->errors ) ), true );
+        }
+		if( $output_style === 'string'){
+            $out = array( 'error' => end( self::$instance->errors ) );
+        }
 		return $out;
 	}
 	
 	public static function get_all( $output_style = 'string' ){
 		$out = self::$instance->errors;
-		if($output_style == 'as_json')
-			$out = json_encode( self::$instance->errors, true );
+		if( $output_style === 'as_json'){
+            $out = json_encode( self::$instance->errors, true );
+        }
 		return $out;
 	}
 	

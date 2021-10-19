@@ -79,68 +79,6 @@ class Updater {
         return array( 'success' => true );
     }
     
-    
-    /**
-	 * Recursive
-	 * Multiple HTTP requests
-	 * Check URLs for to find latest version. Checking response code from URL.
-	 *
-	 * @param array $version
-	 * @param int $version_type_to_check
-	 *
-	 * @return array|string|null
-	 */
-	public function getLatestVersion( $version = null, $version_type_to_check = 0 ){
-		
-		$version = $version ? $version : $this->version_current;
-
-        if($version_type_to_check > 2) {
-            return implode( '.', array_slice( $version, 0, 3 ) );
-        }
-		
-		// Increasing current version type to check
-		$version[ $version_type_to_check ]++;
-		
-		switch( $version_type_to_check ){
-			
-			case 0:
-				$version_to_check = array( $version[0], 0, 0 );
-				break;
-			case 1:
-				$version_to_check = array( $version[0], $version[1], 0 );
-				break;
-			case 2:
-				$version_to_check = $version;
-				break;
-			
-			// Unacceptable version type. We have the latest version. Return it.
-			default:
-				return implode( '.', array_slice( $version, 0, 3 ) );
-				break;
-		}
-		
-		$response_code = Helper::http__request__get_response_code( $this->getURLToCheck( $version_to_check ) );
-		
-		if( $response_code == 200 ){
-			
-			// Set lesser version to 0, if greater was increased
-			if( isset( $version[ $version_type_to_check + 1 ] ) )
-				$version[ $version_type_to_check + 1 ] = 0;
-			if( isset( $version[ $version_type_to_check + 2 ] ) )
-				$version[ $version_type_to_check + 2 ] = 0;
-			
-			return $this->getLatestVersion( $version, $version_type_to_check );
-			
-		}else{
-			
-			// Set previous number if no file was found
-			// Checking next version type
-			$version[ $version_type_to_check ]--;
-			return $this->getLatestVersion( $version, $version_type_to_check + 1 );
-		}
-		
-	}
-    
     /**
      * @return string|null
      */
@@ -156,6 +94,59 @@ class Updater {
      */
     private function getPluginName(){
         return defined( 'SPBCT_PLUGIN' ) ? SPBCT_PLUGIN : null;
+    }
+    
+    /**
+     * Recursive
+     * Multiple HTTP requests
+     * Check URLs for to find latest version. Checking response code from URL.
+     *
+     * @param null $version_to_check
+     * @param int $version_type_to_check
+     *
+     * @return array|string|null
+     */
+    public function getLatestVersion( $version = null, $version_type_to_check = 0 ){
+        
+        $version = $version ? $version : $this->version_current;
+        
+        switch( $version_type_to_check ){
+            
+            case 0:
+                $version_to_check = array( $version[0] + 1, 0, 0 );
+                break;
+            case 1:
+                $version_to_check = array( $version[0], $version[1] + 1, 0 );
+                break;
+            case 2:
+                $version_to_check = array( $version[0], $version[1], $version[2] + 1 );
+                break;
+            
+            // Unacceptable version type. We have the latest version. Return it.
+            default:
+                return implode( '.', array_slice( $version, 0, 3 ) );
+                break;
+        }
+        
+        if( $this->isVersionExists( $version_to_check ) ){
+            
+            return $this->getLatestVersion( $version_to_check, $version_type_to_check );
+        }
+        
+        $version_to_check[ $version_type_to_check ]--;
+        if( isset( $version_to_check[ $version_type_to_check + 1 ] ) &&
+            $this->version_current[ $version_type_to_check ] === $version_to_check[ $version_type_to_check ]
+        ){
+            $version_to_check[ $version_type_to_check + 1 ] = $this->version_current[ $version_type_to_check + 1 ];
+        }
+        
+        return $this->getLatestVersion( $version_to_check, $version_type_to_check + 1 );
+        
+    }
+	
+	private function isVersionExists( $version_to_check ){
+	       
+        return Helper::http__request__get_response_code( $this->getURLToCheck( $version_to_check ) ) == 200;
     }
 	
 	/**
@@ -251,7 +242,7 @@ class Updater {
 	 * @return array|bool
 	 */
 	private function runUpdateActions( $current_version, $new_version ){
-		
+	 
 		$current_version = $this->versionStandardization( $current_version );
 		$new_version     = $this->versionStandardization( $new_version );
 		
@@ -312,10 +303,8 @@ class Updater {
 	
 	private function update_to_3_5_0(){
      
-	    $usp = State::$instance;
-     
 	    // Check if cloud MySQL is accessible
-        $sql_accessible = false;
+        $sql_accessible = true;
         $show_errors = ini_get( 'display_errors' );
         ini_set( 'display_errors', 0);
         try{
@@ -324,14 +313,17 @@ class Updater {
                 'test_user',
                 'oMae9Neid8yi'
             );
-        }catch(Exception $e){
-            $sql_accessible = true;
+        }catch( \Exception $e ){
+            $sql_accessible = false;
         }
         ini_set( 'display_errors', $show_errors);
         
         // Call the method once again if cloud MySQL is accessible
         if( $sql_accessible ){
-            $result = API::method__dbc2c_get_info( $usp->key );
+         
+	        $usp = State::getInstance();
+            $result = API::method__dbc2c_get_info( $usp->key, true );
+            
             if( empty( $result['error'] ) ){
                 $usp->data->db_request_string = 'mysql:host=' . $result['db_host'] . ';dbname=' . $result['db_name'] . ';charset=utf8';
                 $usp->data->db_user           = $result['db_user'];

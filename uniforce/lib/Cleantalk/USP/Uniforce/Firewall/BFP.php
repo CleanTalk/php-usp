@@ -201,7 +201,7 @@ class BFP extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 			$params['page'],
 			$params['page_time'],
 			$params['browser_sign'],
-			isset($log[8]) ? intval( $log[8] ) + 1 : 1,
+			isset($log[8]) ? (int) $log[8] + 1 : 1,
 		);
 		
 		$fd = fopen( $log_path, 'w' );
@@ -237,32 +237,38 @@ class BFP extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 					$log = file_get_contents( $log_dir_path . DS . $log_file );
 					$log = str_getcsv( $log );
 					
-					if( strval( $log[8] ) > 0 ){
-						for( $i = 0; strval( $log[8] ) > $i; $i ++ ){
+					// Skip bad files
+					if( ! isset( $log[0], $log[1], $log[2], $log[3], $log[4], $log[5], $log[6], $log[7], $log[8] ) ){
+					    unlink( $log_dir_path . DS . $log_file );
+					    continue;
+                    }
+					
+					if( (string) $log[8] > 0 ){
+						for( $i = 0; (string) $log[8] > $i; $i ++ ){
 							$data[] = array(
-								'datetime'      => strval( $log[2] ),
+								'datetime'      => (string) $log[2],
 								'user_login'    => null,
-								'event'         => strval( $log[0] ),
+								'event'         => (string) $log[0],
 								'auth_ip'       => strpos( ':', $log[1] ) === false ? (int) sprintf( '%u', ip2long( $log[1] ) ) : (string) $log[1],
-								'page_url'      => strval( $log[3] ),
+								'page_url'      => (string) $log[3],
 								'event_runtime' => null,
 								'role'          => null,
 							);
 						}
 					}else{
 						$data[] = array(
-							'datetime'      => strval( $log[2] ),
+							'datetime'      => (string) $log[2],
 							'user_login'    => null,
-							'event'         => strval( $log[0] ),
+							'event'         => (string) $log[0],
 							'auth_ip'       => strpos( ':', $log[1] ) === false ? (int) sprintf( '%u', ip2long( $log[1] ) ) : (string) $log[1],
-							'page_url'      => strval( $log[3] ),
+							'page_url'      => (string) $log[3],
 							'event_runtime' => null,
 							'role'          => null,
 						);
 					}
 					
 					// Adding user agent if it's login event
-					if( in_array( strval( $log[0] ), array( 'login', 'login_2fa', 'login_new_device', 'logout', ) ) ){
+					if( in_array( (string) $log[0], array( 'login', 'login_2fa', 'login_new_device', 'logout', ) ) ){
 						$data[] = array_merge(
 							array_pop( $data ),
 							array(
