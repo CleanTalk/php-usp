@@ -38,7 +38,7 @@ if ( ! defined( 'CT_USP_ROOT' ) ) {
 
                     <form method="post" id='login-form'>
 
-                        <input type="text" placeholder="Access key<?php if( State::getInstance()->email && State::getInstance()->password ) echo ' or e-mail'; ?>" class="input-field" name="login" required/>
+                        <input type="text" placeholder="Access key or e-mail" class="input-field" name="login" required/>
 
                         <?php if( State::getInstance()->password ) : ?>
                             <input type="password" placeholder="Password" class="input-field" name="password"/>

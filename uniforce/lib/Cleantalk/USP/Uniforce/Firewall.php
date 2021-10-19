@@ -26,7 +26,7 @@ class Firewall extends \Cleantalk\USP\Security\Firewall{
 	 * @param mixed $db database handler
 	 */
 	public function __construct( $db = null ){
-		$this->db = new \Cleantalk\USP\File\FileStorage( 'fw_nets' );
+		$this->db = new \Cleantalk\USP\File\FileDB( 'fw_nets' );
 		parent::__construct( $db );
 	}
 	

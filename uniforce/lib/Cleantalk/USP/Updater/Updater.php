@@ -6,6 +6,7 @@ use Cleantalk\USP\Common\File;
 use Cleantalk\USP\Common\State;
 use Cleantalk\USP\Uniforce\Helper;
 use ZipArchive;
+use Cleantalk\USP\Uniforce\API;
 
 /**
  * CleanTalk Updater class.
@@ -35,6 +36,66 @@ class Updater {
 		$this->backup_path = $root_path . DS . 'backup';
 	}
     
+    public function update( $current_version, $new_version ){
+        
+        $this->deleteDownloads();
+        
+        // Download
+        $path = $this->downloadArchiveByVersion( $new_version );
+        if( ! empty( $path['error'] ) )
+            return $path;
+        
+        // Extract
+        $extract_result = $this->extractArchive( $path, $new_version );
+        if( ! empty( $extract_result['error'] ) )
+            return $extract_result;
+        
+        // Backup
+        if( ! $this->backup() )
+            return array( 'error' => 'Fail to backup previous version.' );
+        
+        // Delete current
+        if( ! File::delete( $this->root_path, array( 'downloads', 'backup', 'data' ) ) ){
+            $rollback_result = $this->rollback() ? 'success' : 'failed';
+            return array( 'error' => 'Fail to delete previous version. Rollback: ' . $rollback_result );
+        }
+        
+        // Install
+        if( ! $this->install( $new_version ) ){
+            $rollback_result = $this->rollback() ? 'success' : 'failed';
+            return array( 'error' => 'Fail install new version. Rollback: ' . $rollback_result );
+        }
+        
+        // Update
+        $update_result = $this->runUpdateActions( $current_version, $new_version );
+        if( ! empty( $update_result['error'] ) ){
+            $rollback_result = $this->rollback() ? 'success' : 'failed';
+            return array( 'error' => $update_result['error'] . ' Rollback: ' . $rollback_result );
+        }
+        
+        $this->deleteBackup();
+        $this->deleteDownloads();
+        
+        return array( 'success' => true );
+    }
+    
+    /**
+     * @return string|null
+     */
+    private function getCurrentVersion(){
+        $version = defined( 'SPBCT_VERSION' ) ? SPBCT_VERSION : null;
+        return $version
+            ? $this->versionStandardization( $version )
+            : null;
+    }
+    
+    /**
+     * @return mixed
+     */
+    private function getPluginName(){
+        return defined( 'SPBCT_PLUGIN' ) ? SPBCT_PLUGIN : null;
+    }
+    
     /**
      * Recursive
      * Multiple HTTP requests
@@ -45,40 +106,40 @@ class Updater {
      *
      * @return array|string|null
      */
-	public function getLatestVersion( $version = null, $version_type_to_check = 0 ){
+    public function getLatestVersion( $version = null, $version_type_to_check = 0 ){
         
         $version = $version ? $version : $this->version_current;
-		
-		switch( $version_type_to_check ){
-		 
-			case 0:
+        
+        switch( $version_type_to_check ){
+            
+            case 0:
                 $version_to_check = array( $version[0] + 1, 0, 0 );
-				break;
-			case 1:
+                break;
+            case 1:
                 $version_to_check = array( $version[0], $version[1] + 1, 0 );
-				break;
-			case 2:
+                break;
+            case 2:
                 $version_to_check = array( $version[0], $version[1], $version[2] + 1 );
-				break;
-			
-			// Unacceptable version type. We have the latest version. Return it.
-			default:
-				return implode( '.', array_slice( $version, 0, 3 ) );
-				break;
-		}
-		
-		if( $this->isVersionExists( $version_to_check ) ){
+                break;
+            
+            // Unacceptable version type. We have the latest version. Return it.
+            default:
+                return implode( '.', array_slice( $version, 0, 3 ) );
+                break;
+        }
+        
+        if( $this->isVersionExists( $version_to_check ) ){
             
             return $this->getLatestVersion( $version_to_check, $version_type_to_check );
-		}
-		
+        }
+        
         $version_to_check[ $version_type_to_check ]--;
-		if( isset( $version_to_check[ $version_type_to_check + 1 ] ) &&
+        if( isset( $version_to_check[ $version_type_to_check + 1 ] ) &&
             $this->version_current[ $version_type_to_check ] === $version_to_check[ $version_type_to_check ]
         ){
             $version_to_check[ $version_type_to_check + 1 ] = $this->version_current[ $version_type_to_check + 1 ];
         }
-		
+        
         return $this->getLatestVersion( $version_to_check, $version_type_to_check + 1 );
         
     }
@@ -147,66 +208,6 @@ class Updater {
 		return $version;
 	}
 	
-	/**
-	 * @return string|null
-	 */
-	public function getCurrentVersion(){
-		$version = defined( 'SPBCT_VERSION' ) ? SPBCT_VERSION : null;
-		return $version
-			? $this->versionStandardization( $version )
-			: null;
-	}
-	
-	/**
-	 * @return mixed
-	 */
-	public function getPluginName(){
-		return defined( 'SPBCT_PLUGIN' ) ? SPBCT_PLUGIN : null;
-	}
-	
-	public function update( $current_version, $new_version ){
-		
-		$this->deleteDownloads();
-		
-		// Download
-		$path = $this->downloadArchiveByVersion( $new_version );
-		if( ! empty( $path['error'] ) )
-			return $path;
-		
-		// Extract
-		$extract_result = $this->extractArchive( $path, $new_version );
-		if( ! empty( $extract_result['error'] ) )
-			return $extract_result;
-		
-		// Backup
-		if( ! $this->backup() )
-			return array( 'error' => 'Fail to backup previous version.' );
-		
-		// Delete current
-		if( ! File::delete( $this->root_path, array( 'downloads', 'backup', 'data' ) ) ){
-			$rollback_result = $this->rollback() ? 'success' : 'failed';
-			return array( 'error' => 'Fail to delete previous version. Rollback: ' . $rollback_result );
-		}
-
-		// Install
-		if( ! $this->install( $new_version ) ){
-			$rollback_result = $this->rollback() ? 'success' : 'failed';
-			return array( 'error' => 'Fail install new version. Rollback: ' . $rollback_result );
-		}
-
-		// Update
-		$update_result = $this->runUpdateActions( $current_version, $new_version );
-		if( ! empty( $update_result['error'] ) ){
-			$rollback_result = $this->rollback() ? 'success' : 'failed';
-			return array( 'error' => $update_result['error'] . ' Rollback: ' . $rollback_result );
-		}
-		
-		$this->deleteBackup();
-		$this->deleteDownloads();
-		
-		return array( 'success' => true );
-	}
-	
 	private function downloadArchiveByVersion( $version ){
 		$url = $this->getDownloadURL( $version );
 		return Helper::http__download_remote_file( $url, $this->download_path );
@@ -241,9 +242,9 @@ class Updater {
 	 * @return array|bool
 	 */
 	private function runUpdateActions( $current_version, $new_version ){
-		
-		$current_version = self::versionStandardization( $current_version );
-		$new_version     = self::versionStandardization( $new_version );
+	    
+		$current_version = $this->versionStandardization( $current_version );
+		$new_version     = $this->versionStandardization( $new_version );
 		
 		$current_version_str = implode( '.', $current_version );
 		$new_version_str     = implode( '.', $new_version );
@@ -256,7 +257,7 @@ class Updater {
 						continue;
 					
 					if( method_exists( $this, "update_to_{$ver_major}_{$ver_minor}_{$ver_fix}" ) ){
-						$result = call_user_func( "update_to_{$ver_major}_{$ver_minor}_{$ver_fix}" );
+						$result = call_user_func( __CLASS__ . "::update_to_{$ver_major}_{$ver_minor}_{$ver_fix}" );
 						if( ! empty( $result['error'] ) ){
 							return $result;
 						}
@@ -299,4 +300,37 @@ class Updater {
 		}else
 			return false;
 	}
+	
+	private function update_to_3_5_0(){
+     
+	    // Check if cloud MySQL is accessible
+        $sql_accessible = true;
+        $show_errors = ini_get( 'display_errors' );
+        ini_set( 'display_errors', 0);
+        try{
+            $db = \Cleantalk\USP\DB::getInstance(
+                'mysql:host=db2c.cleantalk.org;charset=utf8',
+                'test_user',
+                'oMae9Neid8yi'
+            );
+        }catch( \Exception $e ){
+            $sql_accessible = false;
+        }
+        ini_set( 'display_errors', $show_errors);
+        
+        // Call the method once again if cloud MySQL is accessible
+        if( $sql_accessible ){
+         
+	        $usp = State::getInstance();
+            $result = API::method__dbc2c_get_info( $usp->key, true );
+            
+            if( empty( $result['error'] ) ){
+                $usp->data->db_request_string = 'mysql:host=' . $result['db_host'] . ';dbname=' . $result['db_name'] . ';charset=utf8';
+                $usp->data->db_user           = $result['db_user'];
+                $usp->data->db_password       = $result['db_password'];
+                $usp->data->db_created        = $result['created'];
+                $usp->data->save();
+            }
+        }
+    }
 }

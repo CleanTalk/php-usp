@@ -600,23 +600,27 @@ class API{
 		
 		return $result;
 	}
-	
-	/**
-	 * DataBase Client 2 Client
-	 * Creates remote database
-	 *
-	 * @param $api_key
-	 * @param bool $do_check
-	 *
-	 * @return array|bool|mixed|string[] Returns the following data on success call db_name, db_user, db_password, db_host, created
-	 *
-	 */
-	static public function method__dbc2c_get_info( $api_key, $do_check = true ) {
+    
+    /**
+     * DataBase Client 2 Client
+     * Creates remote database
+     *
+     * @param string $api_key
+     * @param null   $force
+     * @param bool   $do_check
+     *
+     * @return array|bool|mixed|string[] Returns the following data on success call db_name, db_user, db_password, db_host, created
+     */
+	static public function method__dbc2c_get_info( $api_key, $force = null, $do_check = true ) {
 		
 		$request = array(
 			'method_name' => 'dbc2c_get_info',
 			'auth_key'    => $api_key,
 		);
+		
+		if( $force ){
+		    $request['force'] = 1;
+        }
 		
 		$result = static::send_request( $request );
 		$result = $do_check ? static::check_response( $result, 'dbc2c_get_info' ) : $result;

@@ -27,10 +27,14 @@ $fw_nets_meta = array (
   'description' => 'Test',
   'indexes' => 
   array (
-    'network' => 
+    0 => 
     array (
+      'columns' => 
+      array (
+        0 => 'network',
+      ),
       'status' => false,
-      'type' => 'b_tree',
+      'type' => 'btree',
     ),
   ),
   'cols_num' => 4,

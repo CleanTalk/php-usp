@@ -9,10 +9,14 @@ use Cleantalk\USP\Uniforce\API;
 use Cleantalk\USP\Uniforce\Helper;
 use Cleantalk\USP\Variables\Get;
 use Cleantalk\USP\Variables\Server;
+use Cleantalk\USP\File\FileDB;
 
 class FW extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
-	
-	public $module_name = 'FW';
+    
+    // Domains which are skipping exclusions
+    private static $test_domains = array( 'lc', 'loc', 'lh', 'test' );
+    
+    public $module_name = 'FW';
 	
 	/**
 	 * @var bool
@@ -68,8 +72,8 @@ class FW extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 			$ip_type = Helper::ip__validate($current_ip);
 			
 			// IPv4 query
-			if( $ip_type && $ip_type == 'v4' ){
-				
+			if( $ip_type && $ip_type === 'v4' ){
+			 
 				$current_ip_v4 = sprintf( "%u", ip2long( $current_ip ) );
 				// Creating IPs to search
 				for ( $needles = array(), $m = 6; $m <= 32; $m ++ ) {
@@ -79,16 +83,19 @@ class FW extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 				}
 				$needles = array_unique( $needles );
 				
-				$db = new FileStorage( 'fw_nets' );
+				$db = new FileDB( 'fw_nets' );
 				$db_results = $db
-					->set_columns( 'network', 'mask', 'status', 'is_personal' )
-					->set_where( array( 'network' => $needles, ) )
-					->set_limit( 0, 20 )
-					->select();
-				
+					->setWhere( array( 'network' => $needles, ) )
+					->setLimit( 0, 20 )
+					->select( 'network', 'mask', 'status', 'is_personal' );
+     
 				for( $i = 0; isset( $db_results[ $i ] ); $i ++ ){
-					if( decbin( $db_results[ $i ]['mask'] ) & decbin( $current_ip_v4 ) != decbin( $db_results[ $i ]['network'] ) )
-						unset( $db_results[ $i ] );
+                    if( ! Helper::ip__mask_match(
+                        $current_ip,
+                        long2ip( $db_results[ $i ]['network'] ). '/' . Helper::ip__mask__long_to_number( $db_results[ $i ]['mask'] )
+                    ) ){
+                        unset( $db_results[ $i ] );
+                    }
 				}
 			}
 			
@@ -413,8 +420,13 @@ class FW extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 		$data = Helper::http__get_data_from_remote_gz( $file_url );
 		
 		if ( ! Err::check() ) {
-				
-			$db = new FileStorage( 'fw_nets' );
+		 
+			$db = new FileDB( 'fw_nets' );
+			$networks_to_skip = array();
+			if( in_array( Server::get_domain(), self::$test_domains ) ){
+                $networks_to_skip[] = ip2long( '127.0.0.1' );
+            }
+			
 			
 			$inserted = 0;
 			while( $data !== '' ){
@@ -426,6 +438,9 @@ class FW extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 				){
 					
 					$entry = Helper::buffer__csv__pop_line_to_array( $data );
+                    if( in_array($entry[0], $networks_to_skip ) ){
+                        continue;
+                    }
 					
 					$nets_for_save[] = array(
 						'network'         => $entry[0],
@@ -471,7 +486,7 @@ class FW extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 		if ( Server::get('HTTP_HOST') ) {
 			
 			// Exceptions for local hosts
-			if( ! in_array( Server::get_domain(), array( 'lc', 'loc', 'lh' ) ) ){
+			if( ! in_array( Server::get_domain(), self::$test_domains ) ){
 				$exclusions[] = Helper::dns__resolve( Server::get( 'HTTP_HOST' ) );
 				$exclusions[] = '127.0.0.1';
 			}
@@ -488,7 +503,7 @@ class FW extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 			}
 		}
 		
-		$db = new FileStorage( 'fw_nets' );
+		$db = new FileDB( 'fw_nets' );
 		
 		if( isset( $nets_for_save ) ){
 			
@@ -514,7 +529,7 @@ class FW extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 	public static function clear_data() {
 		
 		// Clean current database
-		$db = new FileStorage( 'fw_nets' );
+		$db = new FileDB( 'fw_nets' );
 		$db->delete();
 		
 		return array( 'success' => true, );
