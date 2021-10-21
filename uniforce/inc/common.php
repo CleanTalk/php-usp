@@ -42,8 +42,15 @@ new \Cleantalk\USP\Common\State( 'settings', 'data', 'remote_calls', 'fw_stats' 
 // Create empty error object
 \Cleantalk\USP\Common\Err::getInstance();
 
-// Run scheduled tasks
 define( 'CT_USP_CRON_FILE', CT_USP_ROOT . 'data' . DS . 'cron.php' );
+
+if( empty( \Cleantalk\USP\Common\State::getInstance()->data->updated_to_350 ) ){
+    \Cleantalk\USP\Updater\UpdaterScripts::update_to_3_5_0();
+    \Cleantalk\USP\Common\State::getInstance()->data->updated_to_350 = true;
+    \Cleantalk\USP\Common\State::getInstance()->data->save();
+}
+
+// Run scheduled tasks
 $cron = new \Cleantalk\USP\Uniforce\Cron();
 $cron->checkTasks();
 if( ! empty( $cron->tasks_to_run ) && ! RemoteCalls::check() )
