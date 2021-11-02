@@ -42,7 +42,7 @@ class BFP extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 		
 		$results = array();
 		
-		if( $this->is_login_page && ! $this->is_logged_in && $this->do_check ){
+		if( $this->is_login_page && ! $this->is_logged_in && $this->do_check && isset( $this->ip_array['real'] ) ){
 			
 			$block_time = 20 * 60; // 20 minutes
 			$allowed_count = 2;
