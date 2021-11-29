@@ -329,24 +329,24 @@ class Scanner
 				$verdict = array();
 
 				foreach ((array)$signatures as $signature){
-					switch ($signature['type']) {
-						
-						case 'FILE':
-							if($file_info['full_hash'] === $signature['body']){
-								/** @todo Add new type FILE */
-								$verdict['SIGNATURES'][1][] = $signature['id'];
-							}
-							break;
-						
-						case 'CODE_PHP':
-							$file_content = file_get_contents($root_path.$file_info['path']);
-							if(strripos($file_content, $signature['body']) !== false){
-								$string_number = ScannerHelper::file__get_string_number_with_needle($file_content, strripos($file_content, $signature['body']));
-								/** @todo Add new type CODE_PHP */
-								$verdict['SIGNATURES'][$string_number][] = $signature['id'];
-							}
-							break;
-					}
+				    
+                    if( $signature['type'] === 'FILE' ){
+                        if( $file_info['full_hash'] === $signature['body'] ){
+                            $verdict['SIGNATURES'][1][] = $signature['id'];
+                        }
+                    }
+                    
+                    if( in_array( $signature['type'], array('CODE_PHP', 'CODE_JS', 'CODE_HTML' ) ) ) {
+                        $file_content = file_get_contents( $root_path . $file_info['path'] );
+                        $is_regexp = preg_match( '/\/.*\//', $signature['body'] );
+                        if(
+                            ( $is_regexp   && preg_match( $signature['body'], $file_content ) ) ||
+                            ( ! $is_regexp && strripos( $file_content, stripslashes( $signature['body'] ) ) !== false )
+                        ){
+                            $line_number = ScannerHelper::file__get_string_number_with_needle( $file_info['path'], $signature['body'], $is_regexp );
+                            $verdict['SIGNATURES'][ $line_number ][] = $signature['id'];
+                        }
+                    }
 				}
 				
 				$file_info['weak_spots'] = !empty($file_info['weak_spots']) ? json_decode($file_info['weak_spots'], true) : array();

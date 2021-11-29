@@ -241,16 +241,29 @@ class Helper {
 	static function is_windows(){
 		return strpos(strtolower(php_uname('s')), 'windows') !== false ? true : false;
 	}
-	
-	/**
-	 * Returns number of string with a given char position
-	 *
-	 * @param string $haystack String to search in
-	 * @param int    $position Character position
-	 *
-	 * @return int String nubmer
-	 */
-	static function file__get_string_number_with_needle($haystack, $position){
-		return count(explode(PHP_EOL, substr($haystack, 0, $position)));
+    
+    /**
+     * Returns number of string with a given char position
+     *
+     * @param string $file_path   String to search in
+     * @param int $signature_body Character position
+     * @param bool $is_regexp     Flag. Is signature is regular expression?
+     *
+     * @return int String number
+     */
+	public static function file__get_string_number_with_needle($file_path, $signature_body, $is_regexp = false){
+        $file = file( $file_path );
+        $out = 0;
+        
+        foreach( $file as $number => $line ){
+            if(
+                ( $is_regexp   && preg_match( $signature_body, $line ) ) ||
+                ( ! $is_regexp && strripos( $line, stripslashes( $signature_body ) ) !== false )
+            ){
+                $out = $number;
+            }
+        }
+        
+        return $out;
 	}
 }
