@@ -672,8 +672,49 @@ class Helper{
 
 		return $data;
 	}
-	
-	public static function http__download_remote_file( $url, $tmp_folder ){
+    
+    /**
+     * Wrapper for http_request
+     * Requesting HTTP response code for $url
+     *
+     * @param string $path
+     *
+     * @return array|mixed|string
+     */
+    public static function get_data_from_local_gz( $path ){
+        
+        if ( file_exists( $path ) ) {
+            
+            if ( is_readable( $path ) ) {
+                
+                $data = file_get_contents( $path );
+                
+                if ( $data !== false ){
+                    
+                    if( static::get_mime_type( $data, 'application/x-gzip' ) ){
+                        
+                        if( function_exists('gzdecode') ) {
+                            
+                            $data = gzdecode( $data );
+                            
+                            if ( $data !== false ){
+                                return $data;
+                            }else
+                                return array( 'error' => 'Can not unpack datafile');
+                            
+                        }else
+                            return array( 'error' => 'Function gzdecode not exists. Please update your PHP at least to version 5.4 ' . $data['error'] );
+                    }else
+                        return array('error' => 'WRONG_REMOTE_FILE_MIME_TYPE');
+                }else
+                    return array( 'error' => 'Couldn\'t get data' );
+            }else
+                return array( 'error' => 'File is not readable: ' . $path );
+        }else
+            return array( 'error' => 'File doesn\'t exists: ' . $path );
+    }
+    
+    public static function http__download_remote_file( $url, $tmp_folder ){
 		
 		$result = self::http__request( $url, array(), 'get_file' );
 		
@@ -692,8 +733,88 @@ class Helper{
 		}else
 			return $result;
 	}
-	
-	/**
+    
+    /**
+     * Do multi curl requests.
+     *
+     * @param array $urls      Array of URLs to requests
+     * @param string $write_to Path to the writing files dir
+     *
+     * @return array
+     * @psalm-suppress PossiblyUnusedMethod
+     */
+    public static function http__download_remote_file__multi( $urls, $write_to = '' )
+    {
+        if( ! is_array( $urls ) || empty( $urls ) ) {
+            return array( 'error' => 'CURL_MULTI: Parameter is not an array.' );
+        }
+        
+        foreach( $urls as $url ) {
+            if( ! is_string( $url ) ) {
+                return array( 'error' => 'CURL_MULTI: Parameter elements must be strings.' );
+            }
+        }
+        
+        $urls_count = count( $urls );
+        $curl_arr = array();
+        $master = curl_multi_init();
+        
+        for($i = 0; $i < $urls_count; $i++)
+        {
+            $url =$urls[$i];
+            $curl_arr[$i] = curl_init($url);
+            $opts = array(
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_CONNECTTIMEOUT_MS => 10000,
+                CURLOPT_FORBID_REUSE => true,
+                CURLOPT_USERAGENT => self::DEFAULT_USER_AGENT . '; ' . ( isset( $_SERVER['REMOTE_ADDR'] ) ? $_SERVER['REMOTE_ADDR'] : 'UNKNOWN_HOST' ),
+                CURLOPT_HTTPHEADER => array('Expect:'), // Fix for large data and old servers http://php.net/manual/ru/function.curl-setopt.php#82418
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_MAXREDIRS => 5,
+            );
+            curl_setopt_array($curl_arr[$i], $opts);
+            curl_multi_add_handle($master, $curl_arr[$i]);
+        }
+        
+        do {
+            curl_multi_exec($master,$running);
+            // @ToDo place here sleep(500) to avoid possible CPU overusing
+        } while($running > 0);
+        
+        $results = array();
+        
+        for($i = 0; $i < $urls_count; $i++)
+        {
+            $info = curl_getinfo($curl_arr[$i], CURLINFO_HTTP_CODE);
+            if( 200 == $info ) {
+                if( ! empty( $write_to ) && is_dir( $write_to ) && is_writable( $write_to ) ) {
+                    $results[] = file_put_contents(  $write_to . DS . self::getFilenameFromUrl( $urls[$i] ), curl_multi_getcontent( $curl_arr[$i] ) )
+                        ? 'success'
+                        : 'error';
+                } else {
+                    $results[] = curl_multi_getcontent( $curl_arr[$i] );
+                }
+                
+            } else {
+                $results[] = 'error';
+            }
+        }
+        return $results;
+    }
+    
+    /**
+     * @param $url string
+     *
+     * @return string
+     */
+    public static function getFilenameFromUrl( $url )
+    {
+        $array = explode( '/', $url );
+        return end( $array );
+    }
+    
+    
+    /**
 	 * Gets every HTTP_ headers from $_SERVER
 	 *
 	 * If Apache web server is missing then making
@@ -945,6 +1066,12 @@ class Helper{
 	static function buffer__parse__nsv( $buffer ){
 		$buffer = str_replace( array( "\r\n", "\n\r", "\r", "\n" ), "\n", $buffer );
 		$buffer = explode( "\n", $buffer );
+        foreach( $buffer as $key => &$value ){
+            if( $value === '' ){
+                unset( $buffer[ $key ] );
+            }
+        }
+        unset( $value );
 		return $buffer;
 	}
 	
