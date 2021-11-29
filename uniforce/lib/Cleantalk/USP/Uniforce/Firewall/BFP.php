@@ -163,9 +163,13 @@ class BFP extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 		// Updating common firewall log
 		if( is_array( $fw_result ) && $fw_result['status'] !== 'PASS' ){
 			parent::update_log( $fw_result );
-//			return;
+			return;
 		}
-			
+        
+        if( is_array( $fw_result ) && $fw_result['status'] !== 'DENY_BY_BFP' ){
+            $fw_result = 'auth_failed';
+        }
+		
 		global $salt;
 		
 		$params_default = array(
