@@ -338,7 +338,7 @@ class Scanner
                     
                     if( in_array( $signature['type'], array('CODE_PHP', 'CODE_JS', 'CODE_HTML' ) ) ) {
                         $file_content = file_get_contents( $root_path . $file_info['path'] );
-                        $is_regexp = preg_match( '/\/.*\//', $signature['body'] );
+                        $is_regexp = preg_match( '/^\/.*\/$/', $signature['body'] );
                         if(
                             ( $is_regexp   && preg_match( $signature['body'], $file_content ) ) ||
                             ( ! $is_regexp && strripos( $file_content, stripslashes( $signature['body'] ) ) !== false )

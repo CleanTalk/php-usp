@@ -59,21 +59,17 @@ class Helper {
 								$data = gzdecode($gz_data);
 								
 								if($data !== false){
-									
-									$lines = \Cleantalk\USP\Uniforce\Helper::buffer__parse__csv($data);
-									
+                                    
+                                    // Set map for file
+                                    $map = strpos( self::signatures_file_url, '_mapped' ) !== false
+                                        ? \Cleantalk\USP\Uniforce\Helper::buffer__csv__get_map( $data ) // Map from file
+                                        : array( 'id', 'name', 'body', 'type', 'attack_type', 'submitted', 'cci' ); // Default map
+                                    
 									$out = array();
-									foreach($lines as $line){
-										$out[] = array(
-											'id'          => ! isset( $line[0] ) ? '' : $line[0],
-											'name'        => ! isset( $line[1] ) ? '' : $line[1],
-											'body'        => ! isset( $line[2] ) ? '' : stripcslashes( $line[2] ),
-											'type'        => ! isset( $line[3] ) ? '' : $line[3],
-											'attack_type' => ! isset( $line[4] ) ? '' : $line[4],
-											'submitted'   => ! isset( $line[5] ) ? '' : $line[5],
-											'cci'         => ! isset( $line[6] ) ? '' : stripcslashes( $line[6] ),
-										);
-									}
+                                    while( $data ){
+                                        $out[] = \Cleantalk\USP\Uniforce\Helper::buffer__csv__pop_line_to_array( $data, $map, true );
+                                    }
+                                    
 									return $out;
 								}else
 									return array('error' => 'COULDNT_UNPACK');

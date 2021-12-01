@@ -84,8 +84,12 @@ class Storage extends \ArrayObject {
 					$out = isset( $$option_name ) ? $$option_name : array();
 					break;
 				case 'csv':
-					$data = file_get_contents( $filename );
-					$out = \Cleantalk\USP\Uniforce\Helper::buffer__csv__to_array( $data, $this->map );
+                    $out = array();
+					$fd = fopen( $filename, 'r' );
+                        while( $line = fgetcsv( $fd, 2000, ',', '\'', '' ) ){
+                            $out[] = array_combine($this->map, $line);
+                        }
+                    fclose( $fd );
 					break;
 			}
 		}
@@ -116,8 +120,9 @@ class Storage extends \ArrayObject {
 				
 			case 'csv':
 				$fp = fopen( $filename, 'w' );
-				foreach( $this->convertToArray() as $field )
-					fputcsv( $fp, $field, ',', '\'' );
+                    foreach( $this->convertToArray() as &$field ){
+					    fputcsv( $fp, $field, ',', '\'' );
+                    }
 				fclose( $fp );
 				break;
 		}

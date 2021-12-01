@@ -1038,15 +1038,27 @@ class Helper{
 		}
 		return $type;
 	}
-	
-	/**
+    
+    /**
+     * Pops line from the csv buffer and fromat it by map to array
+     *
+     * @param $csv
+     * @param array $map
+     *
+     * @return array|false
+     */
+    public static function buffer__csv__get_map( &$csv ){
+        $line = static::buffer__csv__pop_line( $csv );
+        return explode( ',', $line );
+    }
+    
+    /**
 	 * Parse Comma-separated values
 	 *
 	 * @param $buffer
 	 *
 	 * @return false|string[]
 	 */
-	
 	static function buffer__parse__csv( $buffer ){
 		$buffer = explode( "\n", $buffer );
 		$buffer = self::buffer__trim_and_clear_from_empty_lines( $buffer );
@@ -1082,11 +1094,11 @@ class Helper{
 	 *
 	 * @return false|string
 	 */
-	static public function buffer__csv__pop_line( &$csv ){
-		$pos = strpos( $csv, "\n" );
-		$first_line = substr( $csv, 0, $pos );
-		$csv = substr_replace( $csv, '', 0, $pos + 1 );
-		return $first_line;
+	public static function buffer__csv__pop_line( &$csv ){
+		$pos  = strpos( $csv, "\n" );
+		$line = substr( $csv, 0, $pos );
+		$csv  = substr_replace( $csv, '', 0, $pos + 1 );
+		return $line;
 	}
 
 	/**
@@ -1097,10 +1109,19 @@ class Helper{
 	 *
 	 * @return array|false
 	 */
-	static public function buffer__csv__pop_line_to_array( &$csv, $map = array() ){
+	static public function buffer__csv__pop_line_to_array( &$csv, $map = array(), $stripslashes = false ){
 		$line = trim( static::buffer__csv__pop_line( $csv ) );
-		$line = str_getcsv( $line, ',', '\'' );
+		$line = strpos( $line, '\'' ) === 0
+            ? str_getcsv( $line, ',', '\'' )
+            : explode( ',', $line );
 		
+		if( $stripslashes ){
+            $line = array_map( function( $elem ){
+                    return stripslashes( $elem );
+                },
+                $line
+            );
+        }
 		if( $map )
 			$line = array_combine( $map, $line );
 		
