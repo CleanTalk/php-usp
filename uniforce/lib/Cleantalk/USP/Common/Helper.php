@@ -559,7 +559,7 @@ class Helper{
 				
 				$out = array( 'error' => curl_error( $ch ) );
 				
-			}elseif( strpos( $result, 'error_message' ) ){
+			}elseif( strpos( $result, 'error_message' ) && ! in_array( 'get_file', $presets ) ){
 				
 				$out_tmp = json_decode( $result, true);
 				$out = array(
