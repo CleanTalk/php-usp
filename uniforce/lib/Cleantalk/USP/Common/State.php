@@ -143,9 +143,6 @@ class State extends \Cleantalk\USP\Common\Storage{
 			'cured' => array(),
 		),
 		'2fa_keys'          => array(),
-        
-        // Crunch
-        'updated_to_350' => true,
 	);
 
 	public $default_remote_calls = array(

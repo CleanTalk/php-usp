@@ -42,7 +42,7 @@ class BFP extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 		
 		$results = array();
 		
-		if( $this->is_login_page && ! $this->is_logged_in && $this->do_check ){
+		if( $this->is_login_page && ! $this->is_logged_in && $this->do_check && isset( $this->ip_array['real'] ) ){
 			
 			$block_time = 20 * 60; // 20 minutes
 			$allowed_count = 2;
@@ -163,9 +163,13 @@ class BFP extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 		// Updating common firewall log
 		if( is_array( $fw_result ) && $fw_result['status'] !== 'PASS' ){
 			parent::update_log( $fw_result );
-//			return;
+			return;
 		}
-			
+        
+        if( is_array( $fw_result ) && $fw_result['status'] !== 'DENY_BY_BFP' ){
+            $fw_result = 'auth_failed';
+        }
+		
 		global $salt;
 		
 		$params_default = array(
@@ -249,7 +253,7 @@ class BFP extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 								'datetime'      => (string) $log[2],
 								'user_login'    => null,
 								'event'         => (string) $log[0],
-								'auth_ip'       => strpos( ':', $log[1] ) === false ? (int) sprintf( '%u', ip2long( $log[1] ) ) : (string) $log[1],
+								'auth_ip'       => !empty($log[1]) && strpos( ':', $log[1] ) === false ? (int) sprintf( '%u', ip2long( $log[1] ) ) : (string) $log[1],
 								'page_url'      => (string) $log[3],
 								'event_runtime' => null,
 								'role'          => null,
@@ -260,7 +264,7 @@ class BFP extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 							'datetime'      => (string) $log[2],
 							'user_login'    => null,
 							'event'         => (string) $log[0],
-							'auth_ip'       => strpos( ':', $log[1] ) === false ? (int) sprintf( '%u', ip2long( $log[1] ) ) : (string) $log[1],
+							'auth_ip'       => !empty($log[1]) && strpos( ':', $log[1] ) === false ? (int) sprintf( '%u', ip2long( $log[1] ) ) : (string) $log[1],
 							'page_url'      => (string) $log[3],
 							'event_runtime' => null,
 							'role'          => null,

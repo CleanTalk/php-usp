@@ -59,21 +59,17 @@ class Helper {
 								$data = gzdecode($gz_data);
 								
 								if($data !== false){
-									
-									$lines = \Cleantalk\USP\Uniforce\Helper::buffer__parse__csv($data);
-									
+                                    
+                                    // Set map for file
+                                    $map = strpos( self::signatures_file_url, '_mapped' ) !== false
+                                        ? \Cleantalk\USP\Uniforce\Helper::buffer__csv__get_map( $data ) // Map from file
+                                        : array( 'id', 'name', 'body', 'type', 'attack_type', 'submitted', 'cci' ); // Default map
+                                    
 									$out = array();
-									foreach($lines as $line){
-										$out[] = array(
-											'id'          => ! isset( $line[0] ) ? '' : $line[0],
-											'name'        => ! isset( $line[1] ) ? '' : $line[1],
-											'body'        => ! isset( $line[2] ) ? '' : stripcslashes( $line[2] ),
-											'type'        => ! isset( $line[3] ) ? '' : $line[3],
-											'attack_type' => ! isset( $line[4] ) ? '' : $line[4],
-											'submitted'   => ! isset( $line[5] ) ? '' : $line[5],
-											'cci'         => ! isset( $line[6] ) ? '' : stripcslashes( $line[6] ),
-										);
-									}
+                                    while( $data ){
+                                        $out[] = \Cleantalk\USP\Uniforce\Helper::buffer__csv__pop_line_to_array( $data, $map, true );
+                                    }
+                                    
 									return $out;
 								}else
 									return array('error' => 'COULDNT_UNPACK');
@@ -241,16 +237,29 @@ class Helper {
 	static function is_windows(){
 		return strpos(strtolower(php_uname('s')), 'windows') !== false ? true : false;
 	}
-	
-	/**
-	 * Returns number of string with a given char position
-	 *
-	 * @param string $haystack String to search in
-	 * @param int    $position Character position
-	 *
-	 * @return int String nubmer
-	 */
-	static function file__get_string_number_with_needle($haystack, $position){
-		return count(explode(PHP_EOL, substr($haystack, 0, $position)));
+    
+    /**
+     * Returns number of string with a given char position
+     *
+     * @param string $file_path   String to search in
+     * @param int $signature_body Character position
+     * @param bool $is_regexp     Flag. Is signature is regular expression?
+     *
+     * @return int String number
+     */
+	public static function file__get_string_number_with_needle($file_path, $signature_body, $is_regexp = false){
+        $file = file( $file_path );
+        $out = 0;
+        
+        foreach( $file as $number => $line ){
+            if(
+                ( $is_regexp   && preg_match( $signature_body, $line ) ) ||
+                ( ! $is_regexp && strripos( $line, stripslashes( $signature_body ) ) !== false )
+            ){
+                $out = $number;
+            }
+        }
+        
+        return $out;
 	}
 }
