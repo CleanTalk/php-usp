@@ -86,7 +86,7 @@ class Storage extends \ArrayObject {
 				case 'csv':
                     $out = array();
 					$fd = fopen( $filename, 'r' );
-                        while( $line = fgetcsv( $fd, 2000, ',', '\'', '' ) ){
+                        while( $line = fgetcsv( $fd, 2000, ',', '\'' ) ){
                             $out[] = array_combine($this->map, $line);
                         }
                     fclose( $fd );
