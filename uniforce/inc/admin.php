@@ -480,7 +480,7 @@ function usp_do_save_settings() {
 	$settings =array();
 	foreach($usp->default_settings as $setting => $value){
 		$settings[$setting] = Post::get( $setting ) !== ''
-			? Post::get( $setting )
+			? Post::get( $setting, null, 'xss' )
 			: $value;
 		settype($settings[$setting], gettype($value));
 	} unset($setting, $value);
