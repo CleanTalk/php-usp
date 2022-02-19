@@ -143,6 +143,18 @@ class SuperGlobalVariables{
     public static function sanitize($input, $filter){
         
         switch( $filter ){
+            
+            // XSS. Recursive.
+            case 'xss':
+                $input_filtered = preg_replace( '#[\'"]\s*?>\s*?<#i', '', $input );
+                return $input === $input_filtered
+                    ? $input_filtered
+                    : static::sanitize( $input_filtered, 'xss');
+            
+            // URL
+            case 'url':
+                return preg_replace( '#[^a-zA-Z0-9$\-_.+!*\'(),{}|\\^~\[\]`<>\#%";\/?:@&=.]#i', '', $input );
+                
             default:
                 $output = $input;
         }
