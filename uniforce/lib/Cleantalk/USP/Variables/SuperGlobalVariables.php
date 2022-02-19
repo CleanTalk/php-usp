@@ -42,11 +42,24 @@ class SuperGlobalVariables{
 	 * Gets variable from ${_SOMETHING}
 	 *
 	 * @param string $name Variable name
+     * @param null|string $validation_filter Filter name to run validation
+     * @param null|string $sanitize_filter   Filter name to run sanitizing
 	 *
 	 * @return string
 	 */
-	public static function get( $name ){
-		return static::getInstance()->get_variable( $name );
+	public static function get( $name, $validation_filter = null, $sanitize_filter = null  ){
+	    
+        $variable = static::getInstance()->get_variable( $name );
+        
+        if( $validation_filter && ! static::validation($variable, $validation_filter) ){
+            return false;
+        }
+        
+        if( $sanitize_filter ){
+            $variable = static::sanitize($variable, $sanitize_filter);
+        }
+        
+        return $variable;
 	}
 	
 	/**
