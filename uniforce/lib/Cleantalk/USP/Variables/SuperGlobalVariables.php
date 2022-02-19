@@ -146,9 +146,9 @@ class SuperGlobalVariables{
             
             // XSS. Recursive.
             case 'xss':
-                $input_filtered = preg_replace( '#[\'"]\s*?>\s*?<#i', '', $input );
+                $input_filtered = preg_replace( '#[\'"].*?>.*?<#i', '', $input );
                 return $input === $input_filtered
-                    ? $input_filtered
+                    ? htmlspecialchars( $input_filtered )
                     : static::sanitize( $input_filtered, 'xss');
             
             // URL
