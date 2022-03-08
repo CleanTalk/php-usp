@@ -16,7 +16,9 @@ if( ! defined( 'SPBCT_VERSION' ) )    define( 'SPBCT_VERSION', '3.6.0' );
 if( ! defined( 'SPBCT_AGENT' ) )      define( 'SPBCT_AGENT', SPBCT_PLUGIN . '-' . str_replace( '.', '', SPBCT_VERSION ) );
 if( ! defined( 'SPBCT_USER_AGENT' ) ) define( 'SPBCT_USER_AGENT', 'Cleantalk-Security-Universal-Plugin/' . SPBCT_VERSION );
 
-define( 'DS', DIRECTORY_SEPARATOR );
+if ( ! defined('DS') ) {
+    define( 'DS', DIRECTORY_SEPARATOR );
+}
 
 // Directories
 define( 'CT_USP_INC', realpath(__DIR__ ) . DS );
