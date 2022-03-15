@@ -157,11 +157,15 @@ class WAF extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 			
 			//Check
 			foreach( $this->waf_xss_patterns as $pattern ){
-				/** @todo add regexp check  */
-				if( stripos( $param, $pattern ) !== false ){
-					$this->waf_pattern = array( 'critical' => $pattern );
-					return true;
-				}
+                $is_regexp = preg_match( '@^/.*/$@', $pattern ) || preg_match( '@^#.*#$@', $pattern );
+
+                if (
+                    ($is_regexp && preg_match( $pattern, $param)) ||
+                    (stripos( $param, $pattern ) !== false)
+                ) {
+                    $this->waf_pattern = array( 'critical' => $pattern );
+                    return true;
+                }
 			}
 		}
 		
@@ -188,11 +192,15 @@ class WAF extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 			}
 			
 			foreach( $this->waf_sql_patterns as $pattern ){
-				
-				if( @ preg_match('/'.$pattern.'/i', $param) === 1 ){
-					$this->waf_pattern = array( 'critical' =>  $pattern );
-					return true;
-				}
+                $is_regexp = preg_match( '@^/.*/$@', $pattern ) || preg_match( '@^#.*#$@', $pattern );
+
+                if (
+                    ($is_regexp && preg_match( $pattern, $param)) ||
+                    (stripos( $param, $pattern ) !== false)
+                ) {
+                    $this->waf_pattern = array( 'critical' =>  $pattern );
+                    return true;
+                }
 			}
 		}
 		
@@ -208,10 +216,15 @@ class WAF extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 	private function waf_exploit_check() {
 		
 		foreach( $this->waf_exploit_patterns as $pattern ){
-			if( @ preg_match('/'.$pattern.'/i', Server::get('QUERY_STRING')) === 1 ){
-				$this->waf_pattern = array( 'critical' =>  $pattern );
-				return true;
-			}
+            $is_regexp = preg_match( '@^/.*/$@', $pattern ) || preg_match( '@^#.*#$@', $pattern );
+
+            if (
+                ($is_regexp && preg_match( $pattern, Server::get('QUERY_STRING'))) ||
+                (stripos( Server::get('QUERY_STRING'), $pattern ) !== false)
+            ) {
+                $this->waf_pattern = array( 'critical' =>  $pattern );
+                return true;
+            }
 		}
 		
 		return false;
