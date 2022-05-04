@@ -246,14 +246,16 @@ class BFP extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 					    unlink( $log_dir_path . DS . $log_file );
 					    continue;
                     }
-					
+
+					$auth_ip = $log[1] ? (string) $log[1] : '0.0.0.0';
+
 					if( (string) $log[8] > 0 ){
 						for( $i = 0; (string) $log[8] > $i; $i ++ ){
 							$data[] = array(
 								'datetime'      => (string) $log[2],
 								'user_login'    => null,
 								'event'         => (string) $log[0],
-								'auth_ip'       => !empty($log[1]) && strpos( ':', $log[1] ) === false ? (int) sprintf( '%u', ip2long( $log[1] ) ) : (string) $log[1],
+								'auth_ip'       => strpos( ':', $auth_ip ) === false ? (int) sprintf( '%u', ip2long( $auth_ip ) ) : $auth_ip,
 								'page_url'      => (string) $log[3],
 								'event_runtime' => null,
 								'role'          => null,
@@ -264,7 +266,7 @@ class BFP extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 							'datetime'      => (string) $log[2],
 							'user_login'    => null,
 							'event'         => (string) $log[0],
-							'auth_ip'       => !empty($log[1]) && strpos( ':', $log[1] ) === false ? (int) sprintf( '%u', ip2long( $log[1] ) ) : (string) $log[1],
+							'auth_ip'       => strpos( ':', $auth_ip ) === false ? (int) sprintf( '%u', ip2long( $auth_ip ) ) : $auth_ip,
 							'page_url'      => (string) $log[3],
 							'event_runtime' => null,
 							'role'          => null,
