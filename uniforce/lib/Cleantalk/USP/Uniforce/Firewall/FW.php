@@ -429,12 +429,10 @@ class FW extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 											$result__clear_db = self::clear_data();
 											
 											if( empty( $result__clear_db['error'] ) ){
-											
-												$lines = Helper::buffer__parse__nsv($data);
 												
 												return array(
 													'multifile_url' => $file_url,
-													'file_urls'     => $lines,
+													'file_urls'     => array_column(Helper::buffer__parse__csv($data), 0),
 												);
 												
 											}else
