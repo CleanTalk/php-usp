@@ -177,7 +177,7 @@ class BFP extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 			// Necessary
 			'event'    => null,
 			'auth_ip'  => isset( $fw_result['ip'] ) ? $fw_result['ip'] : Helper::ip__get( array( 'real' ) ),
-			'datetime' => gmdate( 'Y-m-d H:i:s' ),
+			'time'     => time(),
 			
 			// Unnecessary
 			'page_url'   => substr( Server::get( 'HTTP_HOST' ) . Server::get( 'REQUEST_URI' ), 0, 1024 ),
@@ -199,7 +199,7 @@ class BFP extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 		$log = array(
 			$params['event'],
 			$params['auth_ip'],
-			$params['datetime'],
+			$params['time'],
 			$params['page_url'],
 			$params['user_agent'],
 			$params['page'],
@@ -252,7 +252,8 @@ class BFP extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 					if( (string) $log[8] > 0 ){
 						for( $i = 0; (string) $log[8] > $i; $i ++ ){
 							$data[] = array(
-								'datetime'      => (string) $log[2],
+								'datetime'      => is_string($log[2]) ? $log[2] : gmdate('Y-m-d H:i:s', $log[2]),
+								'datetime_gmt'  => is_string($log[2]) ? strtotime($log[2]) : $log[2],
 								'user_login'    => null,
 								'event'         => (string) $log[0],
 								'auth_ip'       => strpos( ':', $auth_ip ) === false ? (int) sprintf( '%u', ip2long( $auth_ip ) ) : $auth_ip,
@@ -263,7 +264,8 @@ class BFP extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 						}
 					}else{
 						$data[] = array(
-							'datetime'      => (string) $log[2],
+							'datetime'      => is_string($log[2]) ? $log[2] : gmdate('Y-m-d H:i:s', $log[2]),
+							'datetime_gmt'  => is_string($log[2]) ? strtotime($log[2]) : $log[2],
 							'user_login'    => null,
 							'event'         => (string) $log[0],
 							'auth_ip'       => strpos( ':', $auth_ip ) === false ? (int) sprintf( '%u', ip2long( $auth_ip ) ) : $auth_ip,
