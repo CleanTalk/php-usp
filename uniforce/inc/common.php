@@ -8,6 +8,7 @@
  * Version: 3.6.0
  */
 
+use Cleantalk\USP\Common\State;
 use Cleantalk\USP\Variables\Server;
 use Cleantalk\USP\Common\RemoteCalls;
 
@@ -46,7 +47,11 @@ new \Cleantalk\USP\Common\State( 'settings', 'data', 'remote_calls', 'fw_stats' 
 
 define( 'CT_USP_CRON_FILE', CT_USP_ROOT . 'data' . DS . 'cron.php' );
 
-if( empty( \Cleantalk\USP\Common\State::getInstance()->data->updated_to_350 ) ){
+if(
+    isset( State::getInstance()->plugin_meta->is_installed ) &&
+    State::getInstance()->plugin_meta->is_installed &&
+    empty( State::getInstance()->data->updated_to_350 )
+) {
     \Cleantalk\USP\Updater\UpdaterScripts::update_to_3_5_0();
     \Cleantalk\USP\Common\State::getInstance()->data->updated_to_350 = true;
     \Cleantalk\USP\Common\State::getInstance()->data->save();
