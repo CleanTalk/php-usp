@@ -151,7 +151,7 @@ class BFP extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 	 * @param $result
 	 */
 	public function actions_for_denied( $result ){
-		$this->state->data->stat->bfp->count;
+		$this->state->data->stat->bfp->count++;
 		$this->state->data->save();
 	}
 	
