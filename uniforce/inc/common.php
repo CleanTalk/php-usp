@@ -8,6 +8,7 @@
  * Version: 3.6.0
  */
 
+use Cleantalk\USP\Common\State;
 use Cleantalk\USP\Variables\Server;
 use Cleantalk\USP\Common\RemoteCalls;
 
@@ -16,7 +17,9 @@ if( ! defined( 'SPBCT_VERSION' ) )    define( 'SPBCT_VERSION', '3.6.0' );
 if( ! defined( 'SPBCT_AGENT' ) )      define( 'SPBCT_AGENT', SPBCT_PLUGIN . '-' . str_replace( '.', '', SPBCT_VERSION ) );
 if( ! defined( 'SPBCT_USER_AGENT' ) ) define( 'SPBCT_USER_AGENT', 'Cleantalk-Security-Universal-Plugin/' . SPBCT_VERSION );
 
-define( 'DS', DIRECTORY_SEPARATOR );
+if ( ! defined('DS') ) {
+    define( 'DS', DIRECTORY_SEPARATOR );
+}
 
 // Directories
 define( 'CT_USP_INC', realpath(__DIR__ ) . DS );
@@ -44,7 +47,11 @@ new \Cleantalk\USP\Common\State( 'settings', 'data', 'remote_calls', 'fw_stats' 
 
 define( 'CT_USP_CRON_FILE', CT_USP_ROOT . 'data' . DS . 'cron.php' );
 
-if( empty( \Cleantalk\USP\Common\State::getInstance()->data->updated_to_350 ) ){
+if(
+    isset( State::getInstance()->plugin_meta->is_installed ) &&
+    State::getInstance()->plugin_meta->is_installed &&
+    empty( State::getInstance()->data->updated_to_350 )
+) {
     \Cleantalk\USP\Updater\UpdaterScripts::update_to_3_5_0();
     \Cleantalk\USP\Common\State::getInstance()->data->updated_to_350 = true;
     \Cleantalk\USP\Common\State::getInstance()->data->save();

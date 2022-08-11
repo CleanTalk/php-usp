@@ -9,22 +9,31 @@ use Cleantalk\USP\Uniforce\API;
 use Cleantalk\USP\Uniforce\Helper;
 use Cleantalk\USP\Variables\Post;
 
-function spbc_scanner_file_send( $file_id ){
-	
-	if( State::getInstance()->data->no_sql )
-		return spbc_scanner_file_send___no_sql( $file_id );
-	
-	$usp = State::getInstance();
-	$db  = DB::getInstance(
-		$usp->data->db_request_string,
-		$usp->data->db_user,
-		$usp->data->db_password
-	);
-
-	$root_path = substr(CT_USP_SITE_ROOT, 0 ,-1);
-
+/**
+ * Sends file for analysis via security_mscan_files method
+ *
+ * @param bool|string $file_id
+ *
+ * @return array|bool|mixed|string[]
+ */
+function spbc_scanner_file_send( $file_id = null ){
+    
+    $file_id = $file_id ?: Post::get('file_id', 'hash');
+    
 	if($file_id){
-
+	    
+        if( State::getInstance()->data->no_sql )
+            return spbc_scanner_file_send___no_sql( $file_id );
+        
+        $usp = State::getInstance();
+        $db  = DB::getInstance(
+            $usp->data->db_request_string,
+            $usp->data->db_user,
+            $usp->data->db_password
+        );
+    
+        $root_path = substr(CT_USP_SITE_ROOT, 0 ,-1);
+        
 		// Getting file info.
 		$file_info = $db->fetch_all('SELECT *'
             .' FROM scanner_files'
@@ -113,22 +122,31 @@ function spbc_scanner_file_send( $file_id ){
 	return $output;
 }
 
-function spbc_scanner_file_delete( $file_id ){
-	
-	if( State::getInstance()->data->no_sql )
-		return spbc_scanner_file_delete___no_sql( $file_id );
-	
-	$usp = State::getInstance();
- 	$db  = DB::getInstance(
-		$usp->data->db_request_string,
-		$usp->data->db_user,
-		$usp->data->db_password
-	);
-	
-	$root_path = substr(CT_USP_SITE_ROOT, 0 ,-1);
-
+/**
+ * Deletes the file
+ *
+ * @param bool|string $file_id
+ *
+ * @return array|bool[]|mixed|string|string[]
+ */
+function spbc_scanner_file_delete( $file_id = false ){
+    
+    $file_id = $file_id ?: Post::get('file_id', 'hash');
+    
 	if($file_id){
-
+	    
+        if( State::getInstance()->data->no_sql )
+            return spbc_scanner_file_delete___no_sql( $file_id );
+        
+        $usp = State::getInstance();
+        $db  = DB::getInstance(
+            $usp->data->db_request_string,
+            $usp->data->db_user,
+            $usp->data->db_password
+        );
+        
+        $root_path = substr(CT_USP_SITE_ROOT, 0 ,-1);
+        
 		// Getting file info.
 		$file_info = $db->fetch_all('SELECT *'
             .' FROM scanner_files'
@@ -184,17 +202,23 @@ function spbc_scanner_file_delete( $file_id ){
 	return $output;
 }
 
-function spbc_scanner_file_view( $file_id = null ){
+/**
+ * Outputs JSON representation of a file
+ *
+ * @param bool|string $file_id
+ */
+function spbc_scanner_file_view( $file_id = false ){
 
-	$file_id = $file_id ?: Post::get('file_id');
-	$usp = State::getInstance();
-	$db  = DB::getInstance(
-		$usp->data->db_request_string,
-		$usp->data->db_user,
-		$usp->data->db_password
-	);
-
+    $file_id = $file_id ?: Post::get('file_id', 'hash');
+    
 	if($file_id){
+
+        $usp = State::getInstance();
+        $db  = DB::getInstance(
+            $usp->data->db_request_string,
+            $usp->data->db_user,
+            $usp->data->db_password
+        );
 
 		$root_path = substr(CT_USP_SITE_ROOT, 0 ,-1);
 
@@ -747,11 +771,20 @@ function usp_scanner__display___no_sql(){
 	$table->display();
 }
 
-function spbc_scanner_file_send___no_sql( $file_id ){
-	
+/**
+ * Sends file for analysis via security_mscan_files method
+ *
+ * @param bool|string $file_id
+ *
+ * @return array|bool|mixed|string[]
+ */
+function spbc_scanner_file_send___no_sql( $file_id = false ){
+ 
 	$usp = State::getInstance();
 	
 	$root_path = substr(CT_USP_SITE_ROOT, 0 ,-1);
+	
+    $file_id = $file_id ?: Post::get('file_id', 'hash');
 	
 	if($file_id){
 		
@@ -837,11 +870,20 @@ function spbc_scanner_file_send___no_sql( $file_id ){
 	return $output;
 }
 
-function spbc_scanner_file_delete___no_sql( $file_id ){
+/**
+ * Deletes the file
+ *
+ * @param bool|string $file_id
+ *
+ * @return bool[]|string[]
+ */
+function spbc_scanner_file_delete___no_sql( $file_id = false ){
 	
 	$usp = State::getInstance();
 	
 	$root_path = substr(CT_USP_SITE_ROOT, 0 ,-1);
+    
+    $file_id = $file_id ?: Post::get('file_id', 'hash');
 	
 	if($file_id){
 		
@@ -881,9 +923,14 @@ function spbc_scanner_file_delete___no_sql( $file_id ){
 	return $output;
 }
 
-function spbc_scanner_file_view___no_sql( $file_id = null ){
-	
-	$file_id = Post::get('file_id');
+/**
+ * Outputs JSON representation of a file
+ *
+ * @param bool|string $file_id
+ */
+function spbc_scanner_file_view___no_sql( $file_id = false ){
+    
+    $file_id = $file_id ?: Post::get('file_id', 'hash');
 	
 	if($file_id){
 		

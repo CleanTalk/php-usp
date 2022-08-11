@@ -175,7 +175,8 @@ class FW extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 				
 				//Compile log
 				$to_data = array(
-					'datetime'         => isset( $log[2] ) ? $log[2] : 0,
+					'datetime'         => isset( $log[2] ) ? gmdate('Y-m-d H:i:s', $log[2]) : 0,
+					'datetime_gmt'     => isset( $log[2] ) ? $log[2] : 0,
 					'page_url'         => isset( $log[6] ) ? $log[6] : 0,
 					'visitor_ip'       => isset( $log[1] ) ? ( Helper::ip__validate( $log[1] ) == 'v4' ? (int) sprintf( '%u', ip2long( $log[1] ) ) : (string) $log[1] ) : 0,
 					'http_user_agent'  => isset( $log[7] ) ? $log[7] : 0,
@@ -429,12 +430,10 @@ class FW extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 											$result__clear_db = self::clear_data();
 											
 											if( empty( $result__clear_db['error'] ) ){
-											
-												$lines = Helper::buffer__parse__nsv($data);
 												
 												return array(
 													'multifile_url' => $file_url,
-													'file_urls'     => $lines,
+													'file_urls'     => array_column(Helper::buffer__parse__csv($data), 0),
 												);
 												
 											}else

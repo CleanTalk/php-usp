@@ -480,7 +480,7 @@ function usp_do_save_settings() {
 	$settings =array();
 	foreach($usp->default_settings as $setting => $value){
 		$settings[$setting] = Post::get( $setting ) !== ''
-			? Post::get( $setting )
+			? Post::get( $setting, null, 'xss' )
 			: $value;
 		settype($settings[$setting], gettype($value));
 	} unset($setting, $value);
@@ -502,8 +502,8 @@ function usp_do_save_settings() {
             // Send BFP logs
             $result = \Cleantalk\USP\Uniforce\Firewall\BFP::send_log( $usp->settings->key );
             if( empty( $result['error'] ) && ! Err::check() ) {
-                $usp->data->stat->bfp->logs_sent_time = $result['rows'];
-                $usp->data->stat->bfp->logs_sent_amount = time();
+                $usp->data->stat->bfp->logs_sent_time = time();
+                $usp->data->stat->bfp->logs_sent_amount = $result['rows'];
                 $usp->data->stat->bfp->count = 0;
             }
     }
