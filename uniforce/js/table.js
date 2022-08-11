@@ -12,7 +12,9 @@ jQuery(document).ready(function(){
 // TABLE BULK ACTIONS
 spbc_bulk_action = null;
 function spbc_tbl__bulk_actions__listen(){
-    jQuery('.tbl-bulk_actions--apply').on('click', function(){
+    jQuery('.tbl-bulk_actions--apply')
+        .off('click')
+        .on('click', function(){
 
         if(!spbc_bulk_action && !confirm(spbc_TableData.warning_bulk))
             return;
@@ -36,7 +38,9 @@ function spbc_tbl__bulk_actions__listen(){
 
 // TABLE ROW ACTIONS
 function spbc_tbl__row_actions__listen(){
-    jQuery('.tbl-row_action--ajax').on('click', function(){
+    jQuery('.tbl-row_action--ajax')
+        .off('click')
+        .on('click', function(){
         console.log('spbc_tbl__row_actions__listen click');
         var self = jQuery(this);
         var data = {
@@ -79,6 +83,7 @@ function spbc_tbl__row_actions__callback( result, data, obj ){
         obj.html(result.temp_html);
         setTimeout(function(){
             obj.html(tmp).css({background: 'inherit'}).find('.column-primary .row-actions .tbl-row_action--'+data.add_action).remove();
+            usp_showHide__listen();
         },5000);
     }
     if(spbc_bulk_action)
@@ -167,8 +172,12 @@ function spbc_tbl__sort__listen(){
 
 // Shows/hides full text
 function usp_showHide__listen(){
-    jQuery('.spbcShortText').on('mouseover', function(){ jQuery(this).next().show(); })
-    jQuery('.spbcFullText').on('mouseout',   function(){ jQuery(this).hide();  });
+    jQuery('.spbcShortText')
+        .off('mouseover' )
+        .on('mouseover', function(){ jQuery(this).next().show(); });
+    jQuery('.spbcFullText')
+        .off('mouseout' )
+        .on('mouseout',   function(){ jQuery(this).hide();  });
 }
 
 // Callback for TABLE SORT ACTIONS

@@ -59,6 +59,16 @@ class CTAJAX{
 
 	success( response ){
 
+		// Hide spinner
+		if( this.spinner ){
+			if( typeof this.spinner == 'function' )
+				this.spinner();
+			if( typeof this.spinner == 'object' ){
+				this.spinner = jQuery( this.spinner );
+				this.spinner.css('display', 'none');
+			}
+		}
+
 		if( !! response.error ){
 
 			this.error(

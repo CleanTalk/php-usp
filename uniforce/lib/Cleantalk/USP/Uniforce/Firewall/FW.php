@@ -175,7 +175,8 @@ class FW extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 				
 				//Compile log
 				$to_data = array(
-					'datetime'         => isset( $log[2] ) ? $log[2] : 0,
+					'datetime'         => isset( $log[2] ) ? gmdate('Y-m-d H:i:s', $log[2]) : 0,
+					'datetime_gmt'     => isset( $log[2] ) ? $log[2] : 0,
 					'page_url'         => isset( $log[6] ) ? $log[6] : 0,
 					'visitor_ip'       => isset( $log[1] ) ? ( Helper::ip__validate( $log[1] ) == 'v4' ? (int) sprintf( '%u', ip2long( $log[1] ) ) : (string) $log[1] ) : 0,
 					'http_user_agent'  => isset( $log[7] ) ? $log[7] : 0,
@@ -250,14 +251,27 @@ class FW extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 		$url_count        = Get::get( 'url_count' );
 		$current_file_num = Get::get( 'current_file_num' );
 		
+        $files = isset( State::getInstance()->fw_stats['updating_folder'] )
+            ? glob( State::getInstance()->fw_stats['updating_folder'] . DS . '/*csv.gz' )
+            : array();
+		
 		// Get multifiles
 		if( ! $multifile_url ){
 			
 			$result = self::update__get_multifiles( $api_key );
-			usleep( 500000 );
-			
-			if( empty( $result['error'] ) ){
-				
+			if( ! empty( $result['error'] ) ){
+                return $result;
+            }
+            
+            $update_folder = self::update__prepare_upd_dir( CT_USP_ROOT . DS . 'fw_files' );
+            if( ! empty( $update_folder['error'] ) ){
+                return $update_folder;
+            }
+            
+            State::getInstance()->fw_stats->updating_folder = CT_USP_ROOT . DS . 'fw_files';
+            $download_files_result = Helper::http__download_remote_file__multi( $result['file_urls'], State::getInstance()->fw_stats->updating_folder );
+			if( empty( $download_files_result['error'] ) ){
+			 
 				State::getInstance()->fw_stats->updating       = true;
 				State::getInstance()->fw_stats->update_percent = 0;
 				State::getInstance()->fw_stats->entries        = 0;
@@ -283,15 +297,16 @@ class FW extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 				return $result;
 			
 		// Write to DB
-		}elseif( $current_file_num < $url_count ){
+		}elseif( count( $files ) ){
 			
-			$url_file_to_wrtie = str_replace( 'multifiles', $current_file_num, $multifile_url );
-			
-			$result = self::update__write_to_db( $url_file_to_wrtie );
-			usleep( 500000 );
+			$result = self::update__write_to_db( reset( $files ) );
 			
 			if( empty( $result['error'] ) ){
-				
+                
+                if( file_exists(reset($files)) ){
+                    unlink(reset($files));
+                }
+			 
 				//Increment firewall entries
 				State::getInstance()->fw_stats->entries += $result;
 				State::getInstance()->fw_stats->update_percent = round( ( ( (int) $current_file_num + 1 ) / (int) $url_count ), 2) * 100;
@@ -336,8 +351,43 @@ class FW extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 				return $result;
 		}
 	}
-	
-	/**
+    
+    public static function update__prepare_upd_dir( $dir_name ){
+        
+        global $spbc;
+        
+        if( $dir_name === '' ) {
+            return array( 'error' => 'FW dir can not be blank.' );
+        }
+    
+        $dir_name .= DS;
+        
+        if( ! is_dir( $dir_name ) && ! mkdir( $dir_name ) ){
+            
+            return ! is_writable( CT_USP_ROOT )
+                ? array( 'error' => 'Can not to make FW dir. Low permissions: ' . fileperms( CT_USP_ROOT ) )
+                : array( 'error' => 'Can not to make FW dir. Unknown reason.' );
+            
+        } else {
+            $files = glob( $dir_name . '/*' );
+            if( $files === false ){
+                return array( 'error' => 'Can not find FW files.' );
+            }
+            if( count( $files ) === 0 ){
+                return (bool) file_put_contents( $dir_name . 'index.php', '<?php' . PHP_EOL );
+            }
+            foreach( $files as $file ){
+                if( is_file( $file ) && unlink( $file ) === false ){
+                    return array( 'error' => 'Can not delete the FW file: ' . $file );
+                }
+            }
+        }
+        
+        return (bool) file_put_contents( $dir_name . 'index.php', '<?php' );
+    }
+    
+    
+    /**
 	 * Gets multifile with data to update Firewall.
 	 *
 	 * @param string $spbc_key
@@ -350,7 +400,9 @@ class FW extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 		$result = API::method__security_firewall_data_file( $spbc_key, 'multifiles' );
 		
 		if(empty($result['error'])){
-			
+            
+            usleep( 500000 );
+		    
 			if( !empty($result['file_url']) ){
 				
 				$file_url = $result['file_url'];
@@ -378,12 +430,10 @@ class FW extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 											$result__clear_db = self::clear_data();
 											
 											if( empty( $result__clear_db['error'] ) ){
-											
-												$lines = Helper::buffer__parse__csv($data);
 												
 												return array(
 													'multifile_url' => $file_url,
-													'file_urls'     => $lines,
+													'file_urls'     => array_column(Helper::buffer__parse__csv($data), 0),
 												);
 												
 											}else
@@ -417,7 +467,7 @@ class FW extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 	 */
 	public static function update__write_to_db( $file_url ){
 		
-		$data = Helper::http__get_data_from_remote_gz( $file_url );
+		$data = Helper::get_data_from_local_gz( $file_url );
 		
 		if ( ! Err::check() ) {
 		 

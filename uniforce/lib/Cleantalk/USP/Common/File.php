@@ -200,10 +200,11 @@ class File{
 		$out = true;
 		
 		if( is_dir( $from ) ){
+            
+            if( ! @mkdir( $to, 0777 ) && ! is_dir( $to ) ){
+                return false;
+            }
 			
-			if( ! mkdir( $to ) && ! is_dir( $to ) ){
-				return false;
-			}
 			$dd = dir( $from );
 			while( ( $entry = $dd->read() ) !== false ){
 				if( ! in_array( $entry, array_merge( $exceptions, array( '.', '..' ) ) ) )

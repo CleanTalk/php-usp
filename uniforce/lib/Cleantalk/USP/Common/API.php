@@ -483,7 +483,7 @@ class API{
 			'path_to_sfile'  => $file_path,
 			'attached_sfile' => $file,
 			'md5sum_sfile'   => $file_md5,
-			'dangerous_code' => $weak_spots,
+			'dangerous_code' => json_encode( $weak_spots ),
 		);
 		
 		$result = static::send_request($request);

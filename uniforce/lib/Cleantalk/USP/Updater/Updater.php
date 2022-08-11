@@ -242,7 +242,7 @@ class Updater {
 	 * @return array|bool
 	 */
 	private function runUpdateActions( $current_version, $new_version ){
-	 
+	    
 		$current_version = $this->versionStandardization( $current_version );
 		$new_version     = $this->versionStandardization( $new_version );
 		
@@ -255,9 +255,9 @@ class Updater {
 					
 					if( version_compare( "{$ver_major}.{$ver_minor}.{$ver_fix}", $current_version_str, '<=' ) )
 						continue;
-					
-					if( method_exists( $this, "update_to_{$ver_major}_{$ver_minor}_{$ver_fix}" ) ){
-						$result = call_user_func( __CLASS__ . "::update_to_{$ver_major}_{$ver_minor}_{$ver_fix}" );
+                    
+                    if( method_exists( 'Cleantalk\USP\Updater\UpdaterScripts', "update_to_{$ver_major}_{$ver_minor}_{$ver_fix}" ) ){
+						$result = call_user_func( "Cleantalk\USP\Updater\UpdaterScripts::update_to_{$ver_major}_{$ver_minor}_{$ver_fix}" );
 						if( ! empty( $result['error'] ) ){
 							return $result;
 						}
@@ -300,37 +300,4 @@ class Updater {
 		}else
 			return false;
 	}
-	
-	private function update_to_3_5_0(){
-     
-	    // Check if cloud MySQL is accessible
-        $sql_accessible = true;
-        $show_errors = ini_get( 'display_errors' );
-        ini_set( 'display_errors', 0);
-        try{
-            $db = \Cleantalk\USP\DB::getInstance(
-                'mysql:host=db2c.cleantalk.org;charset=utf8',
-                'test_user',
-                'oMae9Neid8yi'
-            );
-        }catch( \Exception $e ){
-            $sql_accessible = false;
-        }
-        ini_set( 'display_errors', $show_errors);
-        
-        // Call the method once again if cloud MySQL is accessible
-        if( $sql_accessible ){
-         
-	        $usp = State::getInstance();
-            $result = API::method__dbc2c_get_info( $usp->key, true );
-            
-            if( empty( $result['error'] ) ){
-                $usp->data->db_request_string = 'mysql:host=' . $result['db_host'] . ';dbname=' . $result['db_name'] . ';charset=utf8';
-                $usp->data->db_user           = $result['db_user'];
-                $usp->data->db_password       = $result['db_password'];
-                $usp->data->db_created        = $result['created'];
-                $usp->data->save();
-            }
-        }
-    }
 }
