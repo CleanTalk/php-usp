@@ -1,6 +1,6 @@
 <?php
 /**
- *	Version: 3.6.0
+ *	Version: 3.7.0
  */
 $file_availability = true;
 $site_index_file = __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '/index.php';
