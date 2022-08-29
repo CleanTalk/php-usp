@@ -519,23 +519,23 @@ class ScannerController {
 							.' weak_spots = :weak_spots'
 							.' WHERE fast_hash = :fast_hash'
 					);
+
+                $signatures = new Storage('signatures', null, '', 'csv', array(
+                    'id',
+                    'name',
+                    'body',
+                    'type',
+                    'attack_type',
+                    'submitted',
+                    'cci'
+                ) );
+                $signatures = $signatures->convertToArray();
 				
 				// Initialing results
 				foreach ( $files_to_check as $file ) {
-					
-					$signatures = new Storage('signatures', null, '', 'csv', array(
-						'id',
-						'name',
-						'body',
-						'type',
-						'attack_type',
-						'submitted',
-						'cci'
-					) );
-					$signatures = $signatures->convertToArray();
-					
+
 					$result = Scanner::file__scan__for_signatures( $this->root, $file, $signatures );
-					
+
 					if ( empty( $result['error'] ) ) {
 						
 						$status =     ! empty( $file['status'] ) && $file['status'] === 'MODIFIED' ? 'MODIFIED' : $result['status'];
