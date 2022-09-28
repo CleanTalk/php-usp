@@ -286,16 +286,21 @@ class ScannerController {
 				$usp->data->stat->scanner->signature_last_update = time();
 				$usp->data->stat->scanner->signature_entries = count( $result );
 				$usp->data->save();
-				
-			}elseif($result['error'] === 'UP_TO_DATE'){
-				$out['success'] = 'UP_TO_DATE';
-			}else
-				$out['updated'] = count($result);
-			
+
+                $out['updated'] = count($result);
+
+            } elseif ( $result['error'] === 'UP_TO_DATE' ) {
+                $out['success'] = 'UP_TO_DATE';
+            } else {
+                Err::add($result['error']);
+            }
+
 			$out['end'] = 1;
 			
-		}else
-			Err::add('Signatures scan is disabled');
+		}else{
+            Err::add('Signatures scan is disabled');
+        }
+
 		
 		return Err::check()
 			? Err::check_and_output()
@@ -514,23 +519,23 @@ class ScannerController {
 							.' weak_spots = :weak_spots'
 							.' WHERE fast_hash = :fast_hash'
 					);
+
+                $signatures = new Storage('signatures', null, '', 'csv', array(
+                    'id',
+                    'name',
+                    'body',
+                    'type',
+                    'attack_type',
+                    'submitted',
+                    'cci'
+                ) );
+                $signatures = $signatures->convertToArray();
 				
 				// Initialing results
 				foreach ( $files_to_check as $file ) {
-					
-					$signatures = new Storage('signatures', null, '', 'csv', array(
-						'id',
-						'name',
-						'body',
-						'type',
-						'attack_type',
-						'submitted',
-						'cci'
-					) );
-					$signatures = $signatures->convertToArray();
-					
+
 					$result = Scanner::file__scan__for_signatures( $this->root, $file, $signatures );
-					
+
 					if ( empty( $result['error'] ) ) {
 						
 						$status =     ! empty( $file['status'] ) && $file['status'] === 'MODIFIED' ? 'MODIFIED' : $result['status'];
