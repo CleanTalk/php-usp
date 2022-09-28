@@ -20,6 +20,13 @@ class Cron extends \Cleantalk\USP\Common\Cron
 		    );
 	    }
         require self::CRON_FILE;
+
+        global $uniforce_tasks;
+
+        if (empty($uniforce_tasks)) {
+            return array();
+        }
+
         return $uniforce_tasks;
     }
 
