@@ -116,10 +116,14 @@ class WAF extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 		return $results;
 		
 	}
-	
-	private function signatures__get(){
+
+    /**
+     * Get array of WAF signatures. Return array of signatures or false if no WAF rules found.
+     * @return array|false
+     */
+    private function signatures__get(){
 		
-		$signatures = new Storage('signatures', null, '', 'csv', array(
+		$signatures_source = new Storage('signatures', null, '', 'csv', array(
 			'id',
 			'name',
 			'body',
@@ -128,12 +132,15 @@ class WAF extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 			'submitted',
 			'cci'
 		) );
-		
-		foreach( $signatures->convertToArray() as $signature ){
-			if( $signature['type'] === 'WAF_RULE' )
-				$signatures[] = $signature;
-		}
-		return $signatures;
+
+        $signatures = [];
+
+        foreach ( $signatures_source->convertToArray() as $signature ) {
+            if ( $signature['type'] === 'WAF_RULE' ) {
+                $signatures[] = $signature;
+            }
+        }
+        return !empty($signatures) ? $signatures : false;
 	}
 	
 	/**
