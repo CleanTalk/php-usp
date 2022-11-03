@@ -289,6 +289,10 @@ function usp_install_config($modified_files, $api_key, $cms, $exclusions ){
 
     $usp->plugin_meta->is_installed  = true;
     $usp->plugin_meta->version = SPBCT_VERSION;
+    if ( empty($usp->plugin_meta->latest_version) ) {
+        $updater = new \Cleantalk\USP\Updater\Updater(CT_USP_ROOT);
+        $usp->plugin_meta->latest_version = $updater->getLatestVersion();
+    }
     $usp->plugin_meta->save();
 }
 
