@@ -4,8 +4,8 @@ namespace Cleantalk\USP\Scanner;
 
 class Helper {
 	
-	const signatures_version_file_url = 'https://s3-us-west-2.amazonaws.com/cleantalk-security/security_signatures/version.txt';
-	const signatures_file_url         = 'https://s3-us-west-2.amazonaws.com/cleantalk-security/security_signatures/security_signatures_v2.csv.gz';
+	const signatures_version_file_url = 'https://cleantalk-security.s3.amazonaws.com/security_signatures/version.txt';
+	const signatures_file_url         = 'https://cleantalk-security.s3.amazonaws.com/security_signatures/security_signatures_v2.csv.gz';
 	
 	public static function get_files( $offset = 0, $amount = 1500, $path = CT_USP_SITE_ROOT ) {
 		
@@ -98,7 +98,7 @@ class Helper {
 	 */
 	static public function get_hashes__approved_files($cms, $type, $version) {
 		
-		$file_path = 'https://cleantalk-security.s3-us-west-2.amazonaws.com/extensions_checksums/'.$cms.'/'.$type.'/'.$version.'.csv.gz';
+		$file_path = 'https://cleantalk-security.s3.amazonaws.com/extensions_checksums/'.$cms.'/'.$type.'/'.$version.'.csv.gz';
 		
 		if( \Cleantalk\USP\Uniforce\Helper::http__request($file_path, array(), 'get_code') == 200) {
 			
@@ -217,7 +217,7 @@ class Helper {
 				$url_path = 'https://themes.svn.wordpress.org/'.$file_info['source'].'/'.$file_info['version'].'/'.$file_info['path'];
 				break;
 			default:
-				$url_path = 'http://cleantalk-security.s3.amazonaws.com/cms_sources/'.$file_info['source'].'/'.$file_info['version'].$file_info['path'];
+				$url_path = 'https://cleantalk-security.s3.amazonaws.com/cms_sources/'.$file_info['source'].'/'.$file_info['version'].$file_info['path'];
 				break;
 		}
 		

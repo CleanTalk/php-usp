@@ -289,9 +289,11 @@ class ScannerController {
 				
 			}elseif($result['error'] === 'UP_TO_DATE'){
 				$out['success'] = 'UP_TO_DATE';
-			}else
-				$out['updated'] = count($result);
-			
+			}else{
+                Err::add($result['error']);
+                $out['updated'] = count($result);
+            }
+
 			$out['end'] = 1;
 			
 		}else
