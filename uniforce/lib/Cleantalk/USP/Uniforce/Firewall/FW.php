@@ -312,6 +312,9 @@ class FW extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 				State::getInstance()->fw_stats->update_percent = round( ( ( (int) $current_file_num + 1 ) / (int) $url_count ), 2) * 100;
 				State::getInstance()->fw_stats->save();
 
+                // Make sure to write all fs actions
+                sleep(3);
+
 				// Make next call
 				Helper::http__request(
 					Server::get( 'HTTP_HOST' ) . CT_USP_AJAX_URI,
