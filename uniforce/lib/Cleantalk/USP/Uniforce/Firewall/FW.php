@@ -257,7 +257,14 @@ class FW extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 		
 		// Get multifiles
 		if( ! $multifile_url ){
-			
+
+            if ( State::getInstance()->fw_stats->updating ) {
+                return ['error' => 'Updating is under process.'];
+            }
+
+            State::getInstance()->fw_stats->updating       = true;
+            State::getInstance()->fw_stats->save();
+
 			$result = self::update__get_multifiles( $api_key );
 			if( ! empty( $result['error'] ) ){
                 return $result;
@@ -271,8 +278,7 @@ class FW extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
             State::getInstance()->fw_stats->updating_folder = CT_USP_ROOT . DS . 'fw_files';
             $download_files_result = Helper::http__download_remote_file__multi( $result['file_urls'], State::getInstance()->fw_stats->updating_folder );
 			if( empty( $download_files_result['error'] ) ){
-			 
-				State::getInstance()->fw_stats->updating       = true;
+
 				State::getInstance()->fw_stats->update_percent = 0;
 				State::getInstance()->fw_stats->entries        = 0;
 				State::getInstance()->fw_stats->update_start   = time();
