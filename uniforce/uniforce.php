@@ -16,6 +16,10 @@ if( ! $usp->key )
 // Helper functions
 require_once( CT_USP_INC . 'functions.php' );
 
+global $usp_is_js_attached;
+
+$usp_is_js_attached = false;
+
 if( $usp->settings->fw || $usp->settings->waf || $usp->settings->bfp ){
 
 	// Security FireWall
@@ -75,6 +79,10 @@ if( Cookie::get('spbct_authorized') )
     \Cleantalk\USP\Uniforce\Firewall\BFP::update_log( 'view' );
 
 function uniforce_attach_js( $buffer ){
+    global $usp_is_js_attached;
+    if ($usp_is_js_attached){
+        return $buffer;
+    }
 
     if(
         !(isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') // No ajax
@@ -91,11 +99,11 @@ function uniforce_attach_js( $buffer ){
             1
         );
     }
-    
+
     if( State::getInstance()->settings->bfp && State::getInstance()->detected_cms ){
-    	
+
 	    if( \Cleantalk\USP\Uniforce\Firewall\BFP::is_logged_in( State::getInstance()->detected_cms ) ) {
-	    	
+
 		    if( ! Cookie::get( 'spbct_authorized' ) ){
 			    setcookie( 'spbct_authorized', md5( State::getInstance()->key ), 0, '/' );
 			    \Cleantalk\USP\Uniforce\Firewall\BFP::update_log( 'login' );
@@ -103,17 +111,19 @@ function uniforce_attach_js( $buffer ){
 		    }
 		    
 	    }else{
-	    	
+
 		    if( Cookie::get('spbct_authorized') ) {
 			    \Cleantalk\USP\Uniforce\Firewall\BFP::update_log( 'logout' );
 			    setcookie( 'spbct_authorized', md5( State::getInstance()->key ), time()-3600, '/' );
 		    }
-			 
+
 		    if( Post::get( 'spbct_login_form' ) )
 			    \Cleantalk\USP\Uniforce\Firewall\BFP::update_log( 'auth_failed' );
-		    
+
 	    }
     }
+
+    $usp_is_js_attached = true;
 
     return $buffer;
 }
