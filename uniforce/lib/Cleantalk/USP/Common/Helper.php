@@ -822,14 +822,21 @@ class Helper{
 	 *
 	 * returns array
 	 */
-	static public function http__get_headers(){
+    public static function http__get_headers()
+    {
 		
 		$headers = array();
-		foreach($_SERVER as $key => $val){
-			if(preg_match('/\AHTTP_/', $key)){
+
+        if ( !is_array($_SERVER) ) {
+            return $headers;
+        }
+
+        foreach($_SERVER as $key => $val){
+
+            if(preg_match('/\AHTTP_/', $key)){
 				$server_key = preg_replace('/\AHTTP_/', '', $key);
 				$key_parts = explode('_', $server_key);
-				if(count($key_parts) > 0 and strlen($server_key) > 2){
+				if(count($key_parts) > 0 && strlen($server_key) > 2){
 					foreach($key_parts as $part_index => $part){
 						$key_parts[$part_index] = function_exists('mb_strtolower') ? mb_strtolower($part) : strtolower($part);
 						$key_parts[$part_index][0] = strtoupper($key_parts[$part_index][0]);
