@@ -19,3 +19,4 @@
 .spbc_view_file_row_wrapper:nth-child(even) { background: #ddd; }
 .spbc_view_file_row_num { display: inline-block; width: 30px; margin: 0 0 0 5px; border-right: 1px solid black; }
 .spbc_view_file_row { display: inline; margin: 0 0 0 5px; }
+.spbc_view_file_row_wrapper_weak_spots { background-color: #f00; }
