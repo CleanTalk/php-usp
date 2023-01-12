@@ -28,3 +28,7 @@ Scan a website for malware to protects your website from viruses and deletes inf
 
 ### Web Application Firewall
 The main purpose of the Web Application FireWall is to protect the Web application from unauthorized access, even if there are critical vulnerabilities. Web Application Firewall catches all requests to your website and checks HTTP parameters that include: SQL Injection, Cross-Site Scripting (XSS), uploading files from non-authorized users, PHP constructions/code, the presence of malicious code in the downloaded files.
+
+## Requirements
+
+* CleanTalk account https://cleantalk.org/register?product=anti-spam
