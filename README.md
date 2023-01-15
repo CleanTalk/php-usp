@@ -31,4 +31,4 @@ The main purpose of the Web Application FireWall is to protect the Web applicati
 
 ## Requirements
 
-* CleanTalk account https://cleantalk.org/register?product=anti-spam
+* CleanTalk account https://cleantalk.org/register?product_name=security
