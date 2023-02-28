@@ -48,6 +48,10 @@ if( Post::is_set('action', 'security') ) {
 				usp_do_uninstall();
 				break;
 
+            case 'change_admin_password' :
+                usp_do_change_admin_password();
+                break;
+
 			case 'spbc_tbl-action--row':
 				call_user_func( '\Cleantalk\USP\Layout\ListTable::ajax__row_action_handler' );
 				break;

@@ -634,3 +634,40 @@ function usp_do_uninstall() {
     Err::check() or die(json_encode(array('success' => true)));
     die(Err::check_and_output( 'as_json' ));
 }
+
+/**
+ * AJAX handler for the changing admin password logic
+ *
+ * @return string json
+ */
+function usp_do_change_admin_password()
+{
+    $usp = State::getInstance();
+
+    // Changing password logic
+    // 1 if the fields not empty
+    if ( Post::get('old_password') && Post::get('new_password') && Post::get('new_password_confirm') ) {
+
+        // 2 if the old password is right
+        if ( $usp->data->password !== hash( 'sha256', trim(Post::get('old_password'))) ) {
+            Err::add('Changing admin password', 'The old password is wrong');
+            die(Err::check_and_output( 'as_json' ));
+        }
+
+        // 3 if the new password confirmed
+        if ( Post::get('new_password') !== Post::get('new_password_confirm') ) {
+            Err::add('Changing admin password', 'New password is not confirmed');
+            die(Err::check_and_output( 'as_json' ));
+        }
+
+        // 4 save the new password
+        $usp->data->password = hash('sha256', trim(Post::get('new_password')));
+        $usp->data->save();
+
+    } else {
+        Err::add('Changing admin password', 'All fields are required');
+    }
+
+    Err::check() or die(json_encode(array('success' => true)));
+    die(Err::check_and_output( 'as_json' ));
+}
