@@ -175,12 +175,24 @@ function uninstall(){
 }
 
 function changeAdminPassword() {
+    const newPassword = $('#ctusp_field---new_password').val();
+    if ( newPassword.length < 8 ) {
+        $("body").overhang({
+            type: "error",
+            message: 'Error: Password must be more than 8 characters',
+            duration: 43200,
+            overlay: true,
+            closeConfirm: true,
+            easing: 'linear'
+        });
+        return;
+    }
     ctAJAX(
         {
             data: {
                 action: 'change_admin_password',
                 old_password: $('#ctusp_field---old_password').val(),
-                new_password: $('#ctusp_field---new_password').val(),
+                new_password: newPassword,
                 new_password_confirm: $('#ctusp_field---new_password_confirm').val(),
             },
             successCallback: function(result, data, params, obj) {

@@ -657,13 +657,19 @@ function usp_do_change_admin_password()
             die(Err::check_and_output( 'as_json' ));
         }
 
-        // 3 if the new password confirmed
+        // 3 if the password is too short
+        if ( strlen(Post::get('new_password')) < 8 ) {
+            Err::add('Changing admin password', 'Password must be more than 8 characters');
+            die(Err::check_and_output( 'as_json' ));
+        }
+
+        // 4 if the new password confirmed
         if ( Post::get('new_password') !== Post::get('new_password_confirm') ) {
             Err::add('Changing admin password', 'New password is not confirmed');
             die(Err::check_and_output( 'as_json' ));
         }
 
-        // 4 save the new password
+        // 5 save the new password
         $usp->data->password = hash('sha256', trim(Post::get('new_password')));
         $usp->data->save();
 
