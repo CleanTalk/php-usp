@@ -247,31 +247,7 @@ function usp_install_config($modified_files, $api_key, $cms, $exclusions ){
     if( Post::get( 'user_token' ) )
         $usp->data->user_token = trim( Post::get( 'user_token' ) );
 
-    $host = $_SERVER['HTTP_HOST'] ?: 'Your Site';
-    $to = trim( Post::get( 'email' ) );
-    $subject = 'UniForce settings password for ' . $host;
-    $message = "Hi,<br><br>
-                Your credentials to get access to settings of Uniforce (Universal security plugin by CleanTalk) are bellow,<br><br>
-                Login: $login<br>
-                Password: $pass <br>
-                Settings URL: https://$host/uniforce/ <br>
-                Dashboard: https://cleantalk.org/my/?cp_mode=security <br><br>
-                --<br>
-                With regards,<br>
-                CleanTalk team.";
-
-    $headers  = 'MIME-Version: 1.0' . "\r\n";
-    $headers .= 'Content-type: text/html; charset=iso-8859-1' . "\r\n";
-
-    // Sending password
-    if( trim( Post::get( 'email' ) ) && Post::get( 'admin_password' ) ){
-        mail(
-            $to,
-            $subject,
-            $message,
-            $headers
-        );
-    }
+    usp_send_pass_to_email(trim(Post::get('email')), $login, $pass);
 
     if( Post::get( 'account_name_ob' ) )
         $usp->data->account_name_ob =  trim( Post::get( 'account_name_ob' ) );
@@ -294,6 +270,33 @@ function usp_install_config($modified_files, $api_key, $cms, $exclusions ){
         $usp->plugin_meta->latest_version = $updater->getLatestVersion();
     }
     $usp->plugin_meta->save();
+}
+
+function usp_send_pass_to_email($to, $login, $pass)
+{
+    $host = $_SERVER['HTTP_HOST'] ?: 'Your Site';
+    //$to = trim( Post::get( 'email' ) );
+    $subject = 'UniForce settings password for ' . $host;
+    $message = "Hi,<br><br>
+                Your credentials to get access to settings of Uniforce (Universal security plugin by CleanTalk) are bellow,<br><br>
+                Login: $login<br>
+                Password: $pass <br>
+                Settings URL: https://$host/uniforce/ <br>
+                Dashboard: https://cleantalk.org/my/?cp_mode=security <br><br>
+                --<br>
+                With regards,<br>
+                CleanTalk team.";
+
+    $headers  = 'MIME-Version: 1.0' . "\r\n";
+    $headers .= 'Content-type: text/html; charset=iso-8859-1' . "\r\n";
+
+    // Sending password
+    mail(
+        $to,
+        $subject,
+        $message,
+        $headers
+    );
 }
 
 /**
@@ -663,6 +666,8 @@ function usp_do_change_admin_password()
         // 4 save the new password
         $usp->data->password = hash('sha256', trim(Post::get('new_password')));
         $usp->data->save();
+
+        usp_send_pass_to_email($usp->data->email, $usp->data->email, Post::get('new_password'));
 
     } else {
         Err::add('Changing admin password', 'All fields are required');
