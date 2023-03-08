@@ -65,7 +65,7 @@ if( $usp->settings->fw || $usp->settings->waf || $usp->settings->bfp ){
 			return;
 	}
 	
-	if( $firewall->module__is_loaded__any() ){
+	if( $firewall->module__is_loaded__any() && ! usp__is_admin() ){
 		$firewall->run();
 	}
 	
