@@ -442,7 +442,7 @@ class ScannerController {
 	 */
 	public function action__scanner__get_approved() {
 		
-		$result = ScannerHelper::get_hashes__approved_files('usp','approved', '1.0.0');
+		$result = ScannerHelper::get_hashes__approved_files('usp','approved', SPBCT_VERSION);
 		
 		if (empty($result['error'])) {
 			

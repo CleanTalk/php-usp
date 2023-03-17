@@ -97,8 +97,8 @@ class Helper {
 	 * @return array Array with all files hashes or Error Array
 	 */
 	static public function get_hashes__approved_files($cms, $type, $version) {
-		
-		$file_path = 'https://cleantalk-security.s3.amazonaws.com/extensions_checksums/'.$cms.'/'.$type.'/'.$version.'.csv.gz';
+
+        $file_path = 'https://cleantalk-security.s3.amazonaws.com/extensions_checksums/' . $cms . '/' . $type . '/' . $version . '.csv.gz';
 		
 		if( \Cleantalk\USP\Uniforce\Helper::http__request($file_path, array(), 'get_code') == 200) {
 			
@@ -134,11 +134,9 @@ class Helper {
 								return $result;
 							}else
 								return array('error' =>'BAD_HASHES_FILE');
-							
 						} else {
 							return array('error' => 'Empty hashes file');
 						}
-						
 					} else {
 						return array( 'error' => 'COULDNT_UNPACK' );
 					}
@@ -146,8 +144,8 @@ class Helper {
 					return array( 'error' => 'Function gzdecode not exists. Please update your PHP to version 5.4' );
 				}
 			}
-		}else
-			return array('error' =>'REMOTE_FILE_NOT_FOUND');
+		}
+    return array('error' =>'REMOTE_FILE_NOT_FOUND');
 	}
 	
 	/**
