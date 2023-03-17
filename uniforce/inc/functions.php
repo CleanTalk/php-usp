@@ -1,6 +1,7 @@
 <?php
 
 use Cleantalk\USP\Common\State;
+use Cleantalk\USP\Variables\Cookie;
 
 /**
  * JavaScript test for sender
@@ -46,4 +47,9 @@ function _e( $string, $text_domain ){
 function usp_localize_script( $name, $data ) {
 	$data = json_encode($data);
 	echo "<script>/*<![CDATA[*/var $name = $data;/*]]>*/</script>";
+}
+
+function usp__is_admin()
+{
+    return Cookie::get( 'authentificated' ) === State::getInstance()->data->security_key;
 }
