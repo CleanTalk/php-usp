@@ -1,4 +1,4 @@
-##Security and FireWall plugin by CleanTalk for websites.
+## Security and FireWall plugin by CleanTalk for websites.
 
 
 ### CleanTalk has developed a universal security plugin that can be installed on any PHP site.
