@@ -16,7 +16,7 @@ class Cron extends \Cleantalk\USP\Common\Cron
     	if( ! file_exists( self::CRON_FILE ) ){
     		file_put_contents(
     			self::CRON_FILE,
-			    "<?php\n\$uniforce_tasks = array ();"
+			    "<?php\nglobal \$uniforce_tasks;\n\$uniforce_tasks = array ();"
 		    );
 	    }
         require self::CRON_FILE;
