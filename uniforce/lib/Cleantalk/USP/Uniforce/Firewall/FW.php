@@ -121,6 +121,8 @@ class FW extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 						case -2: $result_entry = array_merge( $result_entry, array('status' => 'DENY_BY_DOS', ) );             break;
 						case -3: $result_entry = array_merge( $result_entry, array('status' => 'DENY_BY_SEC_FW', ) );          break;
 						case -4: $result_entry = array_merge( $result_entry, array('status' => 'DENY_BY_SPAM_FW', ) );         break;
+						case 99: $result_entry = array_merge( $result_entry, array('status' => 'PASS_AS_SKIPPED_NETWORK', ) ); break;
+						default: $result_entry = array_merge( $result_entry, array('status' => 'PASS', ) ); break;
 					}
 					
 					$results[] = $result_entry;

@@ -380,6 +380,7 @@ class API{
 		$request = array(
 			'auth_key'    => $api_key,
 			'method_name' => 'security_firewall_data_file',
+            'version' => 2
 		);
 
 		if( $out )
