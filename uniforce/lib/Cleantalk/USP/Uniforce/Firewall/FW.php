@@ -125,7 +125,6 @@ class FW extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 					
 					$results[] = $result_entry;
 				}
-				
 				// Not in base
 			}else {
 				
@@ -498,6 +497,11 @@ class FW extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 					
 					$entry = Helper::buffer__csv__pop_line_to_array( $data );
                     if( in_array($entry[0], $networks_to_skip ) ){
+                        continue;
+                    }
+
+                    //skip ipv6 because of reasons :(
+                    if ( !is_numeric($entry[0]) ){
                         continue;
                     }
 					
