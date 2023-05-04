@@ -121,11 +121,12 @@ class FW extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 						case -2: $result_entry = array_merge( $result_entry, array('status' => 'DENY_BY_DOS', ) );             break;
 						case -3: $result_entry = array_merge( $result_entry, array('status' => 'DENY_BY_SEC_FW', ) );          break;
 						case -4: $result_entry = array_merge( $result_entry, array('status' => 'DENY_BY_SPAM_FW', ) );         break;
+						case 99: $result_entry = array_merge( $result_entry, array('status' => 'PASS_AS_SKIPPED_NETWORK', ) ); break;
+						default: $result_entry = array_merge( $result_entry, array('status' => 'PASS', ) ); break;
 					}
 					
 					$results[] = $result_entry;
 				}
-				
 				// Not in base
 			}else {
 				
@@ -498,6 +499,11 @@ class FW extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 					
 					$entry = Helper::buffer__csv__pop_line_to_array( $data );
                     if( in_array($entry[0], $networks_to_skip ) ){
+                        continue;
+                    }
+
+                    //skip ipv6 because of reasons :(
+                    if ( !is_numeric($entry[0]) ){
                         continue;
                     }
 					

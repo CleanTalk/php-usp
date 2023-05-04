@@ -621,7 +621,7 @@ function usp_check_account_status( $key = null ){
 	$usp->data->save();
 	$usp->settings->save();
 
-	return $usp->valid;
+	return $usp->data->valid;
 }
 
 /**

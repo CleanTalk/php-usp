@@ -380,6 +380,7 @@ class API{
 		$request = array(
 			'auth_key'    => $api_key,
 			'method_name' => 'security_firewall_data_file',
+            'version' => 2
 		);
 
 		if( $out )
@@ -652,15 +653,22 @@ static public function get_agent(){
 		$data['agent'] = static::get_agent();
 		
 		// Add ssl to 'presets' if enabled
-		if( $ssl )
-			array_push( $presets, 'ssl' );
-		
+		if( $ssl ){
+            array_push( $presets, 'ssl' );
+        }
+
 		$result = Helper::http__request( $url, $data,  $presets );
 		
 		// Retry with SSL enabled if failed
-		if( ! empty ( $result['error'] ) && $ssl === false )
-			$result = Helper::http__request( $url, $data, 'api ssl' );
-		
+		if( ! empty ( $result['error'] ) && $ssl === false ) {
+            $result = Helper::http__request( $url, $data, 'api ssl' );
+        }
+
+        //Retry with HTTP 20 if failed
+        if( ! empty ( $result['error'] )) {
+            $result = Helper::http__request( $url, $data, 'api http_20' );
+        }
+
 		return $result;
 	}
 	

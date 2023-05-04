@@ -541,6 +541,9 @@ class Helper{
 						$opts[CURLOPT_POSTFIELDS] = null;
 						$opts[CURLOPT_HEADER] = false;
 						break;
+                    case 'http_20':
+						$opts[CURLOPT_HTTP_VERSION] = CURL_HTTP_VERSION_2_0;
+						break;
 						
 					default:
 						
