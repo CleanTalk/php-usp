@@ -28,6 +28,7 @@ class FileDB {
     
     private $indexes_description;
     private $indexes;
+    private $indexes_temp;
     private $indexed_column;
     private $index_type;
     
@@ -57,6 +58,7 @@ class FileDB {
             // Set indexes only if we have information about them
             if( $this->meta->indexes ){
                 $this->getIndexes();
+                $this->getIndexesTemp();
             }
         }
     }
@@ -71,6 +73,33 @@ class FileDB {
                 case true:
                     
                     if( $this->storage->put( $data[ $number ] ) ){
+                        $inserted++;
+                    }
+                    break;
+                
+                case false:
+                    
+                    break;
+            }
+            
+        }
+        
+        $this->meta->rows += $inserted;
+        $this->meta->save();
+        
+        return $inserted;
+    }
+    
+    public function insertTemp( $data ){
+        
+        $inserted = 0;
+        
+        for( $number = 0; isset( $data[ $number ] ); $number++ ){
+            
+            switch ( $this->addIndexTemp( $number + 1, $data[ $number ] ) ){
+                case true:
+                    
+                    if( $this->storage->putTemp( $data[ $number ] ) ){
                         $inserted++;
                     }
                     break;
@@ -117,6 +146,37 @@ class FileDB {
         
         // Clear and delete a storage
         $this->storage->delete();
+    }
+
+    public function deleteTemp() {
+        
+        // Clear indexes
+        if( $this->meta->indexes ){
+            
+            foreach( $this->meta->indexes as &$index ){
+                
+                // @todo make multiple indexes support
+                $column_to_index = $index['columns'][0];
+                
+                switch( $index['type'] ){
+                    case 'bintree':
+                        $this->indexes_temp[ $column_to_index ]->clear_tree();
+                        break;
+                    case 'btree':
+                        $this->indexes_temp[ $column_to_index ]->clear();
+                        break;
+                }
+                $index['status'] = false;
+            } unset( $index );
+            
+        }
+        
+        // Reset rows amount
+        $this->meta->rows = 0;
+        $this->meta->save();
+        
+        // Clear and delete a storage
+        $this->storage->deleteTemp();
     }
     
     /**
@@ -369,6 +429,34 @@ class FileDB {
         }
         
     }
+
+    private function getIndexesTemp() {
+        
+        foreach( $this->meta->indexes as $index ){
+            // Index file name = databaseName_allColumnsNames.indexType
+            $index_name =
+                $this->name
+                . '_' . lcfirst( array_reduce(
+                    $index['columns'],
+                    function($result, $item){ return $result . ucfirst( $item ); }
+                ) )
+                . '_temp.' . $index['type'];
+            
+            // @todo extend indexes on a few columns
+            switch( $index['type'] ){
+                
+                case 'bintree':
+                    $this->indexes_temp[ $index['columns'][0] ] = new BinaryTree( self::FS_PATH . $index_name );
+                    break;
+                    
+                case 'btree':
+                    $this->indexes_temp[ $index['columns'][0] ] = new BTree( self::FS_PATH . $index_name );
+                    break;
+            }
+            
+        }
+        
+    }
     
     private function addIndex( $number, $data ) {
         
@@ -398,6 +486,42 @@ class FileDB {
                 $out = false;
             }elseif( $result === false ){
 //                Err::add('Insertion', 'No index added for column "' . $index . '": ' . array_search( $index, $columns_name ) );
+                $out = false;
+            }else{
+                $out = false;
+            }
+            
+            return $out;
+            
+        } unset( $index );
+    }
+
+    private function addIndexTemp( $number, $data ) {
+        
+        foreach ( $this->meta->indexes as $key => &$index ){
+	
+	        // @todo this is a crunch
+            $column_to_index = $index['columns'][0];
+            $value_to_index = $data[ $column_to_index ];
+            
+            switch ( $index['type'] ){
+                case 'bintree':
+                    $result = $this->indexes_temp[ $column_to_index ]->add_key( $value_to_index, $this->meta->rows + $number );
+                    break;
+                case 'btree':
+                    $result = $this->indexes_temp[ $column_to_index ]->put( $value_to_index, $this->meta->rows + $number );
+                    break;
+                default:
+                    $result = false;
+                    break;
+            }
+            
+            if( is_int( $result ) && $result > 0 ){
+	            $index['status'] = 'ready';
+                $out = true;
+            }elseif( $result === true ){
+                $out = false;
+            }elseif( $result === false ){
                 $out = false;
             }else{
                 $out = false;

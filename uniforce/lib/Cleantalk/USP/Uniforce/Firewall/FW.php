@@ -281,7 +281,7 @@ class FW extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 			if( empty( $download_files_result['error'] ) ){
 
 				State::getInstance()->fw_stats->update_percent = 0;
-				State::getInstance()->fw_stats->entries        = 0;
+				State::getInstance()->fw_stats->entries_temp   = 0;
 				State::getInstance()->fw_stats->update_start   = time();
 				State::getInstance()->fw_stats->save();
 				
@@ -315,7 +315,7 @@ class FW extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
                 }
 			 
 				//Increment firewall entries
-				State::getInstance()->fw_stats->entries += $result;
+				State::getInstance()->fw_stats->entries_temp += $result;
 				State::getInstance()->fw_stats->update_percent = round( ( ( (int) $current_file_num + 1 ) / (int) $url_count ), 2) * 100;
 				State::getInstance()->fw_stats->save();
 
@@ -350,12 +350,18 @@ class FW extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 			if( empty( $result['error'] ) ){
 				
 				//Increment firewall entries
-				State::getInstance()->fw_stats->entries        += $result;
+				State::getInstance()->fw_stats->entries_temp   += $result;
+				State::getInstance()->fw_stats->entries        = State::getInstance()->fw_stats->entries_temp;
 				State::getInstance()->fw_stats->updating       = false;
 				State::getInstance()->fw_stats->update_percent = 0;
 				State::getInstance()->fw_stats->last_update    = time();
 				State::getInstance()->fw_stats->updated_in     = time() - State::getInstance()->fw_stats->update_start;
 				State::getInstance()->fw_stats->save();
+
+				if ($url_count === $current_file_num) {
+					rename(CT_USP_ROOT . DS . 'data' . DS . 'fw_nets_network_temp.btree', CT_USP_ROOT . DS . 'data' . DS . 'fw_nets_network.btree');
+					rename(CT_USP_ROOT . DS . 'data' . DS . 'fw_nets_temp.storage', CT_USP_ROOT . DS . 'data' . DS . 'fw_nets.storage');
+				}
 
 			}else
 				return $result;
@@ -437,7 +443,7 @@ class FW extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 										
 										if($data !== false){
 											
-											$result__clear_db = self::clear_data();
+											$result__clear_db = self::clear_temp_data();
 											
 											if( empty( $result__clear_db['error'] ) ){
 												
@@ -520,7 +526,7 @@ class FW extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 				
 				if( ! empty( $nets_for_save ) ){
 					
-					$inserted += $db->insert( $nets_for_save );
+					$inserted += $db->insertTemp( $nets_for_save );
 					
 					if ( Err::check() ){
 						Err::prepend( 'Updating FW' );
@@ -572,7 +578,7 @@ class FW extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 		
 		if( isset( $nets_for_save ) ){
 			
-			$inserted = $db->insert( $nets_for_save );
+			$inserted = $db->insertTemp( $nets_for_save );
 		
 			if ( Err::check() ){
 				Err::prepend('Updating FW exclusions');
@@ -599,5 +605,17 @@ class FW extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 		
 		return array( 'success' => true, );
 		
+	}
+
+	/**
+	 * Clear temp SFW table
+	 *
+	 * @return bool[]
+	 */
+	public static function clear_temp_data() {
+		$db = new FileDB( 'fw_nets' );
+		$db->deleteTemp();
+		
+		return array( 'success' => true, );
 	}
 }
