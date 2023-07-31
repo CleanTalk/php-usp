@@ -26,6 +26,11 @@ class FileDB {
      */
     private $meta;
     
+    /**
+     * @var \Cleantalk\USP\Common\Storage
+     */
+    private $meta_temp;
+    
     private $indexes_description;
     private $indexes;
     private $indexes_temp;
@@ -58,38 +63,19 @@ class FileDB {
             // Set indexes only if we have information about them
             if( $this->meta->indexes ){
                 $this->getIndexes();
+            }
+        }
+
+        $this->getMetaDataTemp(); // @todo handle error
+
+        if (! $this->meta_temp->is_empty()) {
+            $this->storage = new \Cleantalk\USP\File\Storage( $db_name, $this->meta_temp->cols );
+            if ($this->meta_temp->indexes) {
                 $this->getIndexesTemp();
             }
         }
     }
-    
-    public function insert( $data ){
-        
-        $inserted = 0;
-        
-        for( $number = 0; isset( $data[ $number ] ); $number++ ){
-            
-            switch ( $this->addIndex( $number + 1, $data[ $number ] ) ){
-                case true:
-                    
-                    if( $this->storage->put( $data[ $number ] ) ){
-                        $inserted++;
-                    }
-                    break;
-                
-                case false:
-                    
-                    break;
-            }
-            
-        }
-        
-        $this->meta->rows += $inserted;
-        $this->meta->save();
-        
-        return $inserted;
-    }
-    
+
     public function insertTemp( $data ){
         
         $inserted = 0;
@@ -111,12 +97,12 @@ class FileDB {
             
         }
         
-        $this->meta->rows += $inserted;
-        $this->meta->save();
+        $this->meta_temp->rows += $inserted;
+        $this->meta_temp->save();
         
         return $inserted;
     }
-    
+
     public function delete() {
         
         // Clear indexes
@@ -172,8 +158,8 @@ class FileDB {
         }
         
         // Reset rows amount
-        $this->meta->rows = 0;
-        $this->meta->save();
+        $this->meta_temp->rows = 0;
+        $this->meta_temp->save();
         
         // Clear and delete a storage
         $this->storage->deleteTemp();
@@ -401,6 +387,19 @@ class FileDB {
             $this->meta->cols_num    = count( $this->meta->cols );
         }
     }
+
+    /**
+     * Getting metadata for temp data and creates new file if not exists
+     */
+    private function getMetaDataTemp(){
+        
+        $this->meta_temp = new Storage( $this->name . '_meta', null );
+        
+        if( ! $this->meta_temp->is_empty() ){
+            $this->meta_temp->line_length = array_sum( array_column( $this->meta_temp->cols, 'length' ) );
+            $this->meta_temp->cols_num    = count( $this->meta_temp->cols );
+        }
+    }
     
     private function getIndexes() {
         
@@ -432,7 +431,7 @@ class FileDB {
 
     private function getIndexesTemp() {
         
-        foreach( $this->meta->indexes as $index ){
+        foreach( $this->meta_temp->indexes as $index ){
             // Index file name = databaseName_allColumnsNames.indexType
             $index_name =
                 $this->name
@@ -458,47 +457,9 @@ class FileDB {
         
     }
     
-    private function addIndex( $number, $data ) {
-        
-        foreach ( $this->meta->indexes as $key => &$index ){
-	
-	        // @todo this is a crunch
-            $column_to_index = $index['columns'][0];
-            $value_to_index = $data[ $column_to_index ];
-            
-            switch ( $index['type'] ){
-                case 'bintree':
-                    $result = $this->indexes[ $column_to_index ]->add_key( $value_to_index, $this->meta->rows + $number );
-                    break;
-                case 'btree':
-                    $result = $this->indexes[ $column_to_index ]->put( $value_to_index, $this->meta->rows + $number );
-                    break;
-                default:
-                    $result = false;
-                    break;
-            }
-            
-            if( is_int( $result ) && $result > 0 ){
-	            $index['status'] = 'ready';
-                $out = true;
-            }elseif( $result === true ){
-//                Err::add('Insertion', 'Duplicate key for column "' . $index . '": ' . $data[ array_search( $index, $columns_name ) ] );
-                $out = false;
-            }elseif( $result === false ){
-//                Err::add('Insertion', 'No index added for column "' . $index . '": ' . array_search( $index, $columns_name ) );
-                $out = false;
-            }else{
-                $out = false;
-            }
-            
-            return $out;
-            
-        } unset( $index );
-    }
-
     private function addIndexTemp( $number, $data ) {
         
-        foreach ( $this->meta->indexes as $key => &$index ){
+        foreach ( $this->meta_temp->indexes as $key => &$index ){
 	
 	        // @todo this is a crunch
             $column_to_index = $index['columns'][0];
@@ -506,10 +467,10 @@ class FileDB {
             
             switch ( $index['type'] ){
                 case 'bintree':
-                    $result = $this->indexes_temp[ $column_to_index ]->add_key( $value_to_index, $this->meta->rows + $number );
+                    $result = $this->indexes_temp[ $column_to_index ]->add_key( $value_to_index, $this->meta_temp->rows + $number );
                     break;
                 case 'btree':
-                    $result = $this->indexes_temp[ $column_to_index ]->put( $value_to_index, $this->meta->rows + $number );
+                    $result = $this->indexes_temp[ $column_to_index ]->put( $value_to_index, $this->meta_temp->rows + $number );
                     break;
                 default:
                     $result = false;
