@@ -7,6 +7,8 @@ use Cleantalk\USP\Uniforce\Helper as Helper;
 
 class Scanner
 {
+    const FILE_MAX_SIZE = 2621440; // 2.5 MB
+
 	public $path         = ''; // Main path
 	public $path_lenght  = 0;
 	
@@ -289,7 +291,7 @@ class Scanner
 			
 			// Full hash
 			$this->files[$key]['full_hash'] = is_readable($val['path'])
-				? md5_file($val['path'])
+				? $this->files[$key]['size'] > self::FILE_MAX_SIZE ? 'file_is_too_big' : md5_file($val['path'])
 				: 'unknown';
 
 		}
@@ -337,6 +339,10 @@ class Scanner
                     }
                     
                     if( in_array( $signature['type'], array('CODE_PHP', 'CODE_JS', 'CODE_HTML' ) ) ) {
+                        if ( filesize($root_path . $file_info['path']) > self::FILE_MAX_SIZE ) {
+                            // File is too big to getting the content
+                            continue;
+                        }
                         $file_content = file_get_contents( $root_path . $file_info['path'] );
                         $is_regexp = preg_match( '/^\/.*\/$/', $signature['body'] );
                         if(
