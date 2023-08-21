@@ -330,6 +330,7 @@ function usp_uninstall(){
 	// Deleting FW data
 	$db = new \Cleantalk\USP\File\FileDB( 'fw_nets' );
 	$db->delete();
+	$db->deleteTemp();
 
 	// Deleting options and their files
 	$usp->delete( 'data' );
@@ -561,6 +562,7 @@ function usp_do_save_settings() {
 		// Deleting FW data
 		$db = new \Cleantalk\USP\File\FileDB( 'fw_nets' );
 		$db->delete();
+        $db->deleteTemp();
 		State::getInstance()->data->save();
 		Cron::removeTask( 'sfw_update' );
 		Cron::removeTask( 'fw_send_logs' );

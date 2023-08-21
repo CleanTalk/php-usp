@@ -12,11 +12,13 @@ class Storage {
     private $name;
     
     private $path;
+    private $path_temp;
     
     /**
      * @var false|resource
      */
     private $stream;
+    private $stream_temp;
     private $cols;
     private $line_length;
     
@@ -35,10 +37,12 @@ class Storage {
         $this->folder      = $folder ?: CT_USP_ROOT . 'data' . DIRECTORY_SEPARATOR;
         $this->name        = $name;
         $this->path        = $this->folder . $name . '.storage';
+        $this->path_temp        = $this->folder . $name . '_temp.storage';
         $this->cols        = $cols;
         $this->line_length = array_sum( array_column( $this->cols, 'length' ) );
         
         $this->stream = fopen( $this->path, 'a+b' );
+        $this->stream_temp = fopen( $this->path_temp, 'a+b' );
     }
     
     /**
@@ -65,12 +69,44 @@ class Storage {
             
         return (bool) $res;
     }
+
+    /**
+     * @param $row
+     *
+     * @return bool|int
+     */
+    public function putTemp( $row ) {
+        
+        $res = false;
+        
+        if(
+            $this->checkRowFormat( $row ) &&
+            $this->covertRowToRaw( $row )
+        ){
+            fseek( $this->stream, 0, SEEK_END );
+            $res = fwrite( $this->stream_temp, $this->input_buffer . $this->row_separator );
+        }
+        
+        if ( ! $res ){
+            $err = error_get_last();
+            Err::add( $err['message'] );
+        }
+            
+        return (bool) $res;
+    }
     
     /**
      * @return bool
      */
     public function delete(){
         return ftruncate( $this->stream, 0 ) && unlink( $this->path );
+    }
+
+    /**
+     * @return bool
+     */
+    public function deleteTemp(){
+        return ftruncate( $this->stream_temp, 0 ) && unlink( $this->path_temp );
     }
     
     private function checkRowFormat( $data ){

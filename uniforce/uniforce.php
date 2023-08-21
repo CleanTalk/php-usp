@@ -25,7 +25,7 @@ if( $usp->settings->fw || $usp->settings->waf || $usp->settings->bfp ){
 	// Security FireWall
 	$firewall = new \Cleantalk\USP\Uniforce\Firewall();
 	
-	if( $usp->settings->fw && ! $usp->fw_stats->updating && $usp->fw_stats->entries )
+	if( $usp->settings->fw && $usp->fw_stats->entries )
 		$firewall->module__load( new \Cleantalk\USP\Uniforce\Firewall\FW(
 			array(
 				'state'   => $usp,
