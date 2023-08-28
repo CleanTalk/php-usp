@@ -67,7 +67,11 @@ class Helper {
 
 									$out = array();
                                     while( $data ){
-                                        $out[] = \Cleantalk\USP\Uniforce\Helper::buffer__csv__pop_line_to_array( $data, $map, true );
+                                        $row = \Cleantalk\USP\Uniforce\Helper::buffer__csv__pop_line_to_array( $data, $map, true );
+                                        if ( isset($row['body']) ) {
+                                            $row['body'] = base64_encode($row['body']);
+                                        }
+                                        $out[] = $row;
                                     }
 									return $out;
 								}else
