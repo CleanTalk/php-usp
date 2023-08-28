@@ -173,21 +173,57 @@ class FW extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 				
 				$log = file_get_contents( $log_dir_path . DS . $log_file );
 				$log = str_getcsv( $log );
+
+				$_log = array(
+                    'timestamp' => $log[2],
+                    'page_url' => $log[6],
+                    'ip' => $log[1],
+                    'http_user_agent' => $log[7],
+                    'request_method' => $log[8],
+                    'x_forwarded_for' => $log[9],
+                    'is_personal' => $log[10],
+                    'matched_networks' => $log[11],
+                    'hits' => $log[5],
+                    'mask' => $log[12]
+                );
+
+                //datetime legacy
+                if ( !empty($_log['timestamp']) && !Helper::arg_to_timestamp($_log['timestamp']) ){
+                    $_log['datetime'] = $_log['timestamp'];
+                } else {
+                    $_log['datetime'] = !empty($_log['timestamp'])
+                        ? gmdate('Y-m-d H:i:s', $_log['timestamp'])
+                        : gmdate('Y-m-d H:i:s', 0);
+                }
+
+				//timestamp conversion
+                if ( !empty($_log['timestamp']) && Helper::arg_to_timestamp($_log['timestamp']) ){
+                    $_log['timestamp'] = Helper::arg_to_timestamp($_log['timestamp']);
+                } else {
+                    $_log['timestamp'] = 0;
+                }
 				
 				//Compile log
 				$to_data = array(
-					'datetime'         => isset( $log[2] ) ? gmdate('Y-m-d H:i:s', $log[2]) : 0,
-					'datetime_gmt'     => isset( $log[2] ) ? $log[2] : 0,
-					'page_url'         => isset( $log[6] ) ? $log[6] : 0,
-					'visitor_ip'       => isset( $log[1] ) ? ( Helper::ip__validate( $log[1] ) == 'v4' ? (int) sprintf( '%u', ip2long( $log[1] ) ) : (string) $log[1] ) : 0,
-					'http_user_agent'  => isset( $log[7] ) ? $log[7] : 0,
-					'request_method'   => isset( $log[8] ) ? $log[8] : 0,
-					'x_forwarded_for'  => isset( $log[9] ) ? $log[9] : 0,
-					'is_personal'      => isset( $log[10] ) ? $log[10] : null,
-					'matched_networks' => isset( $log[11] ) ? $log[11] . '/' . $log[12] : null,
-					'hits'             => isset( $log[5] ) ? $log[5] : 0,
+                    'datetime'      => $_log['datetime'],
+                    //named because of reasons
+                    'datetime_gmt'  => $_log['timestamp'],
+					'page_url'         => isset( $_log['page_url'] ) ? $_log['page_url'] : 0,
+					'visitor_ip'       => isset( $_log['ip'] )
+                        ? ( Helper::ip__validate( $_log['ip'] ) == 'v4'
+                            ? (int) sprintf( '%u', ip2long( $_log['ip'] ) )
+                            : (string) $_log['ip'] )
+                        : 0,
+					'http_user_agent'  => isset( $_log['http_user_agent'] ) ? $_log['http_user_agent'] : 0,
+					'request_method'   => isset( $_log['request_method'] ) ? $_log['request_method'] : 0,
+					'x_forwarded_for'  => isset( $_log['x_forwarded_for'] ) ? $_log['x_forwarded_for'] : 0,
+					'is_personal'      => isset( $_log['is_personal'] ) ? $_log['is_personal'] : null,
+					'matched_networks' => isset( $_log['matched_networks'] )
+                        ? $_log['matched_networks'] . '/' . $_log['mask']
+                        : null,
+					'hits'             => isset( $_log['hits'] ) ? $_log['hits'] : 0,
 				);
-				
+
 				// Legacy
 				switch( $log[3] ){
 					case 'PASS_BY_TRUSTED_NETWORK': $to_data['status_efw'] = 3;  break;
@@ -224,7 +260,7 @@ class FW extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 				$data[] = $to_data;
 				
 			} unset($key, $value, $result, $to_data);
-			
+
 			//Sending the request
 			$result = API::method__security_logs__sendFWData( $ct_key, $data );
 			

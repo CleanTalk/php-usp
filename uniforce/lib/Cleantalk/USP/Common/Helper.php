@@ -1181,5 +1181,28 @@ class Helper{
 			|| stripos($string_page, 'there has been a critical error on your website') !== false
 		);
 	}
+
+    /**
+     * Try to return int value of timestamp converted from arg, false if fails.
+     * @param $arg
+     *
+     * @return bool|int
+     */
+    static function arg_to_timestamp($arg)
+    {
+        if ( ! is_int($arg) ) {
+            if ( $arg === (string)(int)$arg ) {
+                $arg = (int)$arg;
+            } else {
+                return false;
+            }
+        }
+
+        if ( $arg > time() || 0 > $arg ) {
+            return false;
+        }
+
+        return $arg;
+    }
 	
 }
