@@ -8,6 +8,7 @@ use Cleantalk\USP\File\FileStorage;
 use Cleantalk\USP\Uniforce\API;
 use Cleantalk\USP\Uniforce\Helper;
 use Cleantalk\USP\Variables\Get;
+use Cleantalk\USP\Variables\Post;
 use Cleantalk\USP\Variables\Server;
 use Cleantalk\USP\File\FileDB;
 
@@ -618,4 +619,104 @@ class FW extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 		
 		return array( 'success' => true, );
 	}
+
+    public static function private_record_add($spbc_key)
+    {
+        $metadata = Post::get('metadata');
+        $metadata = json_decode(stripslashes($metadata), true);
+
+        if ( empty($metadata) || !is_array($metadata) || $metadata === 'NULL' || $metadata === null ) {
+            return array('error' => 'private_record_add: metadata JSON decoding failed');
+        }
+
+        foreach ( $metadata as $_key => &$row ) {
+            $row = explode(',', $row);
+            //do this to get info more obvious
+            $metadata_assoc_array = array(
+                'network' => (int)$row[0],
+                'mask' => (int)$row[1],
+                'status' => isset($row[2]) ? (int)$row[2] : null,
+                'source' => isset($row[3]) ? (int)$row[3] : null
+            );
+            //validate
+            $validation_error = '';
+            if ( $metadata_assoc_array['network'] === 0
+                || $metadata_assoc_array['network'] > 4294967295
+            ) {
+                $validation_error = 'metadata validate failed on "network" value';
+            }
+            if ( $metadata_assoc_array['mask'] === 0
+                || $metadata_assoc_array['mask'] > 4294967295
+            ) {
+                $validation_error = 'metadata validate failed on "mask" value';
+            }
+
+            if ( $metadata_assoc_array['source'] !== 1
+            ) {
+                $validation_error = 'metadata validate failed on "source" value';
+            }
+            if ( $metadata_assoc_array['status'] !== 1 && $metadata_assoc_array['status'] !== 0 ) {
+                $validation_error = 'metadata validate failed on "status" value';
+            }
+
+            if ( !empty($validation_error) ) {
+                return array('error' => $validation_error);
+            }
+            $row = $metadata_assoc_array;
+        }
+        unset($row);
+
+        $handler_output = self::update__write_to_db_private_record(
+            $metadata
+        );
+
+        return json_encode(array('OK' => $handler_output));
+    }
+
+    /**
+     * Writes entries from remote call to Firewall database.
+     *
+     * @param array $data
+     *
+     * @return array|bool|int|mixed|string
+     */
+    public static function update__write_to_db_private_record($data)
+    {
+        $db = new FileDB( 'fw_nets' );
+        $networks_to_skip = array();
+        $nets_for_save = array();
+        if( in_array( Server::get_domain(), self::$test_domains ) ){
+            $networks_to_skip[] = ip2long( '127.0.0.1' );
+        }
+
+
+        $inserted = 0;
+        foreach ($data as $line) {
+            if (in_array($line['network'], $networks_to_skip)) {
+                continue;
+            }
+
+            $nets_for_save[] = array(
+                'network' => $line['network'],
+                'mask'  => $line['mask'],
+                'status'=> isset( $line['status'] ) ? $line['status'] : 0,
+                'is_personal' => isset( $line['source'] ) ? intval( $line['source'] ) : 0,
+            );
+        }
+
+        if( ! empty( $nets_for_save ) ){
+
+            $inserted += $db->insert( $nets_for_save );
+
+            if ( Err::check() ){
+                Err::prepend( 'Updating FW' );
+                error_log( var_export( Err::get_all( 'string' ), true ) );
+                return array( 'error' => Err::get_last( 'string' ), );
+            }
+
+        }else
+            Err::add( 'Updating FW', 'No data to save' );
+
+        return $inserted;
+    }
 }
