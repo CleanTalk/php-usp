@@ -247,46 +247,80 @@ class BFP extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 					    continue;
                     }
 
+                    $_log = array(
+                        'event' => $log[0],
+                        'ip' => $log[1],
+                        'timestamp' => $log[2],
+                        'page_url' => $log[3],
+                        'http_user_agent' => $log[4],
+                        //unused
+//                        'page' => $log[5],
+//                        'page_time' => $log[6],
+//                        'browser_sign' => $log[7],
+                        'hits' => $log[8],
+                    );
+
+                    //datetime legacy
+                    if ( !empty($_log['timestamp']) && !Helper::arg_to_timestamp($_log['timestamp']) ){
+                        $_log['datetime'] = $_log['timestamp'];
+                    } else {
+                        $_log['datetime'] = !empty($_log['timestamp'])
+                            ? gmdate('Y-m-d H:i:s', $_log['timestamp'])
+                            : gmdate('Y-m-d H:i:s', 0);
+                    }
+
+                    //timestamp conversion
+                    if ( !empty($_log['timestamp']) && Helper::arg_to_timestamp($_log['timestamp']) ){
+                        $_log['timestamp'] = Helper::arg_to_timestamp($_log['timestamp']);
+                    } else {
+                        $_log['timestamp'] = 0;
+                    }
+
+
 					$auth_ip = $log[1] ? (string) $log[1] : '0.0.0.0';
 
-					if( (string) $log[8] > 0 ){
-						for( $i = 0; (string) $log[8] > $i; $i ++ ){
+					if( (int) $_log['hits'] > 0 ){ //todo AG: for what this for cycle?
+						for( $i = 0; (int) $_log['hits'] > $i; $i ++ ){
 							$data[] = array(
-								'datetime'      => is_string($log[2]) ? $log[2] : gmdate('Y-m-d H:i:s', $log[2]),
-								'datetime_gmt'  => is_string($log[2]) ? strtotime($log[2]) : $log[2],
+								'datetime'      => $_log['datetime'],
+								'datetime_gmt'  => $_log['timestamp'],
 								'user_login'    => null,
-								'event'         => (string) $log[0],
-								'auth_ip'       => strpos( ':', $auth_ip ) === false ? (int) sprintf( '%u', ip2long( $auth_ip ) ) : $auth_ip,
-								'page_url'      => (string) $log[3],
+								'event'         => (string) $_log['event'],
+								'auth_ip'       => strpos( ':', $auth_ip ) === false
+                                    ? (int) sprintf( '%u', ip2long( $auth_ip ) )
+                                    : $auth_ip,
+								'page_url'      => (string) $_log['page_url'],
 								'event_runtime' => null,
 								'role'          => null,
 							);
 						}
-					}else{
-						$data[] = array(
-							'datetime'      => is_string($log[2]) ? $log[2] : gmdate('Y-m-d H:i:s', $log[2]),
-							'datetime_gmt'  => is_string($log[2]) ? strtotime($log[2]) : $log[2],
-							'user_login'    => null,
-							'event'         => (string) $log[0],
-							'auth_ip'       => strpos( ':', $auth_ip ) === false ? (int) sprintf( '%u', ip2long( $auth_ip ) ) : $auth_ip,
-							'page_url'      => (string) $log[3],
-							'event_runtime' => null,
-							'role'          => null,
-						);
+					} else {
+                        $data[] = array(
+                            'datetime'      => $_log['datetime'],
+                            'datetime_gmt'  => $_log['timestamp'],
+                            'user_login'    => null,
+                            'event'         => (string) $_log['event'],
+                            'auth_ip'       => strpos( ':', $auth_ip ) === false
+                                ? (int) sprintf( '%u', ip2long( $auth_ip ) )
+                                : $auth_ip,
+                            'page_url'      => (string) $_log['page_url'],
+                            'event_runtime' => null,
+                            'role'          => null,
+                        );
 					}
 					
 					// Adding user agent if it's login event
-					if( in_array( (string) $log[0], array( 'login', 'login_2fa', 'login_new_device', 'logout', ) ) ){
+					if( in_array( (string) $_log['event'], array( 'login', 'login_2fa', 'login_new_device', 'logout', ) ) ){
 						$data[] = array_merge(
 							array_pop( $data ),
 							array(
-								'user_agent' => $log[4],
+								'user_agent' => $_log['user_agent'],
 							)
 						);
 					}
 				}
-				
-				$result = API::method__security_logs( $ct_key, $data );
+
+                $result = API::method__security_logs( $ct_key, $data );
 				
 				if( empty( $result['error'] ) ){
 					
