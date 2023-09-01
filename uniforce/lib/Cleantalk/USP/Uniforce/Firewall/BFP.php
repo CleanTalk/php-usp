@@ -277,7 +277,7 @@ class BFP extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
                     }
 
 
-					$auth_ip = $log[1] ? (string) $log[1] : '0.0.0.0';
+					$auth_ip = $_log['ip'] ? (string) $_log['ip']: '0.0.0.0';
 
 					if( (int) $_log['hits'] > 0 ){ //todo AG: for what this for cycle?
 						for( $i = 0; (int) $_log['hits'] > $i; $i ++ ){
@@ -314,7 +314,7 @@ class BFP extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 						$data[] = array_merge(
 							array_pop( $data ),
 							array(
-								'user_agent' => $_log['user_agent'],
+								'user_agent' => $_log['http_user_agent'],
 							)
 						);
 					}
