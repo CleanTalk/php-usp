@@ -16,7 +16,8 @@ function ctusp_settings__show_modified_files(){
 function usp_settings__plugin_state()
 {
     $usp = State::getInstance();
-    if ( ! empty($usp->plugin_meta->latest_version) ) {
+    $usp->plugin_meta->latest_version;
+    if (! empty($usp->plugin_meta->latest_version) ) {
         if ( version_compare($usp->plugin_meta->version, $usp->plugin_meta->latest_version) === -1 ) {
             echo '<p class="text-center">There is a newer version. Update to the latest ' . $usp->plugin_meta->latest_version . '</p>';
             echo '<p class="text-center"><button id="btn-update" form="none" class="btn btn-setup" value="">Update</button><img class="preloader" src="img/preloader.gif"></p>';
