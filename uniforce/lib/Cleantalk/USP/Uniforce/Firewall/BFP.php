@@ -12,20 +12,20 @@ use Cleantalk\USP\Variables\Post;
 use Cleantalk\USP\Variables\Server;
 
 class BFP extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
-	
+
 	public $module_name = 'BFP';
-	
+
 	// Flags
 	protected $is_logged_in  = false;
 	protected $is_login_page = false;
 	protected $do_check      = false;
-	
+
 	protected $allowed_interval = 900;
 	protected $bf_limit = 5;
 	protected $block_period = 3600;
-	
+
 	protected $chance_to_clean = 100;
-	
+
 	/**
 	 * FireWall_module constructor.
 	 * Use this method to prepare any data for the module working.
@@ -33,38 +33,38 @@ class BFP extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 	 * @param array $params
 	 */
 	public function __construct( $params = array() ){
-		
+
 		parent::__construct( $params );
-		
+
 	}
-	
+
 	public function check(){
-		
+
 		$results = array();
-		
+
 		if( $this->is_login_page && ! $this->is_logged_in && $this->do_check && isset( $this->ip_array['real'] ) ){
-			
+
 			$block_time = 20 * 60; // 20 minutes
 			$allowed_count = 2;
 			$allowed_interval = 900; // 15 min
-			
+
 			$bfp_blacklist      = State::getInstance()->bfp_blacklist;
 			$bfp_blacklist_fast = State::getInstance()->bfp_blacklist_fast;
-			
+
 			$found_ip = null;
 			$current_ip__real = $this->ip_array['real'];
-			
+
 			// Check against black list
 			foreach( $bfp_blacklist as $bad_ip => $bad_ip__details ){
 				if( $bad_ip === $current_ip__real ){
 					$found_ip = $bad_ip;
 					$found_ip__details = $bad_ip__details;
 				}
-				
+
 			} unset( $bad_ip, $bad_ip__details );
-			
+
 			if( $found_ip ) {
-				
+
 				// Remove the IP from the blacklist and proceed the checking
 				if( $found_ip__details->added + $block_time < time() ) {
 					unset( $bfp_blacklist->$current_ip__real );
@@ -72,15 +72,15 @@ class BFP extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 				}else{
 					$results[] = array( 'status' => 'DENY_BY_BFP', );
 				}
-				
+
 			}
-			
+
 			// Check count of logins
 			$found_ip = null;
 			$js_on    = spbct_js_test();
-			
+
 			foreach( $bfp_blacklist_fast as $bad_ip => $bad_ip__details ){
-				
+
 				if( $bad_ip === $current_ip__real && $bad_ip__details->added + $allowed_interval > time() ){
 					$found_ip = $bad_ip;
 					$found_ip__details = array(
@@ -92,33 +92,33 @@ class BFP extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
                     unset( $bfp_blacklist_fast->$current_ip__real );
 					$bfp_blacklist_fast->save();
 				}
-				
+
 			} unset( $bad_ip, $bad_ip__details );
-			
+
 			if( $found_ip ) {
-				
+
 				//increased allowed count to 20 if JS is on!
 				if( $found_ip__details['js_on'] == 1 )
 					$allowed_count = $allowed_count * 2;
-				
+
 				// Check count of the logins and move the IP to the black list.
 				if( $found_ip__details['count'] > $allowed_count ){
-					
+
 					$bfp_blacklist->$current_ip__real['added'] = time();
 					$bfp_blacklist->save();
-					
+
 					unset( $bfp_blacklist_fast->$current_ip__real );
 					$bfp_blacklist_fast->save();
-					
+
 					$results[] = array( 'status' => 'DENY_BY_BFP', );
-					
+
 				}else{
-					
+
 					$bfp_blacklist_fast->$found_ip = $found_ip__details;
 					$bfp_blacklist_fast->save();
-					
+
 				}
-				
+
 			}else{
 				$bfp_blacklist_fast->$current_ip__real = array(
 					'added' => time(),
@@ -126,9 +126,9 @@ class BFP extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 					'count' => 1
 				);
 				$bfp_blacklist_fast->save();
-				
+
 			}
-			
+
 			// Make the result standard
 			foreach( $results as &$result ){
 				$result = array_merge( $result, array(
@@ -138,13 +138,13 @@ class BFP extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 					'module'      => 'BFP'
 				) );
 			}
-			
+
 		}
-		
+
 		return $results;
-		
+
 	}
-	
+
 	/**
 	 *
 	 *
@@ -154,48 +154,48 @@ class BFP extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 		$this->state->data->stat->bfp->count++;
 		$this->state->data->save();
 	}
-	
+
 	/**
 	 * @param array|string $fw_result
 	 */
 	public static function update_log( $fw_result ) {
-		
+
 		// Updating common firewall log
 		if( is_array( $fw_result ) && $fw_result['status'] !== 'PASS' ){
 			parent::update_log( $fw_result );
 			return;
 		}
-        
+
         if( is_array( $fw_result ) && $fw_result['status'] !== 'DENY_BY_BFP' ){
             $fw_result = 'auth_failed';
         }
-		
+
 		global $salt;
-		
+
 		$params_default = array(
-			
+
 			// Necessary
 			'event'    => null,
 			'auth_ip'  => isset( $fw_result['ip'] ) ? $fw_result['ip'] : Helper::ip__get( array( 'real' ) ),
 			'time'     => time(),
-			
+
 			// Unnecessary
 			'page_url'   => substr( Server::get( 'HTTP_HOST' ) . Server::get( 'REQUEST_URI' ), 0, 1024 ),
 			'user_agent' => substr( Server::get( 'HTTP_USER_AGENT' ), 0, 1024 ),
-			
+
 			// @ToDo Unused params. Implement this logic to the next releases
 			'page'         => null,
 			'page_time'    => null,
 			'browser_sign' => null,
 		);
 		$params = array_merge( $params_default, array( 'event' => $fw_result, ) );
-		
+
 		// Inserting to the logs.
 		$log_path = CT_USP_ROOT . 'data/security_logs/' . hash('sha256', $params['auth_ip'] . $salt . $params['event']) . '.log';
-		
+
 		if( file_exists( $log_path ) )
 			$log = explode( ',', file_get_contents( $log_path ) );
-		
+
 		$log = array(
 			$params['event'],
 			$params['auth_ip'],
@@ -207,7 +207,7 @@ class BFP extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 			$params['browser_sign'],
 			isset($log[8]) ? (int) $log[8] + 1 : 1,
 		);
-		
+
 		$fd = fopen( $log_path, 'w' );
 		if( $fd ){
             flock( $fd, LOCK_EX );
@@ -215,7 +215,7 @@ class BFP extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
             fclose( $fd );
         }
 	}
-	
+
 	/**
 	 * Sends security log
 	 *
@@ -224,23 +224,23 @@ class BFP extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 	 * @return array|bool|int[]|mixed|string[]
 	 */
 	public static function send_log( $ct_key ){
-		
+
 		$log_dir_path = CT_USP_ROOT . 'data/security_logs';
-		
+
 		if( is_dir( $log_dir_path ) ){
-			
+
 			$log_files = array_diff( scandir( $log_dir_path ), array( '.', '..', 'index.php' ) );
-			
+
 			if( ! empty( $log_files ) ){
-				
+
 				//Compile logs
 				$data = array();
-				
+
 				foreach( $log_files as $log_file ){
-					
+
 					$log = file_get_contents( $log_dir_path . DS . $log_file );
 					$log = str_getcsv( $log );
-					
+
 					// Skip bad files
 					if( ! isset( $log[0], $log[1], $log[2], $log[3], $log[4], $log[5], $log[6], $log[7], $log[8] ) ){
 					    unlink( $log_dir_path . DS . $log_file );
@@ -308,7 +308,7 @@ class BFP extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
                             'role'          => null,
                         );
 					}
-					
+
 					// Adding user agent if it's login event
 					if( in_array( (string) $_log['event'], array( 'login', 'login_2fa', 'login_new_device', 'logout', ) ) ){
 						$data[] = array_merge(
@@ -321,19 +321,19 @@ class BFP extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 				}
 
                 $result = API::method__security_logs( $ct_key, $data );
-				
+
 				if( empty( $result['error'] ) ){
-					
+
 					//Clear local table if it's ok.
 					if( $result['rows'] == count( $data ) ){
-						
+
 						foreach( $log_files as $log_file ){
 							if( file_exists( $log_dir_path . DS . $log_file ) )
 								unlink( $log_dir_path . DS . $log_file );
 						}
-						
+
 						return $result;
-						
+
 					}else{
 						return array( 'error' => 'SENT_AND_RECEIVED_LOGS_COUNT_DOESNT_MACH' );
 					}
@@ -346,13 +346,13 @@ class BFP extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 		}else{
 			return array( 'rows' => 0 );
 		} // No logs. Directory is not exists.
-		
+
 	}
-	
+
 	public static function is_logged_in( $cms ) {
-		
+
 		$cms = defined( 'USP_DASHBOARD' ) ? 'UniForce' : $cms;
-		
+
 		switch ( $cms ) {
 			case 'Joomla' :
 				return class_exists('JFactory') && \JFactory::getUser()->id;
