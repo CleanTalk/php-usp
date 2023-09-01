@@ -8,6 +8,7 @@
  * Version: 3.8.0
  */
 
+use Cleantalk\USP\Common\Err;
 use Cleantalk\USP\Common\State;
 use Cleantalk\USP\Variables\Server;
 use Cleantalk\USP\Common\RemoteCalls;
@@ -66,4 +67,9 @@ if( ! empty( $cron->tasks_to_run ) && ! RemoteCalls::check() )
 unset( $cron );
 
 // Accept remote calls
-RemoteCalls::check() && RemoteCalls::perform();
+try {
+    RemoteCalls::check() && RemoteCalls::perform();
+} catch (\Exception $e) {
+    Err::add('Failed to perform test remote call: ' . $e->getMessage());
+    exit;
+}

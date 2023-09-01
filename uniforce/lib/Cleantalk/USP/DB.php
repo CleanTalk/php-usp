@@ -27,25 +27,27 @@ class DB extends \PDO implements Common\DB {
      * @param mixed ...$params
      */
     public function init( ...$params ){
-		
-		if( $params[0] ){
-			$dsn      = $params[0];
-			$username = $params[1];
-			$password = $params[2];
-			$options  = isset( $params[3] ) ? $params[3] : array(
-				\PDO::ATTR_ERRMODE            => \PDO::ERRMODE_EXCEPTION, // Handle errors as an exceptions
-				\PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,        // Set default fetch mode as associative array
-				\PDO::MYSQL_ATTR_SSL_CA => CT_USP_DATA_SSL_CERT . 'ca.pem',
-				\PDO::MYSQL_ATTR_SSL_CERT => CT_USP_DATA_SSL_CERT . 'client-cert.pem',
-				\PDO::MYSQL_ATTR_SSL_KEY => CT_USP_DATA_SSL_CERT . 'client-key.pem',
-			);
+		try {
+            if( $params[0] ){
+                $dsn      = $params[0];
+                $username = $params[1];
+                $password = $params[2];
+                $options  = isset( $params[3] ) ? $params[3] : array(
+                    \PDO::ATTR_ERRMODE            => \PDO::ERRMODE_EXCEPTION, // Handle errors as an exceptions
+                    \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,        // Set default fetch mode as associative array
+                    \PDO::MYSQL_ATTR_SSL_CA => CT_USP_DATA_SSL_CERT . 'ca.pem',
+                    \PDO::MYSQL_ATTR_SSL_CERT => CT_USP_DATA_SSL_CERT . 'client-cert.pem',
+                    \PDO::MYSQL_ATTR_SSL_KEY => CT_USP_DATA_SSL_CERT . 'client-key.pem',
+                );
 
-			parent::__construct( $dsn, $username, $password, $options );
+                parent::__construct( $dsn, $username, $password, $options );
 
-		}else{
-			self::$instance = null;
-		}
-
+            }else{
+                self::$instance = null;
+            }
+        } catch (\Exception $e) {
+            throw new \Exception("Can not init DB connect, error:" .  $e->getMessage());
+        }
 	}
 
 	/**
