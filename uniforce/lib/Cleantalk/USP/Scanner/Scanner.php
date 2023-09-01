@@ -330,12 +330,9 @@ class Scanner
 
 				$verdict = array();
 
-				foreach ((array)$signatures as $signature){
-
-                    $signature_body_decoded = base64_decode($signature['body']);
-
+				foreach ($signatures as $signature){
                     if( $signature['type'] === 'FILE' ){
-                        if( $file_info['full_hash'] === $signature_body_decoded ){
+                        if( $file_info['full_hash'] === $signature ){
                             $verdict['SIGNATURES'][1][] = $signature['id'];
                         }
                     }
@@ -346,12 +343,12 @@ class Scanner
                             continue;
                         }
                         $file_content = file_get_contents( $root_path . $file_info['path'] );
-                        $is_regexp = preg_match( '/^\/.*\/$/', $signature_body_decoded );
+                        $is_regexp = preg_match( '/^\/.*\/$/', $signature['body'] );
                         if(
-                            ( $is_regexp   && preg_match( $signature_body_decoded, $file_content ) ) ||
-                            ( ! $is_regexp && strripos( $file_content, stripslashes( $signature_body_decoded ) ) !== false )
+                            ( $is_regexp   && preg_match( $signature, $file_content ) ) ||
+                            ( ! $is_regexp && strripos( $file_content, stripslashes( $signature['body'] ) ) !== false )
                         ){
-                            $line_number = ScannerHelper::file__get_string_number_with_needle( $file_info['path'], $signature_body_decoded, $is_regexp );
+                            $line_number = ScannerHelper::file__get_string_number_with_needle( $root_path . $file_info['path'], $signature['body'], $is_regexp );
                             $verdict['SIGNATURES'][ $line_number ][] = $signature['id'];
                         }
                     }

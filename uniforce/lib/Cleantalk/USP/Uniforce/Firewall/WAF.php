@@ -54,9 +54,13 @@ class WAF extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 
 		if ( $signatures ) {
 
-			foreach ( $signatures as $signature ) {
+            $decoded_signatures = array();
+            foreach ($signatures as $signature => $value){
+                $decoded_signatures[$signature] = $value;
+                $decoded_signatures[$signature]['body'] = base64_decode($signature['body']);
+            }
 
-                $signature_body_decoded = base64_decode($signature['body']);
+			foreach ( $decoded_signatures as $signature_body_decoded ) {
 
 				switch ( $signature['attack_type'] ) {
 
