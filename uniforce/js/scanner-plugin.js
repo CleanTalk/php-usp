@@ -175,8 +175,8 @@ class spbc_Scanner{
             case 'get_signatures':     params.timeout = 60000; break;
             case 'clear_table':        this.amount = 1000;     break;
             case 'surface_analysis':   this.amount = 500;      break;
-            case 'signature_analysis': this.amount = 10;       break;
-            case 'heuristic_analysis': this.amount = 10;       break;
+            case 'signature_analysis': this.amount = this.settings['no_sql'] === 1 ? 200 : 50;       break;
+            case 'heuristic_analysis': this.amount = this.settings['no_sql'] === 1 ? 200 : 50;      break;
             case 'auto_cure':          this.amount = 5;        break;
             case 'send_results':                               break;
             default:                                           break;
