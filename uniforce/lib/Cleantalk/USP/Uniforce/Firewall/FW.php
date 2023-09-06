@@ -742,7 +742,7 @@ class FW extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 
         if( ! empty( $nets_for_save ) ){
 
-            $inserted += $db->insert( $nets_for_save );
+            $inserted += $db->insertTemp( $nets_for_save );
 
             if ( Err::check() ){
                 Err::prepend( 'Updating FW' );
