@@ -656,12 +656,12 @@ class FW extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 		return array( 'success' => true, );
 	}
 
-    public static function private_record_add($spbc_key)
+    public static function private_record_add()
     {
         $metadata = Post::get('metadata');
         $metadata = json_decode(stripslashes($metadata), true);
 
-        if ( empty($metadata) || !is_array($metadata) || $metadata === 'NULL' || $metadata === null ) {
+        if ( empty($metadata) || !is_array($metadata)) {
             return array('error' => 'private_record_add: metadata JSON decoding failed');
         }
 
