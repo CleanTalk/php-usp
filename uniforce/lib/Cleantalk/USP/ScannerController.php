@@ -531,31 +531,37 @@ class ScannerController {
                 ) );
                 $signatures = $signatures->convertToArray();
 
+                $decoded_signatures = array();
+                foreach ($signatures as $signature => $value){
+                    $decoded_signatures[$signature] = $value;
+                    $decoded_signatures[$signature]['body'] = base64_decode($signature['body']);
+                }
+
 				// Initialing results
 				foreach ( $files_to_check as $file ) {
 
-					$result = Scanner::file__scan__for_signatures( $this->root, $file, $signatures );
+					$result = Scanner::file__scan__for_signatures( $this->root, $file, $decoded_signatures );
 
 					if ( empty( $result['error'] ) ) {
 
-						$status =     ! empty( $file['status'] ) && $file['status'] === 'MODIFIED' ? 'MODIFIED' : $result['status'];
-						$weak_spots = ! empty( $result['weak_spots'] ) ? json_encode( $result['weak_spots'] ) : NULL;
-						$severity =   ! empty( $file['severity'] )
-							? $file['severity']
-							: ( $result['severity'] ? $result['severity'] : null );
+                        $status =     ! empty( $file['status'] ) && $file['status'] === 'MODIFIED' ? 'MODIFIED' : $result['status'];
+                        $weak_spots = ! empty( $result['weak_spots'] ) ? json_encode( $result['weak_spots'] ) : NULL;
+                        $severity =   ! empty( $file['severity'] )
+                            ? $file['severity']
+                            : ( $result['severity'] ? $result['severity'] : null );
 
-						$result_db = $prepared_query
-							->execute(
-								array(
-									':status' => $status,
-									':severity' => $severity,
-									':weak_spots' => $weak_spots,
-									':fast_hash' =>  $file['fast_hash'],
-								)
-							);
+                        $result_db = $prepared_query
+                            ->execute(
+                                array(
+                                    ':status' => $status,
+                                    ':severity' => $severity,
+                                    ':weak_spots' => $weak_spots,
+                                    ':fast_hash' =>  $file['fast_hash'],
+                                )
+                            );
 
-						$result['status'] !== 'OK' ? $out['found']++   : $out['found'];
-						$result_db !== false       ? $out['scanned']++ : $out['scanned'];
+                        $result['status'] !== 'OK' ? $out['found']++   : $out['found'];
+                        $result_db !== false       ? $out['scanned']++ : $out['scanned'];
 
 					}else
 						 return array( 'error' => 'Signature scan: ' . $result['error']);
@@ -773,7 +779,7 @@ class ScannerController {
 					break;
 				}
 
-				$result = self::action__scanner__signature_analysis___no_sql(
+                $result = self::action__scanner__signature_analysis___no_sql(
 					(int) Get::get( 'offset' ),
 					10,
 					substr( CT_USP_SITE_ROOT, 0, - 1 )
@@ -907,9 +913,16 @@ class ScannerController {
 				) );
 				$signatures = $signatures->convertToArray();
 
+                $decoded_signatures = array();
+                foreach ($signatures as $signature => $value){
+                    $decoded_signatures[$signature] = $value;
+                    $decoded_signatures[$signature]['body'] = base64_decode($signature['body']);
+                }
+
+
 				foreach ( $files_to_check as $file ) {
 
-					$result = Scanner::file__scan__for_signatures( CT_USP_SITE_ROOT, $file, $signatures );
+					$result = Scanner::file__scan__for_signatures( CT_USP_SITE_ROOT, $file, $decoded_signatures );
 
 					if ( empty( $result['error'] ) ) {
 
