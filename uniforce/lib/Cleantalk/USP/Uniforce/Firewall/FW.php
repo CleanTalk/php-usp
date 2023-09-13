@@ -336,8 +336,9 @@ class FW extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 					array( 'get', 'async' )
 				);
 
-			}else
-				return $result;
+			}else {
+                return $result;
+            }
 
 		// Write to DB
 		}elseif( count( $files ) ){
@@ -374,8 +375,9 @@ class FW extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 					array( 'get', 'async' )
 				);
 
-			}else
-				return $result;
+			} else {
+                return $result;
+            }
 
 		// Write exclusions
 		}else{
@@ -399,8 +401,9 @@ class FW extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 					rename(CT_USP_ROOT . DS . 'data' . DS . 'fw_nets_temp.storage', CT_USP_ROOT . DS . 'data' . DS . 'fw_nets.storage');
 				}
 
-			}else
-				return $result;
+			} else {
+                return $result;
+            }
 		}
 	}
 
@@ -570,14 +573,15 @@ class FW extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 						return array( 'error' => Err::get_last( 'string' ), );
 					}
 
-				}else
-					Err::add( 'Updating FW', 'No data to save' );
+				} else {
+                    Err::add( 'Updating FW', 'No data to save' );
+                }
 			}
-
 			return $inserted;
 
-		}else
-			Err::prepend( 'Updating FW' );
+		} else {
+            Err::prepend( 'Updating FW' );
+        }
 	}
 
 	/**
