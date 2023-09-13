@@ -22,7 +22,7 @@ function spbc_scanner_button_file_view_event(obj){
 
 function spbc_scannerButtonFileView_callback(result, data, params){
     console.log('FILE_VIEWED');
-    var weak_spots = result.weak_spots.match(/\d+/g); 
+    var weak_spots = Array.from(result.weak_spots.matchAll(/[{,].?"(\d+)":/g), x=>x[1])
     var window_height = window.innerHeight;
     var row_template = '<div class="spbc_view_file_row_wrapper"><span class="spbc_view_file_row_num">%s</span><p class="spbc_view_file_row">%s</p><br /></div>';
     var row_template_weak_spots = '<div class="spbc_view_file_row_wrapper_weak_spots"><span class="spbc_view_file_row_num">%s</span><p class="spbc_view_file_row">%s</p><br /></div>';
