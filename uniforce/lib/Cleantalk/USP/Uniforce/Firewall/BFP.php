@@ -365,7 +365,13 @@ class BFP extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 				return class_exists('Drupal') && !! \Drupal::currentUser()->id();
 				break;
 			case 'Bitrix' :
-				return class_exists( 'CUser') && \CUser::IsAuthorized();
+				if (class_exists( 'CUser')) {
+					if (method_exists( 'CUser', 'IsAuthorized')) {
+						return \CUser::IsAuthorized();
+					}
+					global $USER;
+					return $USER->IsAuthorized();
+				}
 				break;
 			case 'OpenCart' :
 				// @ToDo we have to find a way to detect admin logging in
