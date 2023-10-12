@@ -121,6 +121,28 @@ class Field extends Element {
 			: '';
 	}
 
+    public function draw_element__password() {
+
+        $name = $this->getName();
+
+        if($this->title_first)
+            echo '<label for="ctusp_field---' . $name . '" class="ctusp_field-title ctusp_field-title--' . $this->input_type . '">' . $this->title . '</label>&nbsp;';
+
+        echo '<input type="password" id="ctusp_field---'. $name .'" name="'. $name .'" '
+            . 'class="' . ($this->class ? $this->class : ''). '" '
+            .'value="" '
+            .( $this->parent_field && !$this->state->settings->{$this->parent_field} ? ' disabled="disabled"' : '')
+            .($this->child_fields ? ' onchange="uspSettingsDependencies([\''.implode("','",$this->child_fields).'\'])"' : '')
+            .' />';
+
+        if(!$this->title_first)
+            echo '&nbsp;<label for="ctusp_field---' . $name . '" class="ctusp_field-title ctusp_field-title--' . $this->input_type . '">' . $this->title . '</label>';
+
+        echo $this->description
+            ?'<div class="ctusp_field-description">'. $this->description .'</div>'
+            : '';
+    }
+
 	public function draw_element__checkbox() {
 
 		$name = $this->getName();

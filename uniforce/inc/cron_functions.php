@@ -13,6 +13,9 @@ function uniforce_fw_update( $immediate = false ){
 	// SFW actions
 	if( $usp->key && $usp->settings->fw ){
 
+        State::getInstance()->fw_stats->updating = false;
+        State::getInstance()->fw_stats->save();
+
 		// Update SFW
 		Helper::http__request(
 			Server::get('HTTP_HOST') . CT_USP_AJAX_URI,

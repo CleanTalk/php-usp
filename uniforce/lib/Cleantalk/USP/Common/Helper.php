@@ -159,7 +159,7 @@ class Helper{
 			}
 			
 			// Is private network
-			if($ip_type === false || ($ip_type && (self::ip__is_private_network($ips['real'], $ip_type) || self::ip__mask_match($ips['real'], filter_input(INPUT_SERVER, 'SERVER_ADDR') . '/24', $ip_type)))){
+			if($ip_type === false || ($ip_type && (self::ip__is_private_network($ips['real'], $ip_type) || self::ip__mask_match($ips['real'], $_SERVER['SERVER_ADDR'] . '/24', $ip_type)))){
 				
 				// X-Forwarded-For
 				if(isset($headers['X-Forwarded-For'])){
@@ -224,53 +224,76 @@ class Helper{
 	 */
 	static public function ip__mask_match($ip, $cidr, $ip_type = 'v4', $xtet_count = 0)
 	{
-		if(is_array($cidr)){
-			foreach($cidr as $curr_mask){
-				if(self::ip__mask_match($ip, $curr_mask, $ip_type)){
-					return true;
-				}
-			}
-			unset($curr_mask);
-			return false;
-		}
-		
-		$xtet_base = ($ip_type == 'v4') ? 8 : 16;
-		
-		// Calculate mask
-		$exploded = explode('/', $cidr);
-		$net_ip = $exploded[0];
-		$mask = $exploded[1];
-		
-		// Exit condition
-		$xtet_end = ceil($mask / $xtet_base);
-		if($xtet_count == $xtet_end)
-			return true;
-		
-		// Lenght of bits for comparsion
-		$mask = $mask - $xtet_base * $xtet_count >= $xtet_base ? $xtet_base : $mask - $xtet_base * $xtet_count;
-		
-		// Explode by octets/hextets from IP and Net
-		$net_ip_xtets = explode($ip_type == 'v4' ? '.' : ':', $net_ip);
-		$ip_xtets = explode($ip_type == 'v4' ? '.' : ':', $ip);
-		
-		// Standartizing. Getting current octets/hextets. Adding leading zeros.
-		$net_xtet = str_pad(decbin($ip_type == 'v4' ? $net_ip_xtets[$xtet_count] : hexdec($net_ip_xtets[$xtet_count])), $xtet_base, 0, STR_PAD_LEFT);
-		$ip_xtet = str_pad(decbin($ip_type == 'v4' ? $ip_xtets[$xtet_count] : hexdec($ip_xtets[$xtet_count])), $xtet_base, 0, STR_PAD_LEFT);
-		
-		// Comparing bit by bit
-		for($i = 0, $result = true; $mask != 0; $mask--, $i++){
-			if($ip_xtet[$i] != $net_xtet[$i]){
-				$result = false;
-				break;
-			}
-		}
-		
-		// Recursing. Moving to next octet/hextet.
-		if($result)
-			$result = self::ip__mask_match($ip, $cidr, $ip_type, $xtet_count + 1);
-		
-		return $result;
-		
+        if (is_array($cidr)) {
+            foreach ($cidr as $curr_mask) {
+                if (self::ip__mask_match($ip, $curr_mask, $ip_type)) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        if ( ! self::ip__validate($ip) || ! self::cidrValidate($cidr) ) {
+            return false;
+        }
+
+        $xtet_base = ($ip_type === 'v4') ? 8 : 16;
+
+        // Calculate mask
+        $exploded = explode('/', $cidr);
+        $net_ip   = $exploded[0];
+        $mask     = (int)$exploded[1];
+
+        // Exit condition
+        $xtet_end = ceil($mask / $xtet_base);
+        if ($xtet_count == $xtet_end) {
+            return true;
+        }
+
+        // Length of bits for comparison
+        $mask = $mask - $xtet_base * $xtet_count >= $xtet_base ? $xtet_base : $mask - $xtet_base * $xtet_count;
+
+        // Explode by octets/hextets from IP and Net
+        $net_ip_xtets = explode($ip_type === 'v4' ? '.' : ':', $net_ip);
+        $ip_xtets     = explode($ip_type === 'v4' ? '.' : ':', $ip);
+
+        // Standartizing. Getting current octets/hextets. Adding leading zeros.
+        $net_xtet = str_pad(
+            decbin(
+                ($ip_type === 'v4' && (int)$net_ip_xtets[$xtet_count]) ? $net_ip_xtets[$xtet_count] : @hexdec(
+                    $net_ip_xtets[$xtet_count]
+                )
+            ),
+            $xtet_base,
+            0,
+            STR_PAD_LEFT
+        );
+        $ip_xtet  = str_pad(
+            decbin(
+                ($ip_type === 'v4' && (int)$ip_xtets[$xtet_count]) ? $ip_xtets[$xtet_count] : @hexdec(
+                    $ip_xtets[$xtet_count]
+                )
+            ),
+            $xtet_base,
+            0,
+            STR_PAD_LEFT
+        );
+
+        // Comparing bit by bit
+        for ($i = 0, $result = true; $mask != 0; $mask--, $i++) {
+            if ($ip_xtet[$i] != $net_xtet[$i]) {
+                $result = false;
+                break;
+            }
+        }
+
+        // Recursing. Moving to next octet/hextet.
+        if ($result) {
+            $result = self::ip__mask_match($ip, $cidr, $ip_type, $xtet_count + 1);
+        }
+
+        return $result;
 	}
 	
 	/**
@@ -300,6 +323,20 @@ class Helper{
 		if(filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) && self::ip__v6_reduce($ip) != '0::0') return 'v6';  // IPv6
 		return false; // Unknown
 	}
+
+    /**
+     * Validate CIDR
+     *
+     * @param string $cidr expects string like 1.1.1.1/32
+     *
+     * @return bool
+     */
+    public static function cidrValidate($cidr)
+    {
+        $cidr = explode('/', $cidr);
+
+        return isset($cidr[0], $cidr[1]) && self::ip__validate($cidr[0]) && preg_match('@\d{1,2}@', $cidr[1]);
+    }
 	
 	/**
 	 * Expand IPv6
@@ -540,6 +577,9 @@ class Helper{
 						$opts[CURLOPT_POST] = false;
 						$opts[CURLOPT_POSTFIELDS] = null;
 						$opts[CURLOPT_HEADER] = false;
+						break;
+                    case 'http_20':
+						$opts[CURLOPT_HTTP_VERSION] = CURL_HTTP_VERSION_2_0;
 						break;
 						
 					default:
@@ -822,14 +862,21 @@ class Helper{
 	 *
 	 * returns array
 	 */
-	static public function http__get_headers(){
+    public static function http__get_headers()
+    {
 		
 		$headers = array();
-		foreach($_SERVER as $key => $val){
-			if(preg_match('/\AHTTP_/', $key)){
+
+        if ( !is_array($_SERVER) ) {
+            return $headers;
+        }
+
+        foreach($_SERVER as $key => $val){
+
+            if(preg_match('/\AHTTP_/', $key)){
 				$server_key = preg_replace('/\AHTTP_/', '', $key);
 				$key_parts = explode('_', $server_key);
-				if(count($key_parts) > 0 and strlen($server_key) > 2){
+				if(count($key_parts) > 0 && strlen($server_key) > 2){
 					foreach($key_parts as $part_index => $part){
 						$key_parts[$part_index] = function_exists('mb_strtolower') ? mb_strtolower($part) : strtolower($part);
 						$key_parts[$part_index][0] = strtoupper($key_parts[$part_index][0]);

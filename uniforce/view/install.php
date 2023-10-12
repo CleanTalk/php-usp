@@ -50,7 +50,7 @@ $usp = \Cleantalk\USP\Common\State::getInstance();
                             <p id='error-msg'>Warning: Couldn't connect to cloud SQL. Malware scanner will use local database to store scan results.</p>
                         </div>
                     <?php endif; ?>
-                    
+
                     <!-- Start Error box -->
                     <div class="alert alert-danger alert-dismissible fade in" style="display:none" role="alert">
                         <button type="button" class="close" > &times;</button>
@@ -75,7 +75,7 @@ $usp = \Cleantalk\USP\Common\State::getInstance();
                         </p>
                         <div class ="advanced_conf">
                             <p class="text-center"><small>If you already have an access key, you could use it here</small></p>
-                            <input type="text" placeholder="Access key" class="input-field" name="access_key_field" required style="display: inline;"/>
+                            <input type="text" placeholder="Access key" class="input-field" name="access_key_field" style="display: inline;"/>
                             <img class="preloader" src="img/preloader.gif" style="display: none;" alt="">
                             <p><small>Additional scripts</small>&nbsp
                                 <img data-toggle="tooltip" data-placement="top" src="img/help_icon.png" title="Universal Security plugin will write protection code to index.php file by default. If your contact or registration contact forms are located in different files/scripts, list them here separated by commas. Example: register.php, contact.php" style="width:10px; height:10px;" alt="">
@@ -83,11 +83,11 @@ $usp = \Cleantalk\USP\Common\State::getInstance();
                             <input type="text" class="input-field" name="addition_scripts" />
                         </div>
                         <button type="submit" class="btn btn-setup" disabled>Install</button>
-	
+
 	                    <?php if( CT_USP__NO_SQL ): ?>
                             <input type="hidden" name="no_sql" value="1" />
 	                    <?php endif; ?>
-                     
+
                     </form>
 
                     <div class="setup-links">

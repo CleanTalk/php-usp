@@ -13,12 +13,12 @@
 	}catch(Exception $e){
         $no_sql = true;
     }
-	
+
 	ini_set( 'display_errors', $show_errors);
-    
+
     // Check if the openssl extension is installed
     define( 'CT_USP__NO_SQL', $no_sql );
-    
+
 ?>
 
 <?php if( version_compare( phpversion(), '5.6', '<' ) ) : ?>
@@ -29,23 +29,23 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<link rel="shortcut icon" href="img/ct_logo.png">
 		<link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet">
-		
+
 		<title>Universal Anti-Spam Plugin by CleanTalk</title>
 		<!-- Bootstrap core CSS -->
 		<link href="css/bootstrap.css" rel="stylesheet">
-		
+
 		<!-- Custom styles -->
 		<link href="css/setup-wizard.css" rel="stylesheet">
-		
+
 		<link href="css/animate-custom.css" rel="stylesheet">
-	
+
 	</head>
 	<body class="fade-in">
 	<!-- start setup wizard box -->
 	<div class="container" id="setup-block">
 		<div class="row">
 			<div class="col-sm-6 col-md-4 col-sm-offset-3 col-md-offset-4">
-				
+
 				<div class="setup-box clearfix animated flipInY">
 					<div class="page-icon animated bounceInDown">
 						<img  src="img/ct_logo.png" alt="Cleantalk logo" />
@@ -70,14 +70,14 @@
 			</div>
 		</div>
 		<!-- End setup-wizard wizard box -->
-		
+
 		<footer class="container">
-		
+
 		</footer>
-		
+
 		<script src="js/jquery.min.js"></script>
+        <script src="js/bootstrap.min.js"></script>
 		<script src="js/jquery-ui.min.js"></script>
-		<script src="js/bootstrap.min.js"></script>
 		<script src="js/placeholder-shim.min.js"></script>
 		<script src="js/common.js?v=2.0"></script>
 		<script src="js/custom.js?v=2.0"></script>
@@ -85,7 +85,7 @@
             var security = '<?php echo md5( Server::get( 'SERVER_NAME' ) ) ?>';
             var ajax_url = location.href;
 		</script>
-	
+
 	</body>
 	</html>
 	<?php
