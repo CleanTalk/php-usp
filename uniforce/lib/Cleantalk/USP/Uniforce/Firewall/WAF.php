@@ -57,21 +57,21 @@ class WAF extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
             $decoded_signatures = array();
             foreach ($signatures as $signature => $value){
                 $decoded_signatures[$signature] = $value;
-                $decoded_signatures[$signature]['body'] = base64_decode($signature['body']);
+                $decoded_signatures[$signature]['body'] = base64_decode($value['body']);
             }
 
 			foreach ( $decoded_signatures as $signature_body_decoded ) {
 
-				switch ( $signature['attack_type'] ) {
+				switch ( $signature_body_decoded['attack_type'] ) {
 
 					case 'SQL_INJECTION':
-						$this->waf_sql_patterns[] = $signature_body_decoded;
+						$this->waf_sql_patterns[] = $signature_body_decoded['body'];
 						break;
 					case 'XSS':
-						$this->waf_xss_patterns[] = $signature_body_decoded;
+						$this->waf_xss_patterns[] = $signature_body_decoded['body'];
 						break;
 					case 'EXPLOIT':
-						$this->waf_exploit_patterns[] = $signature_body_decoded;
+						$this->waf_exploit_patterns[] = $signature_body_decoded['body'];
 						break;
 				}
 			}

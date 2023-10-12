@@ -22,7 +22,7 @@ function spbc_scanner_button_file_view_event(obj){
 
 function spbc_scannerButtonFileView_callback(result, data, params){
     console.log('FILE_VIEWED');
-    var weak_spots = result.weak_spots.match(/\d+/g); 
+    var weak_spots = Array.from(result.weak_spots.matchAll(/[{,].?"(\d+)":/g), x=>x[1])
     var window_height = window.innerHeight;
     var row_template = '<div class="spbc_view_file_row_wrapper"><span class="spbc_view_file_row_num">%s</span><p class="spbc_view_file_row">%s</p><br /></div>';
     var row_template_weak_spots = '<div class="spbc_view_file_row_wrapper_weak_spots"><span class="spbc_view_file_row_num">%s</span><p class="spbc_view_file_row">%s</p><br /></div>';
@@ -35,28 +35,37 @@ function spbc_scannerButtonFileView_callback(result, data, params){
         }
     }
 
-    var content_height = Object.keys(result.file).length * 19 + 19,
-        visible_height = (document.documentElement.clientHeight) / 10 * 75;
-    content_height = content_height < 76 ? 76 : content_height;
-    var overflow = content_height < window_height ? 'no_scroll' : 'scroll';
+    let content_height = Object.keys(result.file).length * 19 < 76 ? 76 : Object.keys(result.file).length * 19 + 19,
+        visible_height = (window.screen.availHeight/100) * 75,
+        overflow       = content_height < visible_height ? 'hidden' : 'scroll',
+        height         = overflow === 'scroll' ? visible_height : content_height;
 
-    jQuery('#spbc_dialog').data('overflow', overflow);
+    jQuery('#spbc_dialog').css({
+        height: height,
+        overflow: overflow,
+    })
+
     jQuery('#spbc_dialog').dialog({
         modal:true,
-        title: result.file_path,
-        position: { my: "center", at: "center" , of: window },
+        title: ('Loaded: ' + result.file_path),
+        position: { my: "center top", at: "center top+100px" , of: window },
         width: +(jQuery('body').width() / 100 * 70),
-        maxHeight: window_height,
         show: { effect: "blind", duration: 500 },
+        maxHeight: visible_height,
         draggable: true,
+        resizable: false,
         closeText: "Close",
         open: function(event, ui) {
-            console.log(jQuery(event.target).data('overflow'));
-            document.body.style.overflow = 'hidden';
-            if(jQuery(event.target).data('overflow') == 'scroll') event.target.style.overflow = 'scroll';
-            setTimeout(function(){ jQuery('.spbc_view_file_row_wrapper_weak_spots')[0].scrollIntoView({block: "center"}); }, 100);
+            event.target.style.overflow = overflow;
+            jQuery('#spbc_dialog').height(height);
+            jQuery('.ui-widget-overlay').on('click', function() {
+                jQuery("#spbc_dialog").dialog('close');
+            });
         },
-        beforeClose: function(event, ui) { document.body.style.overflow = 'auto'; },
+        beforeClose: function(event, ui) {
+            document.body.style.overflow = 'auto';
+            jQuery('#spbc_dialog').empty();
+        },
     });
 }
 
