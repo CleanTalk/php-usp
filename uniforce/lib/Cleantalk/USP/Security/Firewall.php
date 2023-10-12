@@ -30,6 +30,8 @@ class Firewall
 	private $statuses_priority = array(
 		'PASS',
 		'DENY',
+		'DENY_BY_SEC_FW',
+		'DENY_BY_SPAM_FW',
 		'DENY_BY_NETWORK',
 		'DENY_BY_BFP',
 		'DENY_BY_DOS',
@@ -166,43 +168,63 @@ class Firewall
 	 * @return array Single element array of result
 	 */
 	private function prioritize( $results ){
-		
-		$current_fw_result_priority = 0;
-		$result = array(
-			'status' => 'PASS',
-			'ip' => '',
-		);
-		
-		if( is_array( $results ) ) {
-			foreach ( $results as $fw_result ) {
-				$priority = array_search( $fw_result['status'], $this->statuses_priority ) + ( isset($fw_result['is_personal']) && $fw_result['is_personal'] ? count ( $this->statuses_priority ) : 0 );
-				if( $priority >= $current_fw_result_priority ){
-					$current_fw_result_priority = $priority;
+
+        $final_priority = 0;
+        $result = array(
+            'status' => 'PASS',
+            'ip' => '',
+        );
+
+        if ( is_array($results) ) {
+            foreach ( $results as $fw_result ) {
+                /**
+                 * Calculating priority. Records that have status PASS_BY_TRUSTED_NETWORK gain hardcoded highest priority.
+                 * Personal records are next by priority in accordance of this->statuses_priority.
+                 */
+                $status_priority_from_table = array_search($fw_result['status'], $this->statuses_priority);
+                $is_personal_flag = isset($fw_result['is_personal']) && $fw_result['is_personal'];
+                $is_trusted_network_flag = isset($fw_result['status']) && $fw_result['status'] == 'PASS_BY_TRUSTED_NETWORK';
+                $is_skipped_network_flag = isset($fw_result['status']) && $fw_result['status'] == 'PASS_AS_SKIPPED_NETWORK';
+                //used to gain maximum priority
+                $total_count_of_statuses = count($this->statuses_priority);
+                $current_record_priority = $status_priority_from_table;
+                if ( $is_personal_flag || $is_trusted_network_flag ) {
+                    // set maximum priority
+                    $current_record_priority += $total_count_of_statuses;
+                    // set maximum priority if skipped network (status 99 - PASS_AS_SKIPPED_NETWORK)
+                    if ( $is_skipped_network_flag ) {
+                        $current_record_priority++;
+                    }
+                }
+                $final_status = $fw_result['status'] === 'PASS_AS_SKIPPED_NETWORK' ? 'PASS' : $fw_result['status'];
+                //set new final priority if it is less than current record priority
+                if ( $current_record_priority >= $final_priority ) {
+                    $final_priority = $current_record_priority;
+					//proceed result array
 					$result = array(
-						
+
 						// Necessary params
 						'module'       => $fw_result['module'],
 						'ip'           => $fw_result['ip'],
-						'status'       => $fw_result['status'],
-						
+						'status'       => $final_status,
+
 						// FW
 						'is_personal'  => !empty( $fw_result['is_personal'] ) ? (int)$fw_result['is_personal'] : 0,
 						'country_code' => !empty( $fw_result['country_code'] ) ? $fw_result['country_code'] : '',
 						'network'      => !empty( $fw_result['network'] ) ? $fw_result['network'] : 0,
 						'mask'         => !empty( $fw_result['mask'] ) ? $fw_result['mask'] : 0,
-						
+
 						// WAF
 						'pattern'      => !empty( $fw_result['pattern'] ) ? $fw_result['pattern'] : array(),
-						
+
 						// Security
-						'event'         => !empty( $fw_result['event'] ) ? $fw_result['event'] : 0,
+						'event'        => !empty( $fw_result['event'] ) ? $fw_result['event'] : 0,
 					);
 				}
 			}
 		}
-		
 		return $result;
-		
+
 	}
 	
 	/**

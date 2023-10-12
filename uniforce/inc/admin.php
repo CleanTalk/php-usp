@@ -156,9 +156,9 @@ function usp_do_install() {
  * @param $exclusions
  */
 function usp_install($files, $api_key, $cms, $exclusions ){
-	
+
 	foreach ($files as $file){
-		
+
 		$file_content = file_get_contents( $file );
         // Check if short PHP tags used
         if( preg_match( "/<\?[^(php)]/", $file_content ) ) {
@@ -172,13 +172,13 @@ function usp_install($files, $api_key, $cms, $exclusions ){
 		// Adding <?php to the start if it's not there
 		if($first_php_start !== 0)
 			File::inject__code($file, "$open_php_tag\n?>\n", 'start');
-		
+
 		if( ! Err::check() ){
-			
+
 			// Adding ? > to the end if it's not there
 			if($php_open_tags <= $php_close_tags)
 				File::inject__code($file, "\n$open_php_tag\n" . PHP_EOL, 'end');
-			
+
 			if( ! Err::check() ){
 
 				// Addition to the top of the script
@@ -188,9 +188,9 @@ function usp_install($files, $api_key, $cms, $exclusions ){
 					'(<\?php)|(<\?)',
 					'top_code'
 				);
-				
+
 				if( ! Err::check() ){
-					
+
 					// Addition to index.php Bottom (JavaScript test)
 					File::inject__code(
 						$file,
@@ -201,7 +201,7 @@ function usp_install($files, $api_key, $cms, $exclusions ){
 						'end',
 						'bottom_code'
 					);
-					
+
 				}
 			}
 		}
@@ -210,7 +210,7 @@ function usp_install($files, $api_key, $cms, $exclusions ){
 	// Install settings in cofig if everything is ok
 	if( ! Err::check() )
         usp_install_config( $files, $api_key, $cms, $exclusions );
-	
+
 	// Set cron tasks
 	if( ! Err::check() )
         usp_install_cron();
@@ -247,31 +247,7 @@ function usp_install_config($modified_files, $api_key, $cms, $exclusions ){
     if( Post::get( 'user_token' ) )
         $usp->data->user_token = trim( Post::get( 'user_token' ) );
 
-    $host = $_SERVER['HTTP_HOST'] ?: 'Your Site';
-    $to = trim( Post::get( 'email' ) );
-    $subject = 'UniForce settings password for ' . $host;
-    $message = "Hi,<br><br>
-                Your credentials to get access to settings of Uniforce (Universal security plugin by CleanTalk) are bellow,<br><br>
-                Login: $login<br>
-                Password: $pass <br>
-                Settings URL: https://$host/uniforce/ <br>
-                Dashboard: https://cleantalk.org/my/?cp_mode=security <br><br>
-                --<br>
-                With regards,<br>
-                CleanTalk team.";
-
-    $headers  = 'MIME-Version: 1.0' . "\r\n";
-    $headers .= 'Content-type: text/html; charset=iso-8859-1' . "\r\n";
-
-    // Sending password
-    if( trim( Post::get( 'email' ) ) && Post::get( 'admin_password' ) ){
-        mail(
-            $to,
-            $subject,
-            $message,
-            $headers
-        );
-    }
+    usp_send_pass_to_email(trim(Post::get('email')), $login, $pass);
 
     if( Post::get( 'account_name_ob' ) )
         $usp->data->account_name_ob =  trim( Post::get( 'account_name_ob' ) );
@@ -289,7 +265,38 @@ function usp_install_config($modified_files, $api_key, $cms, $exclusions ){
 
     $usp->plugin_meta->is_installed  = true;
     $usp->plugin_meta->version = SPBCT_VERSION;
+    if ( empty($usp->plugin_meta->latest_version) ) {
+        $updater = new \Cleantalk\USP\Updater\Updater(CT_USP_ROOT);
+        $usp->plugin_meta->latest_version = $updater->getLatestVersion();
+    }
     $usp->plugin_meta->save();
+}
+
+function usp_send_pass_to_email($to, $login, $pass)
+{
+    $host = $_SERVER['HTTP_HOST'] ?: 'Your Site';
+    //$to = trim( Post::get( 'email' ) );
+    $subject = 'UniForce settings password for ' . $host;
+    $message = "Hi,<br><br>
+                Your credentials to get access to settings of Uniforce (Universal security plugin by CleanTalk) are bellow,<br><br>
+                Login: $login<br>
+                Password: $pass <br>
+                Settings URL: https://$host/uniforce/ <br>
+                Dashboard: https://cleantalk.org/my/?cp_mode=security <br><br>
+                --<br>
+                With regards,<br>
+                CleanTalk team.";
+
+    $headers  = 'MIME-Version: 1.0' . "\r\n";
+    $headers .= 'Content-type: text/html; charset=iso-8859-1' . "\r\n";
+
+    // Sending password
+    mail(
+        $to,
+        $subject,
+        $message,
+        $headers
+    );
 }
 
 /**
@@ -312,7 +319,7 @@ function usp_install_cron(){
  * @return bool
  */
 function usp_uninstall(){
-	
+
 	$usp = State::getInstance();
 
 	foreach ( $usp->data->modified_files as $file ){
@@ -323,6 +330,7 @@ function usp_uninstall(){
 	// Deleting FW data
 	$db = new \Cleantalk\USP\File\FileDB( 'fw_nets' );
 	$db->delete();
+	$db->deleteTemp();
 
 	// Deleting options and their files
 	$usp->delete( 'data' );
@@ -332,7 +340,7 @@ function usp_uninstall(){
 	$usp->delete( 'signatures' );
 	$usp->delete( 'fw_stats' );
 	$usp->delete( 'plugin_meta' );
-	
+
 	$usp->delete( 'bfp_blacklist' );
 	$usp->delete( 'bfp_blacklist_fast' );
 
@@ -342,7 +350,7 @@ function usp_uninstall(){
 	// Deleting any logs
     usp_uninstall_logs();
 
-	setcookie('authentificated', 0, time()-86400, '/', null, false, true);
+	setcookie('authentificated', 0, time()-86400, '/', '', false, true);
 
 	return ! Err::check();
 
@@ -375,12 +383,12 @@ function usp_uninstall_logs() {
  * @return array
  */
 function usp_detect_cms($path_to_index, $out = array( 'name' => 'Unknown', 'admin_page' => '' ) ){
-	
+
 	if( is_file($path_to_index) ){
-	
+
 		// Detecting CMS
 		$index_file = file_get_contents( $path_to_index );
-		
+
 		//X-Cart 4
 		if (preg_match('/(xcart_4_.*?)/', $index_file))
 			$out = array( 'name' => 'X-Cart 4', 'admin_page' => '' );
@@ -422,7 +430,7 @@ function usp_detect_cms($path_to_index, $out = array( 'name' => 'Unknown', 'admi
 			$out = array( 'name' => 'phpBB', 'admin_page' => '/' );
 
 	}
-	
+
 	return $out;
 
 }
@@ -444,10 +452,10 @@ function usp_do_login($apikey, $password, $email ) {
     if( $password ){
 
         if( ( Post::get( 'login' ) == $apikey || Post::get( 'login' ) === $email ) && hash( 'sha256', trim( Post::get( 'password' ) ) ) == $password )
-            setcookie('authentificated', State::getInstance()->data->security_key, 0, '/', null, false, true);
+            setcookie('authentificated', State::getInstance()->data->security_key, 0, '/', '', false, true);
         else
             Err::add('Incorrect login or password');
-        
+
     // No match
     }else
         Err::add('Incorrect login');
@@ -463,7 +471,7 @@ function usp_do_login($apikey, $password, $email ) {
  */
 function usp_do_logout() {
 
-	setcookie('authentificated', 0, time()-86400, '/', null, false, true);
+	setcookie('authentificated', 0, time()-86400, '/', '', false, true);
 
     die( json_encode( array( 'success' => true ) ) );
 }
@@ -484,10 +492,10 @@ function usp_do_save_settings() {
 			: $value;
 		settype($settings[$setting], gettype($value));
 	} unset($setting, $value);
-	
+
 	// Recognizing new key
 	$new_key_is_set = $usp->settings->key !== $settings['key'];
-	
+
 	// Set values
 	foreach ( $settings as $setting => $value) {
 		$usp->settings->$setting = $value;
@@ -495,7 +503,7 @@ function usp_do_save_settings() {
 
     // validate the new key
 	$usp->data->key_is_ok = usp_check_account_status();
-    
+
     // BFP actions
     if( $usp->settings->key ){
 
@@ -507,27 +515,27 @@ function usp_do_save_settings() {
                 $usp->data->stat->bfp->count = 0;
             }
     }
-	
+
 	if( $new_key_is_set ){
 		$scanner_controller = new \Cleantalk\USP\ScannerController(
 			CT_USP_SITE_ROOT
 		);
 		$scanner_controller->action__scanner__create_db();
 	}
-    
+
     // Update signatures
     if( $usp->settings->scanner_signature_analysis ){
 	    $scanner_controller = new \Cleantalk\USP\ScannerController( CT_USP_SITE_ROOT );
 	    $scanner_controller->action__scanner__get_signatures();
     }
-	
+
 	$usp->data->save();
 	$usp->settings->save();
- 
+
 	// FireWall actions
 	// Last in the list because it can overwrite the data in the the remote call it makes
 	if( ( $usp->settings->fw || $usp->settings->waf ) && $usp->settings->key ){
-		
+
 		// Update SFW
 		Helper::http__request(
 			Server::get('HTTP_HOST') . CT_USP_AJAX_URI,
@@ -539,21 +547,22 @@ function usp_do_save_settings() {
 			),
 			'get async'
 		);
-		
+
 		// Send FW logs
 		$result = \Cleantalk\USP\Uniforce\Firewall\FW::send_log( $usp->settings->key );
-		
+
 		if( empty( $result['error'] ) && ! Err::check() ) {
 			$usp->fw_stats->logs_sent_time = time();
 			$usp->fw_stats->logs_sent_amount = $result['rows'];
 			$usp->fw_stats->save();
 		}
-		
+
 		// Cleaning up Firewall data
 	} else {
 		// Deleting FW data
 		$db = new \Cleantalk\USP\File\FileDB( 'fw_nets' );
 		$db->delete();
+        $db->deleteTemp();
 		State::getInstance()->data->save();
 		Cron::removeTask( 'sfw_update' );
 		Cron::removeTask( 'fw_send_logs' );
@@ -614,7 +623,7 @@ function usp_check_account_status( $key = null ){
 	$usp->data->save();
 	$usp->settings->save();
 
-	return $usp->valid;
+	return $usp->data->valid;
 }
 
 /**
@@ -623,9 +632,54 @@ function usp_check_account_status( $key = null ){
  */
 function usp_do_uninstall() {
 
-	setcookie('authentificated', 0, time()-86400, '/', null, false, true);
+	setcookie('authentificated', 0, time()-86400, '/', '', false, true);
 
     usp_uninstall();
+
+    Err::check() or die(json_encode(array('success' => true)));
+    die(Err::check_and_output( 'as_json' ));
+}
+
+/**
+ * AJAX handler for the changing admin password logic
+ *
+ * @return string json
+ */
+function usp_do_change_admin_password()
+{
+    $usp = State::getInstance();
+
+    // Changing password logic
+    // 1 if the fields not empty
+    if ( Post::get('old_password') && Post::get('new_password') && Post::get('new_password_confirm') ) {
+
+        // 2 if the old password is right
+        if ( $usp->data->password !== hash( 'sha256', trim(Post::get('old_password'))) ) {
+            Err::add('Changing admin password', 'The old password is wrong');
+            die(Err::check_and_output( 'as_json' ));
+        }
+
+        // 3 if the password is too short
+        if ( strlen(Post::get('new_password')) < 8 ) {
+            Err::add('Changing admin password', 'Password must be more than 8 characters');
+            die(Err::check_and_output( 'as_json' ));
+        }
+
+        // 4 if the new password confirmed
+        if ( Post::get('new_password') !== Post::get('new_password_confirm') ) {
+            Err::add('Changing admin password', 'New password is not confirmed');
+            die(Err::check_and_output( 'as_json' ));
+        }
+
+        // 5 save the new password
+        $usp->data->password = hash('sha256', trim(Post::get('new_password')));
+        $usp->data->save();
+
+        usp_send_pass_to_email($usp->data->email, $usp->data->email, Post::get('new_password'));
+
+    } else {
+        Err::add('Changing admin password', 'All fields are required');
+    }
 
     Err::check() or die(json_encode(array('success' => true)));
     die(Err::check_and_output( 'as_json' ));

@@ -23,6 +23,11 @@ jQuery(document).ready(function() {
             uninstall();
     });
 
+    // Change admin password
+    $("#ctusp_field---change_admin_password").on('click', function(event){
+        changeAdminPassword();
+    });
+
     // Update
     // Logout
     $("#btn-update").on('click', function(event){
@@ -167,6 +172,55 @@ function uninstall(){
         }
     );
 
+}
+
+function changeAdminPassword() {
+    const newPassword = $('#ctusp_field---new_password').val();
+    if ( newPassword.length < 8 ) {
+        $("body").overhang({
+            type: "error",
+            message: 'Error: Password must be more than 8 characters',
+            duration: 43200,
+            overlay: true,
+            closeConfirm: true,
+            easing: 'linear'
+        });
+        return;
+    }
+    ctAJAX(
+        {
+            data: {
+                action: 'change_admin_password',
+                old_password: $('#ctusp_field---old_password').val(),
+                new_password: newPassword,
+                new_password_confirm: $('#ctusp_field---new_password_confirm').val(),
+            },
+            successCallback: function(result, data, params, obj) {
+                if (result.success) {
+                    $("body").overhang({
+                        type: "success",
+                        message: "New password saved!",
+                        duration: 3,
+                        overlay: true,
+                        // closeConfirm: true,
+                        easing: 'linear'
+                    });
+                }
+            },
+            spinner: $('#ctusp_field---change_admin_password+div>.preloader'),
+            button: $('#ctusp_field---change_admin_password'),
+            errorOutput: function( msg ){
+                $("body").overhang({
+                    type: "error",
+                    message: 'Error: ' + msg,
+                    duration: 43200,
+                    overlay: true,
+                    closeConfirm: true,
+                    easing: 'linear'
+                });
+            }
+        }
+    );
 }
 
 function update(){

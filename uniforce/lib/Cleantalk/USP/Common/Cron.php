@@ -148,6 +148,8 @@ class Cron
 						$error = Err::get_last('string')['error'];
 					}
 
+					Err::add('CRON: can not execute task: ' . $error);
+
 					$this->tasks_completed[$task] = false;
 				}
 				
@@ -180,7 +182,7 @@ class Cron
 			if(isset($this->tasks[$task], $this->tasks_completed[$task])){
 				$this->tasks[$task]['next_call'] = $this->tasks_completed[$task]
 					? time() + $this->tasks[$task]['period']
-					: time() + round($this->tasks[$task]['period']/4);
+					: time() + (int)round($this->tasks[$task]['period']/4);
 			}
 			
 			if(empty($this->tasks[$task]['next_call']) || $this->tasks[$task]['next_call'] < time()){

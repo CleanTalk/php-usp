@@ -26,8 +26,14 @@ class FileDB {
      */
     private $meta;
     
+    /**
+     * @var \Cleantalk\USP\Common\Storage
+     */
+    private $meta_temp;
+    
     private $indexes_description;
     private $indexes;
+    private $indexes_temp;
     private $indexed_column;
     private $index_type;
     
@@ -59,18 +65,27 @@ class FileDB {
                 $this->getIndexes();
             }
         }
+
+        $this->getMetaDataTemp(); // @todo handle error
+
+        if (! $this->meta_temp->is_empty()) {
+            $this->storage = new \Cleantalk\USP\File\Storage( $db_name, $this->meta_temp->cols );
+            if ($this->meta_temp->indexes) {
+                $this->getIndexesTemp();
+            }
+        }
     }
-    
-    public function insert( $data ){
+
+    public function insertTemp( $data ){
         
         $inserted = 0;
         
         for( $number = 0; isset( $data[ $number ] ); $number++ ){
             
-            switch ( $this->addIndex( $number + 1, $data[ $number ] ) ){
+            switch ( $this->addIndexTemp( $number + 1, $data[ $number ] ) ){
                 case true:
                     
-                    if( $this->storage->put( $data[ $number ] ) ){
+                    if( $this->storage->putTemp( $data[ $number ] ) ){
                         $inserted++;
                     }
                     break;
@@ -82,12 +97,12 @@ class FileDB {
             
         }
         
-        $this->meta->rows += $inserted;
-        $this->meta->save();
+        $this->meta_temp->rows += $inserted;
+        $this->meta_temp->save();
         
         return $inserted;
     }
-    
+
     public function delete() {
         
         // Clear indexes
@@ -117,6 +132,37 @@ class FileDB {
         
         // Clear and delete a storage
         $this->storage->delete();
+    }
+
+    public function deleteTemp() {
+        
+        // Clear indexes
+        if( $this->meta->indexes ){
+            
+            foreach( $this->meta->indexes as &$index ){
+                
+                // @todo make multiple indexes support
+                $column_to_index = $index['columns'][0];
+                
+                switch( $index['type'] ){
+                    case 'bintree':
+                        $this->indexes_temp[ $column_to_index ]->clear_tree();
+                        break;
+                    case 'btree':
+                        $this->indexes_temp[ $column_to_index ]->clear();
+                        break;
+                }
+                $index['status'] = false;
+            } unset( $index );
+            
+        }
+        
+        // Reset rows amount
+        $this->meta_temp->rows = 0;
+        $this->meta_temp->save();
+        
+        // Clear and delete a storage
+        $this->storage->deleteTemp();
     }
     
     /**
@@ -341,6 +387,19 @@ class FileDB {
             $this->meta->cols_num    = count( $this->meta->cols );
         }
     }
+
+    /**
+     * Getting metadata for temp data and creates new file if not exists
+     */
+    private function getMetaDataTemp(){
+        
+        $this->meta_temp = new Storage( $this->name . '_meta', null );
+        
+        if( ! $this->meta_temp->is_empty() ){
+            $this->meta_temp->line_length = array_sum( array_column( $this->meta_temp->cols, 'length' ) );
+            $this->meta_temp->cols_num    = count( $this->meta_temp->cols );
+        }
+    }
     
     private function getIndexes() {
         
@@ -369,10 +428,38 @@ class FileDB {
         }
         
     }
-    
-    private function addIndex( $number, $data ) {
+
+    private function getIndexesTemp() {
         
-        foreach ( $this->meta->indexes as $key => &$index ){
+        foreach( $this->meta_temp->indexes as $index ){
+            // Index file name = databaseName_allColumnsNames.indexType
+            $index_name =
+                $this->name
+                . '_' . lcfirst( array_reduce(
+                    $index['columns'],
+                    function($result, $item){ return $result . ucfirst( $item ); }
+                ) )
+                . '_temp.' . $index['type'];
+            
+            // @todo extend indexes on a few columns
+            switch( $index['type'] ){
+                
+                case 'bintree':
+                    $this->indexes_temp[ $index['columns'][0] ] = new BinaryTree( self::FS_PATH . $index_name );
+                    break;
+                    
+                case 'btree':
+                    $this->indexes_temp[ $index['columns'][0] ] = new BTree( self::FS_PATH . $index_name );
+                    break;
+            }
+            
+        }
+        
+    }
+    
+    private function addIndexTemp( $number, $data ) {
+        
+        foreach ( $this->meta_temp->indexes as $key => &$index ){
 	
 	        // @todo this is a crunch
             $column_to_index = $index['columns'][0];
@@ -380,10 +467,10 @@ class FileDB {
             
             switch ( $index['type'] ){
                 case 'bintree':
-                    $result = $this->indexes[ $column_to_index ]->add_key( $value_to_index, $this->meta->rows + $number );
+                    $result = $this->indexes_temp[ $column_to_index ]->add_key( $value_to_index, $this->meta_temp->rows + $number );
                     break;
                 case 'btree':
-                    $result = $this->indexes[ $column_to_index ]->put( $value_to_index, $this->meta->rows + $number );
+                    $result = $this->indexes_temp[ $column_to_index ]->put( $value_to_index, $this->meta_temp->rows + $number );
                     break;
                 default:
                     $result = false;
@@ -394,10 +481,8 @@ class FileDB {
 	            $index['status'] = 'ready';
                 $out = true;
             }elseif( $result === true ){
-//                Err::add('Insertion', 'Duplicate key for column "' . $index . '": ' . $data[ array_search( $index, $columns_name ) ] );
                 $out = false;
             }elseif( $result === false ){
-//                Err::add('Insertion', 'No index added for column "' . $index . '": ' . array_search( $index, $columns_name ) );
                 $out = false;
             }else{
                 $out = false;

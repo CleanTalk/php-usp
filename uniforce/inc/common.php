@@ -5,15 +5,16 @@
  *
  * Sets all main constants
  *
- * Version: 3.7.0
+ * Version: 3.8.0
  */
 
+use Cleantalk\USP\Common\Err;
 use Cleantalk\USP\Common\State;
 use Cleantalk\USP\Variables\Server;
 use Cleantalk\USP\Common\RemoteCalls;
 
 if( ! defined( 'SPBCT_PLUGIN' ) )     define( 'SPBCT_PLUGIN', 'uniforce' );
-if( ! defined( 'SPBCT_VERSION' ) )    define( 'SPBCT_VERSION', '3.7.0' );
+if( ! defined( 'SPBCT_VERSION' ) )    define( 'SPBCT_VERSION', '3.8.0' );
 if( ! defined( 'SPBCT_AGENT' ) )      define( 'SPBCT_AGENT', SPBCT_PLUGIN . '-' . str_replace( '.', '', SPBCT_VERSION ) );
 if( ! defined( 'SPBCT_USER_AGENT' ) ) define( 'SPBCT_USER_AGENT', 'Cleantalk-Security-Universal-Plugin/' . SPBCT_VERSION );
 
@@ -66,4 +67,9 @@ if( ! empty( $cron->tasks_to_run ) && ! RemoteCalls::check() )
 unset( $cron );
 
 // Accept remote calls
-RemoteCalls::check() && RemoteCalls::perform();
+try {
+    RemoteCalls::check() && RemoteCalls::perform();
+} catch (\Exception $e) {
+    Err::add('Failed to perform test remote call: ' . $e->getMessage());
+    exit;
+}
