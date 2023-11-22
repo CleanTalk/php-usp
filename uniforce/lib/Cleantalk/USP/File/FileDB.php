@@ -76,6 +76,33 @@ class FileDB {
         }
     }
 
+    public function insert($data)
+    {
+        $inserted = 0;
+
+        for( $number = 0; isset( $data[ $number ] ); $number++ ){
+
+            switch ( $this->addIndex( $number + 1, $data[ $number ] ) ){
+                case true:
+
+                    if( $this->storage->put( $data[ $number ] ) ){
+                        $inserted++;
+                    }
+                    break;
+
+                case false:
+
+                    break;
+            }
+
+        }
+
+        $this->meta->rows += $inserted;
+        $this->meta->save();
+
+        return $inserted;
+    }
+
     public function insertTemp( $data ){
         
         $inserted = 0;
@@ -455,6 +482,42 @@ class FileDB {
             
         }
         
+    }
+
+    private function addIndex($number, $data)
+    {
+        foreach ( $this->meta->indexes as $key => &$index ){
+
+            // @todo this is a crunch
+            $column_to_index = $index['columns'][0];
+            $value_to_index = $data[ $column_to_index ];
+
+            switch ( $index['type'] ){
+                case 'bintree':
+                    $result = $this->indexes[ $column_to_index ]->add_key( $value_to_index, $this->meta->rows + $number );
+                    break;
+                case 'btree':
+                    $result = $this->indexes[ $column_to_index ]->put( $value_to_index, $this->meta->rows + $number );
+                    break;
+                default:
+                    $result = false;
+                    break;
+            }
+
+            if( is_int( $result ) && $result > 0 ){
+                $index['status'] = 'ready';
+                $out = true;
+            }elseif( $result === true ){
+                $out = false;
+            }elseif( $result === false ){
+                $out = false;
+            }else{
+                $out = false;
+            }
+
+            return $out;
+
+        } unset( $index );
     }
     
     private function addIndexTemp( $number, $data ) {
