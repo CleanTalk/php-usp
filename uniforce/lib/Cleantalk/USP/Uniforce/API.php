@@ -7,7 +7,7 @@ namespace Cleantalk\USP\Uniforce;
  * Compatible only with Wordpress.
  *
  * @depends       \Cleantalk\USP\Common\API
- * 
+ *
  * @version       1.0
  * @author        Cleantalk team (welcome@cleantalk.org)
  * @copyright (C) 2014 CleanTalk team (http://cleantalk.org)
@@ -15,7 +15,7 @@ namespace Cleantalk\USP\Uniforce;
  * @see           https://github.com/CleanTalk/wordpress-antispam
  */
 class API extends \Cleantalk\USP\Common\API{
-	
+
 	static public function get_agent(){
 		return defined( 'SPBCT_AGENT' ) ? SPBCT_AGENT : static::DEFAULT_AGENT;
 	}
@@ -42,9 +42,48 @@ class API extends \Cleantalk\USP\Common\API{
         );
 
         $result = static::send_request($request);
-        $result = $do_check ? static::check_response($result, 'security_logs') : $result;
+        $result = $do_check ? parent::check_response($result, 'security_logs') : $result;
 
         return $result;
     }
-	
+
+    static public function method__get_api_key($product_name, $email, $website, $platform, $timezone = null, $language = null, $user_ip = null, $wpms = false, $white_label = false, $hoster_api_key = '', $do_check = true)
+    {
+        $result = parent::method__get_api_key($product_name, $email, $website, $platform, $timezone = null, $language = null, $user_ip = null, $wpms = false, $white_label = false, $hoster_api_key = '', false);
+        if ($do_check) {
+            $parent_check_result = parent::check_response($result, 'get_api_key');
+            if (is_array($parent_check_result) && isset($parent_check_result['error'])) {
+                return $parent_check_result;
+            } else {
+                if (!is_string($result)) {
+                    return array(
+                        'error' => 'Unknown server response format.',
+                    );
+                } else {
+                    $result = json_decode($result, true);
+                    if(empty($result)){
+                        return array(
+                            'error' => 'JSON_DECODE_ERROR',
+                        );
+                    }
+                    $result = isset($result['data']) ? $result['data'] : $result;
+
+                    if ( ! isset($result['auth_key'])) {
+                        $result['valid'] = 0;
+                        if (isset($result['account_exists']) && $result['account_exists'] == 1) {
+                            $result['error'] = 'Account already exists. Please, insert the access key from your CleanTalk control panel.';
+                        } else {
+                            $result['error'] = 'Unknown error. Please, insert the access key from your CleanTalk control panel.';
+                        }
+                    }
+                    else {
+                        $result['valid'] = 1;
+                    }
+                    return $result;
+                }
+            }
+        }
+
+        return $result;
+    }
 }
