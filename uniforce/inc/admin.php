@@ -1,6 +1,7 @@
 <?php
 
 use Cleantalk\USP\Common\API;
+use Cleantalk\USP\Uniforce\API as USPAPI;
 use Cleantalk\USP\Common\Err;
 use Cleantalk\USP\Common\File;
 use Cleantalk\USP\Common\State;
@@ -38,7 +39,7 @@ function usp_key_validate() {
  */
 function usp_get_key() {
 
-    $result = API::method__get_api_key(
+    $result = USPAPI::method__get_api_key(
         'security',
         Post::get( 'email' ),
         Server::get( 'SERVER_NAME' ),

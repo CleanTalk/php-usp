@@ -116,8 +116,13 @@ class CTAJAX{
 				console.log( '%c ' + xhr.responseText, 'color: pink;' );
 			}else {
 				var error_string = 'Unexpected error: ' + status;
-				if( typeof error !== 'undefined' )
+				if (xhr.responseText === 'Getting key error: Account already exists. Please, insert the access key from your CleanTalk control panel.') {
+					$('#show_more_btn').click();
+					$('#access_key_desc')[0].innerHTML = 'Please, get the access key from <a href="https://cleantalk.org/my/?cp_mode=security"> CleanTalk Control Panel</a> and insert it in this field';
+				}
+				if( typeof error !== 'undefined' ) {
 					error_string += ' Additional info: ' + error;
+				}
 				errorOutput( error_string );
 			}
 		}else if(xhr.status === 500){
