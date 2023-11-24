@@ -33,9 +33,9 @@ class FirewallModule extends FirewallModule_abstract {
 	protected $result_code = '';
 	
 	protected $ip_array = array();
-	
-	protected $test_ip;
-	
+
+	public $test_ip;
+
 	protected $die_page__file;
 	
 	/**

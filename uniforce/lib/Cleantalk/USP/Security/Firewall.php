@@ -20,7 +20,9 @@ class Firewall
 {
 	
 	public $ip_array = Array();
-	
+
+    private $test_block = array();
+
 	// Database
 	protected $db;
 	
@@ -117,7 +119,18 @@ class Firewall
 			$module_results = $module->check();
 			
 			if( ! empty( $module_results ) ) {
-				
+
+                foreach ($module_results as $result) {
+                    if (strpos('PASS', $result['status']) === false) {
+                        if ($module->test_ip && $result['ip'] === $module->test_ip) {
+                            $this->test_block = $result;
+                        }
+                        if (Get::get('spbct_test_waf') &&  $result['module'] === 'WAF') {
+                            $this->test_block = $result;
+                        }
+                    }
+                }
+
 				// Prioritize
 				$module_result = $this->prioritize( $module_results );
 				
@@ -130,9 +143,9 @@ class Firewall
 			}
 			
 			// Break protection logic if it whitelisted or trusted network.
-			if( $this->is_whitelisted( $results ) )
-				break;
-			
+			if( $this->is_whitelisted( $results ) && !empty($this->test_block) ) {
+                break;
+            }
 		}
 		
         // Get the prime result
@@ -148,13 +161,16 @@ class Firewall
 			// Do finish action - die or set cookies
 			// Blocked
 			if( strpos( $result['status'], 'DENY' ) !== false ){
-				$this->fw_modules[ $result['module'] ]->actions_for_denied( $result );
-				$this->fw_modules[ $result['module'] ]->_die( $result );
-				
+                $curr_module->actions_for_denied( $result );
+                $curr_module->_die( $result );
 			// Allowed
-			}else
-				$this->fw_modules[ $result['module'] ]->actions_for_passed( $result );
-		
+			} else {
+                $curr_module->actions_for_passed( $result );
+                //if this is a test, run block anyway
+                if (!empty($this->test_block) && !empty($this->test_block['module']) ) {
+                    $this->fw_modules[ $this->test_block['module'] ]->_die( $this->test_block );
+                }
+            }
 		}
 		
 	}
