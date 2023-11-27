@@ -72,7 +72,7 @@ class CTAJAX{
 		if( !! response.error ){
 
 			this.error(
-				{status: 200, responseText: response.error},
+				{status: 200, responseText: response.error, response_obj: response},
 				response.error,
 				response.msg
 			);
@@ -101,7 +101,7 @@ class CTAJAX{
 
 	};
 
-	error( xhr, status, error ){
+	error( xhr, status, error){
 
 		let errorOutput = typeof this.errorOutput === 'function' ? this.errorOutput : function( msg ){ alert( msg ) };
 
@@ -116,8 +116,17 @@ class CTAJAX{
 				console.log( '%c ' + xhr.responseText, 'color: pink;' );
 			}else {
 				var error_string = 'Unexpected error: ' + status;
-				if( typeof error !== 'undefined' )
+				if (
+					xhr.hasOwnProperty('response_obj') &&
+					xhr.response_obj.hasOwnProperty('additional_html') &&
+					xhr.response_obj.additional_html.length > 0
+				) {
+					$('#show_more_btn').click();
+					$('#access_key_desc')[0].innerHTML = xhr.response_obj.additional_html;
+				}
+				if( typeof error !== 'undefined' ) {
 					error_string += ' Additional info: ' + error;
+				}
 				errorOutput( error_string );
 			}
 		}else if(xhr.status === 500){

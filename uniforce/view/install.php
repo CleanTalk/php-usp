@@ -74,7 +74,7 @@ $usp = \Cleantalk\USP\Common\State::getInstance();
                             </button>
                         </p>
                         <div class ="advanced_conf">
-                            <p class="text-center"><small>If you already have an access key, you could use it here</small></p>
+                            <p class="text-center" id="access_key_desc"><small>If you already have the access key, insert the key in this field</small></p>
                             <input type="text" placeholder="Access key" class="input-field" name="access_key_field" style="display: inline;"/>
                             <img class="preloader" src="img/preloader.gif" style="display: none;" alt="">
                             <p><small>Additional scripts</small>&nbsp

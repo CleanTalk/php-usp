@@ -109,6 +109,7 @@ class Field extends Element {
 		echo '<input type="text" id="ctusp_field---'. $name .'" name="'. $name .'" '
              . 'class="' . ($this->class ? $this->class : ''). '" '
 		     .'value="'.($this->state->settings->$name ? $this->state->settings->$name : '').'" '
+		     .'autocomplete="off" autofill="off"'
 		     .( $this->parent_field && !$this->state->settings->{$this->parent_field} ? ' disabled="disabled"' : '')
 		     .($this->child_fields ? ' onchange="uspSettingsDependencies([\''.implode("','",$this->child_fields).'\'])"' : '')
 		     .' />';
@@ -159,11 +160,11 @@ class Field extends Element {
 			?'<div class="ctusp_field-description">'. $this->description .'</div>'
 			: '';
 	}
-	
+
 	public function draw_element__button() {
-		
+
 		$name = $this->getName();
-		
+
 		echo '<button type="button" id="ctusp_field---' . $this->getName() . '" name="' . $name . '" value="1" '
 		     .($this->disabled == true || ( $this->parent_field && !$this->state->settings->{$this->parent_field} ) ? ' disabled="disabled"' : '')
 		     .($this->child_fields ? ' onchange="uspSettingsDependencies([\''.implode("','",$this->child_fields).'\'])"' : '')
@@ -172,5 +173,5 @@ class Field extends Element {
 			?'<div class="ctusp_field-description">'. $this->description .'</div>'
 			: '';
 	}
-	
+
 }
