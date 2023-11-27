@@ -16,28 +16,28 @@ namespace Cleantalk\USP\Security\Firewall;
 use Cleantalk\USP\Common\State;
 
 class FirewallModule extends FirewallModule_abstract {
-	
+
 	public $module_name;
-	
+
 	protected $db;
 	protected $data_table;
 	protected $log_table;
-	
+
 	/**
 	 * @var State
 	 */
 	protected $state = '';
-	
+
 	protected $service_id;
-	
+
 	protected $result_code = '';
-	
+
 	protected $ip_array = array();
-	
-	protected $test_ip;
-	
+
+	public $test_ip;
+
 	protected $die_page__file;
-	
+
 	/**
 	 * FireWall_module constructor.
 	 * Use this method to prepare any data for the module working.
@@ -45,15 +45,15 @@ class FirewallModule extends FirewallModule_abstract {
 	 * @param array $params
 	 */
 	public function __construct( $params = array() ){
-		
+
 		foreach( $params as $param_name => $param ){
 			$this->$param_name = isset( $this->$param_name ) ? $param : false;
 		}
-		
+
 	}
-	
+
 	public function ip__append_additional( &$ips ){}
-	
+
 	/**
 	 * Use this method to execute main logic of the module.
 	 *
@@ -62,23 +62,23 @@ class FirewallModule extends FirewallModule_abstract {
 	public function check(){}
 	public function actions_for_denied( $result ){}
 	public function actions_for_passed( $result ){}
-	
+
 	/**
 	 * @param mixed $db
 	 */
 	public function setDb( $db ) {
 		$this->db = $db;
 	}
-	
+
 	/**
 	 * @param array $ip_array
 	 */
 	public function setIpArray( $ip_array ) {
 		$this->ip_array = $ip_array;
 	}
-	
+
 	public function _die( $result ){
-		
+
 		// Headers
 		if(headers_sent() === false){
 			header('Expires: '.date(DATE_RFC822, mktime(0, 0, 0, 1, 1, 1971)));
@@ -87,6 +87,6 @@ class FirewallModule extends FirewallModule_abstract {
 			header('Pragma: no-cache');
 			header("HTTP/1.0 403 Forbidden");
 		}
-		
+
 	}
 }

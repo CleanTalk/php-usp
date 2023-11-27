@@ -18,15 +18,17 @@ use Cleantalk\USP\Variables\Get;
  */
 class Firewall
 {
-	
+
 	public $ip_array = Array();
-	
+
+    private $test_block = array();
+
 	// Database
 	protected $db;
-	
+
 	//Debug
 	public $debug;
-	
+
 	private $statuses_priority = array(
 		'PASS',
 		'DENY',
@@ -42,23 +44,23 @@ class Firewall
 		'PASS_BY_WHITELIST',
 		'PASS_BY_TRUSTED_NETWORK', // Highest
 	);
-	
+
 	public $fw_modules = array();
-	
+
 	/**
 	 * Creates Database driver instance.
 	 *
 	 * @param mixed $db database handler
 	 */
 	public function __construct( $db = null  ){
-		
+
 		$this->debug    = !! Get::get( 'debug' );
 		$this->ip_array = $this->ip__get( array('real'), true );
-		
+
 		if( isset( $db ) )
 			$this->db       = $db;
 	}
-	
+
 	/**
 	 * Getting arrays of IP (REMOTE_ADDR, X-Forwarded-For, X-Real-Ip, Cf_Connecting_Ip)
 	 *
@@ -68,13 +70,13 @@ class Firewall
 	 * @return array|mixed|null
 	 */
 	public function ip__get( $ips_input = array( 'real', 'remote_addr', 'x_forwarded_for', 'x_real_ip', 'cloud_flare' ), $v4_only = true ){
-		
+
 		$result = Helper::ip__get( $ips_input, $v4_only );
-		
+
 		return ! empty( $result ) ? array( 'real' => $result ) : array();
-		
+
 	}
-	
+
 	/**
 	 * Loads the FireWall module to the array.
 	 * For inner usage only.
@@ -83,82 +85,96 @@ class Firewall
 	 * @param FirewallModule $module
 	 */
 	public function module__load( FirewallModule $module ){
-		
+
 		if( ! $this->module__is_loaded( $module ) ){
 			$module->setDb( $this->db );
 			$module->ip__append_additional( $this->ip_array );
 			$this->fw_modules[ $module->module_name ] = $module;
 			$module->setIpArray( $this->ip_array );
 		}
-		
+
 	}
-	
+
 	public function module__is_loaded( FirewallModule $module = null ){
 		return $module && in_array( $module, $this->fw_modules );
 	}
-	
+
 	public function module__is_loaded__any(){
 		return (bool) $this->fw_modules;
 	}
-	
+
 	/**
 	 * Do main logic of the module.
 	 *
 	 * @return void   returns die page or set cookies
 	 */
 	public function run() {
-		
+
 		$results = array();
-		
+
 		foreach( $this->fw_modules as $module ){
-			
+
 			// Check
 			// Module should return not empty result!
 			$module_results = $module->check();
-			
+
 			if( ! empty( $module_results ) ) {
-				
+
+                foreach ($module_results as $result) {
+                    if (strpos('PASS', $result['status']) === false) {
+                        if ($module->test_ip && $result['ip'] === $module->test_ip) {
+                            $this->test_block = $result;
+                        }
+                        if (Get::get('spbct_test_waf') &&  $result['module'] === 'WAF') {
+                            $this->test_block = $result;
+                        }
+                    }
+                }
+
 				// Prioritize
 				$module_result = $this->prioritize( $module_results );
-				
+
 				// Perform middle action if module require it
 				if( method_exists( $module, 'middle_action') )
 					$module->middle_action( $module_result );
-				
+
 				// Push to all results
 				$results[ $module->module_name ] = $module_result;
 			}
-			
+
 			// Break protection logic if it whitelisted or trusted network.
-			if( $this->is_whitelisted( $results ) )
-				break;
-			
+			if( $this->is_whitelisted( $results ) && !empty($this->test_block) ) {
+                break;
+            }
 		}
-		
+
         // Get the prime result
 		$result = $this->prioritize( $results );
-		
+
 		// Write log. Each module use their own log system
 		$curr_module = $this->fw_modules[ $result['module'] ];
-		
+
 		if( $curr_module ){
-		
+
 			$curr_module::update_log( $result );
-			
+
 			// Do finish action - die or set cookies
 			// Blocked
 			if( strpos( $result['status'], 'DENY' ) !== false ){
-				$this->fw_modules[ $result['module'] ]->actions_for_denied( $result );
-				$this->fw_modules[ $result['module'] ]->_die( $result );
-				
+                $curr_module->actions_for_denied( $result );
+                $curr_module->_die( $result );
 			// Allowed
-			}else
-				$this->fw_modules[ $result['module'] ]->actions_for_passed( $result );
-		
+			} else {
+                $curr_module->actions_for_passed( $result );
+                //if this is a test, run block anyway
+                if (!empty($this->test_block) && !empty($this->test_block['module']) ) {
+                    $this->fw_modules[ $this->test_block['module'] ]->_die( $this->test_block );
+                }
+            }
 		}
-		
+
 	}
-	
+
 	/**
 	 * Sets priorities for firewall results.
 	 * It generates one main result from multi-level results array.
@@ -226,7 +242,7 @@ class Firewall
 		return $result;
 
 	}
-	
+
 	/**
 	 * Check the result if it whitelisted or trusted network
 	 *
@@ -235,7 +251,7 @@ class Firewall
 	 * @return bool
 	 */
 	private function is_whitelisted( $results ) {
-		
+
 		foreach ( $results as $fw_result ) {
 			if (
 				strpos( $fw_result['status'], 'PASS_BY_TRUSTED_NETWORK' ) !== false ||
@@ -245,9 +261,9 @@ class Firewall
 			}
 		}
 		return false;
-		
+
 	}
-	
+
 	/**
 	 * Use this method to handle logs updating by the module.
 	 *
