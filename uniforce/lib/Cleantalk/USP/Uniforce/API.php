@@ -75,6 +75,7 @@ class API extends \Cleantalk\USP\Common\API{
                         } else {
                             $result['error'] = 'Unknown error. Please, insert the access key from your CleanTalk control panel.';
                         }
+                        $result['additional_html'] = 'Please, get the access key from <a href="https://cleantalk.org/my/?cp_mode=security"> CleanTalk Control Panel</a> and insert it in this field';
                     }
                     else {
                         $result['valid'] = 1;
