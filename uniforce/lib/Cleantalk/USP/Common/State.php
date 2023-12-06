@@ -153,6 +153,8 @@ class State extends \Cleantalk\USP\Common\Storage{
 		'update_security_firewall' => array('last_call' => 0, 'cooldown' => 0),
 		'drop_security_firewall'   => array('last_call' => 0,),
 		'update_settings'          => array('last_call' => 0,),
+        'private_record_add'       => array('last_call' => 0,),
+        'private_record_delete'    => array('last_call' => 0, 'cooldown' => 0),
 
 	// Inner
 		'download__quarantine_file' => array('last_call' => 0, 'cooldown' => 3),

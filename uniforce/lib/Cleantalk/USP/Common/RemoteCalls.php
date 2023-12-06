@@ -93,4 +93,18 @@ class RemoteCalls
 		
 		die(empty($result['error']) ? 'OK' : 'FAIL '.json_encode(array('error' => $result['error'])));
 	}
+
+    static function action__private_record_add()
+    {
+        $result = FW::private_record_add();
+
+        die(empty($result['error']) ? 'OK' : 'FAIL '.json_encode(array('error' => $result['error'])));
+    }
+
+    static function action__private_record_delete()
+    {
+        $result = FW::update( State::getInstance()->key );
+
+        die(empty($result['error']) ? 'OK' : 'FAIL '.json_encode(array('error' => $result['error'])));
+    }
 }
