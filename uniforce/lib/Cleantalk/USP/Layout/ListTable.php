@@ -261,7 +261,7 @@ class ListTable
 					echo "<option value='{$action_key}'>{$action['name']}</option>";
 				}
 				echo '</select>';
-				echo '<button type="button" name="bulk_perform" class="tbl-button tbl-bulk_actions--apply">'.__('Apply').'</button>';
+				echo '<button type="button" name="bulk_perform" class="tbl-button tbl-bulk_actions--apply">'.uniforce_translate('Apply').'</button>';
 				echo '<img class="tbl-preloader--small" src="' . CT_USP_URI . '/img/preloader_tiny.gif" />';
 			echo '</div>';
 		}
@@ -282,7 +282,7 @@ class ListTable
 				echo '<button type="button" class="tbl-button tbl-pagination--button tbl-pagination--prev"><i class="icon-fast-bw"></i></button>';
 				echo "<input type='text' class='tbl-pagination--curr_page' value='{$this->pagination['page']}'/>";
 				echo '<span class="tbl-pagination--total"> of '.ceil($this->items_total / $this->pagination['per_page']).'</span>';
-				echo '<button type="button" class="tbl-button tbl-pagination--button tbl-pagination--go">'.__('Go').'</button>';
+				echo '<button type="button" class="tbl-button tbl-pagination--button tbl-pagination--go">'.uniforce_translate('Go').'</button>';
 				echo '<button type="button" class="tbl-button tbl-pagination--button tbl-pagination--next"><i class="icon-fast-fw"></i></button>';
 				echo '<button type="button" class="tbl-button tbl-pagination--button tbl-pagination--end"><i class="icon-to-end"></i></button>';
 				echo '<img class="tbl-preloader--small" src="' . CT_USP_URI . '/img/preloader_tiny.gif" />';
@@ -458,7 +458,7 @@ class ListTable
 			$out = array(
 				'temp_html' => "<td $colspan>"
                     . sprintf(
-                           __('We will check the file(s) and let you know results by email to %s', 'security-malware-firewall'),
+                           uniforce_translate('We will check the file(s) and let you know results by email to %s', 'security-malware-firewall'),
                            \Cleantalk\USP\Common\State::getInstance()->data->email
                     )
                     . '</td>',

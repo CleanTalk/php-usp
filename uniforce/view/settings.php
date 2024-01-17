@@ -15,11 +15,11 @@ require_once CT_USP_INC . 'scanner.php';
 
 usp_localize_script( 'spbc_TableData',
     array(
-        'warning_bulk'       => __('Are sure you want to perform these actions?', 'security-malware-firewall'),
-        'warning_default'    => __('Do you want to proceed?', 'security-malware-firewall'),
-        'warning_delte'      => __('This can\'t be undone and could damage your website. Are you sure?', 'security-malware-firewall'),
-        'warning_replace'    => __('This can\'t be undone. Are you sure?', 'security-malware-firewall'),
-        'warning_quarantine' => __('This can\'t be undone and could damage your website. Are you sure?', 'security-malware-firewall'),
+        'warning_bulk'       => uniforce_translate('Are sure you want to perform these actions?', 'security-malware-firewall'),
+        'warning_default'    => uniforce_translate('Do you want to proceed?', 'security-malware-firewall'),
+        'warning_delte'      => uniforce_translate('This can\'t be undone and could damage your website. Are you sure?', 'security-malware-firewall'),
+        'warning_replace'    => uniforce_translate('This can\'t be undone. Are you sure?', 'security-malware-firewall'),
+        'warning_quarantine' => uniforce_translate('This can\'t be undone and could damage your website. Are you sure?', 'security-malware-firewall'),
     )
 );
 
@@ -59,48 +59,48 @@ usp_localize_script( 'spbc_ScannerData', array(
 	//TRANSLATIONS
 
 	//Confirmation
-	'scan_modified_confiramation'           => __( 'There is more than 30 modified files and this could take time. Do you want to proceed?', 'security-malware-firewall' ),
-	'warning_about_cancel'                  => __( 'Scan will be performed in the background mode soon.', 'security-malware-firewall' ),
-	'delete_warning'                        => __( 'Are you sure you want to delete the file? It can not be undone.' ),
+	'scan_modified_confiramation'           => uniforce_translate( 'There is more than 30 modified files and this could take time. Do you want to proceed?', 'security-malware-firewall' ),
+	'warning_about_cancel'                  => uniforce_translate( 'Scan will be performed in the background mode soon.', 'security-malware-firewall' ),
+	'delete_warning'                        => uniforce_translate( 'Are you sure you want to delete the file? It can not be undone.' ),
 	// Buttons
-	'button_scan_perform'                   => __('Perform scan', 'security-malware-firewall'),
-	'button_scan_pause'                     => __('Pause scan',   'security-malware-firewall'),
-	'button_scan_resume'                    => __('Resume scan',  'security-malware-firewall'),
+	'button_scan_perform'                   => uniforce_translate('Perform scan', 'security-malware-firewall'),
+	'button_scan_pause'                     => uniforce_translate('Pause scan',   'security-malware-firewall'),
+	'button_scan_resume'                    => uniforce_translate('Resume scan',  'security-malware-firewall'),
 	// Progress bar
-	'progressbar_create_db'                 => __('Creating remote database',        'security-malware-firewall'),
-	'progressbar_get_signatures'            => __('Receiving signatures', 'security-malware-firewall'),
-	'progressbar_clear_table'               => __('Preparing',        'security-malware-firewall'),
-	'progressbar_get_hashes'                => __('Receiving hashes', 'security-malware-firewall'),
-	'progressbar_get_approved'              => __('Receiving approved files', 'security-malware-firewall'),
+	'progressbar_create_db'                 => uniforce_translate('Creating remote database',        'security-malware-firewall'),
+	'progressbar_get_signatures'            => uniforce_translate('Receiving signatures', 'security-malware-firewall'),
+	'progressbar_clear_table'               => uniforce_translate('Preparing',        'security-malware-firewall'),
+	'progressbar_get_hashes'                => uniforce_translate('Receiving hashes', 'security-malware-firewall'),
+	'progressbar_get_approved'              => uniforce_translate('Receiving approved files', 'security-malware-firewall'),
 	// Scanning core
-	'progressbar_count_files'               => __('Counting files',             'security-malware-firewall'),
-	'progressbar_surface_analysis'          => __('Scanning for modifications', 'security-malware-firewall'),
-	'progressbar_signature_analysis'        => __('Searching for signatures',    'security-malware-firewall'),
-	'progressbar_heuristic_analysis'        => __('Heuristic analysis',         'security-malware-firewall'),
+	'progressbar_count_files'               => uniforce_translate('Counting files',             'security-malware-firewall'),
+	'progressbar_surface_analysis'          => uniforce_translate('Scanning for modifications', 'security-malware-firewall'),
+	'progressbar_signature_analysis'        => uniforce_translate('Searching for signatures',    'security-malware-firewall'),
+	'progressbar_heuristic_analysis'        => uniforce_translate('Heuristic analysis',         'security-malware-firewall'),
 	//Cure
-	'progressbar_cure_backup'               => __('Backup', 'security-malware-firewall'),
-	'progressbar_count_cure'                => __('Count cure', 'security-malware-firewall'),
-	'progressbar_cure'                      => __('cure', 'security-malware-firewall'),
+	'progressbar_cure_backup'               => uniforce_translate('Backup', 'security-malware-firewall'),
+	'progressbar_count_cure'                => uniforce_translate('Count cure', 'security-malware-firewall'),
+	'progressbar_cure'                      => uniforce_translate('cure', 'security-malware-firewall'),
 	// Links
-	'progressbar_count_links'               => __('Counting links', 'security-malware-firewall'),
-	'progressbar_scan_links'                => __('Scanning links', 'security-malware-firewall'),
+	'progressbar_count_links'               => uniforce_translate('Counting links', 'security-malware-firewall'),
+	'progressbar_scan_links'                => uniforce_translate('Scanning links', 'security-malware-firewall'),
 	// Frontend
-	'progressbar_frontend_count'            => __('Counting pages', 'security-malware-firewall'),
-	'progressbar_frontend_scan'             => __('Scanning pages', 'security-malware-firewall'),
+	'progressbar_frontend_count'            => uniforce_translate('Counting pages', 'security-malware-firewall'),
+	'progressbar_frontend_scan'             => uniforce_translate('Scanning pages', 'security-malware-firewall'),
 	// Other
-	'progressbar_send_results'              => __('Sending results', 'security-malware-firewall'),
+	'progressbar_send_results'              => uniforce_translate('Sending results', 'security-malware-firewall'),
 	// Warnings
-	'result_text_bad_template'              => __('Recommend to scan all (%s) of the found files to make sure the website is secure.', 'security-malware-firewall'),
-	'result_text_good_template'             => __('No threats are found.', 'security-malware-firewall'),
+	'result_text_bad_template'              => uniforce_translate('Recommend to scan all (%s) of the found files to make sure the website is secure.', 'security-malware-firewall'),
+	'result_text_good_template'             => uniforce_translate('No threats are found.', 'security-malware-firewall'),
 	//Misc
-	'look_below_for_scan_res'               => __('Look below for scan results.', 'security-malware-firewall'),
+	'look_below_for_scan_res'               => uniforce_translate('Look below for scan results.', 'security-malware-firewall'),
 	'view_all_results'                      => sprintf(
-		__('</br>%sView all scan results for this website%s', 'security-malware-firewall'),
+		uniforce_translate('</br>%sView all scan results for this website%s', 'security-malware-firewall'),
 		'<a target="blank" href="https://cleantalk.org/my/logs_mscan?service=' . Cleantalk\USP\Common\State::getInstance()->service_id . '&user_token='. Cleantalk\USP\Common\State::getInstance()->user_token .'">',
 		'</a>'
 	),
-	'last_scan_was_just_now'        => __('Website last scan was just now. %s files were scanned.', 'security-malware-firewall'),
-	'last_scan_was_just_now_links'  => __('Website last scan was just now. %s files were scanned. %s outbound links were found.', 'security-malware-firewall'),
+	'last_scan_was_just_now'        => uniforce_translate('Website last scan was just now. %s files were scanned.', 'security-malware-firewall'),
+	'last_scan_was_just_now_links'  => uniforce_translate('Website last scan was just now. %s files were scanned. %s outbound links were found.', 'security-malware-firewall'),
 ));
 
 usp_localize_script( 'usp',
