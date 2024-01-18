@@ -36,12 +36,12 @@ usp_localize_script( 'spbc_ScannerData', array(
 	'wp_root_dir'       =>  realpath(CT_USP_SITE_ROOT),
 	// Params
 	'on_page' => 20,
-	
+
 	'settings' => array(
-        
+
         // Common
         'no_sql' => State::getInstance()->data->no_sql ? 1 : 0,
-	       
+
         // Do not create DB if created or OpenSSL is not installed
 		'scanner_create_db'          => State::getInstance()->data->db_created || State::getInstance()->data->no_sql
             ? 0
@@ -202,10 +202,12 @@ usp_localize_script( 'usp',
                                             ->add_field('bfp_admin_page')
                                                 ->setInput_type('text')
                                                 ->setTitle('Admin page URI')
+                                                ->setDescription('Specify the site admin area page address to protect it from brute-force attacks. <br />Example: http://yoursite.com/admin_area')
                                         ->getParent()
                                             ->add_field('bfp_login_form_fields')
                                                 ->setInput_type('text')
-                                                ->setTitle('Add the field names in the login form (For unknown CMS)')
+                                                ->setTitle('Add the field names presented in the login form (For unknown CMS)')
+                                                ->setDescription('Specify the unique fields names of the login form. These fields input will be checked by brute-force protection. No quotes, separated by comma. <br /> Example: user_name_custom, user_pwd_custom')
 	                                    ->getParent( 2)
 	                                    ->add_group( 'malware_scanner')
                                             ->add_field( 'scanner_auto_start' )
