@@ -45,9 +45,8 @@
 	text-align: center;
 }
 	.setup-links a{
-		color: #444;
+		color: #045760;
 		display:inline-block;
-		padding:5px;
 		text-decoration: underline;
 		-webkit-transition: all .2s ease-in-out;
 		-moz-transition: all .2s ease-in-out;
@@ -58,3 +57,26 @@
 			opacity: 0.75;
 			text-decoration: none;
 		}
+
+#advanced_conf_div{
+	border: 1px solid rgba(210, 217, 222, 0.6);
+	background: #f2faff;
+	border-radius: 3px;
+	margin-bottom: 10px;
+}
+
+.setup-hint{
+	border: 1px solid rgba(210, 217, 222, 0.5);
+	border-radius: 3px;
+	margin: 10px;
+	background: #ebf7fe;
+	padding: 5px;
+}
+
+#install_preloader{
+	display: block;
+	text-align: -webkit-center;
+	padding: 5px;
+}
+
+
