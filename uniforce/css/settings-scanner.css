@@ -20,3 +20,30 @@
 .spbc_view_file_row_num { display: inline-block; width: 30px; margin: 0 0 0 5px; border-right: 1px solid black; }
 .spbc_view_file_row { display: inline; margin: 0 0 0 5px; }
 .spbc_view_file_row_wrapper_weak_spots { background-color: #f00; }
+
+#spbc_estimated_time_hint
+{
+    width: 100%;
+    text-align: right;
+    vertical-align: sub;
+    font-weight: 400;
+    font-size: 12px;
+}
+
+#spbc_estimated_time_block{
+    border: 1px solid #ddd;
+    padding: 10px;
+    border-radius: 3px;
+}
+
+.spbc_estimated_item {
+    width: 50%;
+    text-align: left;
+    vertical-align: sub;
+    font-weight: 400;
+    font-size: 14px;
+}
+
+    #spbc_estimated_output, #spbc_elapsed_output {
+        font-weight: 600;
+    }
