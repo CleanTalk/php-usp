@@ -468,6 +468,19 @@ function usp_scanner__display(){
 
 	// Progressbar
 	echo '<div id="spbc_scaner_progress_bar" class="--hide" style="height: 22px;"><div class="spbc_progressbar_counter"><span></span></div></div>';
+	echo '
+        <div id="spbc_estimated_time_block" class="--hide">
+            <div id="spbc_estimated_output" >
+                Calculating scan process estimated time..
+            </div>
+            <div id="spbc_elapsed_output">
+                Calculating scan process elapsed time..
+            </div>
+            <div id="spbc_estimated_time_hint">
+                First time scan may take up to 10 minutes. Current estimated time may change depending on webserver performance.
+            </div>
+        </div>
+';
 
 	if( $usp->data->stat->scanner->last_scan ){
 

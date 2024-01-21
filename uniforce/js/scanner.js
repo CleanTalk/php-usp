@@ -105,6 +105,8 @@ jQuery(document).ready(function(){
         progress_overall: jQuery('#spbc_scaner_progress_overall'),
         progressbar: jQuery('#spbc_scaner_progress_bar'),
         progressbar_text: jQuery('.spbc_progressbar_counter span'),
+        estimated_output: jQuery('#spbc_estimated_output'),
+        elapsed_output: jQuery('#spbc_elapsed_output'),
         wrapper: document.getElementsByClassName('spbc_unchecked_file_list'),
         warnings: {
             long_scan: jQuery('.spbc_hint_warning__long_scan'),
@@ -114,6 +116,7 @@ jQuery(document).ready(function(){
 
     jQuery('#spbc_perform_scan').on('click', function(){
         spbc_scanner.start();
+        jQuery('#spbc_estimated_time_block').removeClass('--hide');
     });
 
 });
