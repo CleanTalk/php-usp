@@ -53,11 +53,9 @@ jQuery(document).ready(function($) {
         validate_installation();
 
         if( is_password ){
-            $('#password_requirements').hide();
             field.css('border', '1px solid #04B66B');
             field.css('box-shadow', '0 0 8px #04B66B');
         }else{
-            $('#password_requirements').show();
             field.css('box-shadow', '0 0 8px #F44336');
             field.css('border', '1px solid #F44336');
         }
@@ -81,8 +79,11 @@ jQuery(document).ready(function($) {
 
     // Install button
     $('.btn-setup').on('click', function(event){
-        if( ! key_valid )
+        $('#install_preloader').css("display", "block");
+        if( ! key_valid ){
             get_key();
+            $('#install_preloader').css("display", "none");
+        }
         else
             install();
     });
@@ -90,12 +91,17 @@ jQuery(document).ready(function($) {
 });
 
 function validate_installation(){
-
-    $('.btn-setup').prop(
+    const installButton = $('.btn-setup');
+    installButton.prop(
         'disabled',
         ! ( is_email && is_password )
     );
-
+    if (!installButton.prop(
+        'disabled')) {
+        installButton.css('color', 'white')
+    } else {
+        installButton.css('color', 'inherit')
+    }
 }
 
 function get_key(){

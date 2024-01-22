@@ -35,11 +35,10 @@ $usp = \Cleantalk\USP\Common\State::getInstance();
                     <div class="alert alert-success alert-dismissible fade in" style="display:none; word-wrap: break-word;" role="alert">
                         <strong style="text-align: center; display: block;">Success!</strong>
                         <br />
-                        <p>Enter your <a class="underlined" href="https://cleantalk.org/my/">CleanTalk dashboard</a> to view statistics.</p>
+                        <p>UniForce dashboard is <?php echo '<a href="' . CT_USP_URI . '">here</a>'; ?>. Password was sent to your email.</p>
                         <br />
-                        <p>UniForce dashboard is <?php echo '<a href="' . CT_USP_URI . '">here</a>'; ?>.</p>
+                        <p>Use <a class="underlined" href="https://cleantalk.org/my/?cp_mode=security" target="_blank">Security Dashboard</a> at <a class="underlined" href="https://cleantalk.org/">cleantalk.org</a> to view statistics and manage some cloud settings.</p>
                         <br />
-                        <p>Password was sent to your email.</p>
                     </div>
                     <!-- End Success box -->
 
@@ -61,44 +60,53 @@ $usp = \Cleantalk\USP\Common\State::getInstance();
                     <!-- Start Installation form -->
                     <form action = 'javascript:void(null);' method="post" id='setup-form'>
                         <p class="text-center">Please, enter your e-mail and password to protect UniForce dashboard</></p>
-                        <div style="text-align: center">
-                            <input type="text" placeholder="E-mail" class="input-field" name="email_field" required style="display: inline;"/>
+                        <div class="setup-hint">
+                            <input type="text" placeholder="E-mail" class="input-field" name="email_field" required "/>
                             <img class="preloader" src="img/preloader.gif" style="display: none;" alt="">
+                            <small>This email will be used to sign up at <a class="underlined" href="https://cleantalk.org/">cleantalk.org</a> or add a new site to an existing account under the email.</small>
                         </div>
-                        <input type="password" name="admin_password" class="input-field" placeholder="New password" />
-                        <p class="text-center --hide" id='password_requirements'><small>Password requirements are 4 symbols minimum, and no spaces.</small></p>
+                        <div class="setup-hint">
+                            <input type="password" name="admin_password" class="input-field" placeholder="New password" />
+                            <small>Password should contain 4 symbols minimum and contain no spaces.</small>
+                        </div>
+
                         <p>
                             <button type="button" class="btn" id="show_more_btn" style="background-color:transparent">
                                 Advanced configuration (optional)
                                 <img  class ="show_more_icon" src="img/expand_more.png" alt="Show more" style="width:24px; height:24px;"/>
                             </button>
                         </p>
-                        <div class ="advanced_conf">
-                            <p class="text-center" id="access_key_desc"><small>If you already have the access key, insert the key in this field</small></p>
-                            <input type="text" placeholder="Access key" class="input-field" name="access_key_field" style="display: inline;"/>
+                        <div id="advanced_conf_div" class="advanced_conf">
+                            <div class="setup-hint">
+                            <p><b><small>Access key</small></b></p>
+                            <input type="text" class="input-field" name="access_key_field"/>
+                            <small id="access_key_desc">If you already have the access key, insert the key in this field</small>
+                            </div>
+                            <div class="setup-hint">
                             <img class="preloader" src="img/preloader.gif" style="display: none;" alt="">
-                            <p><small>Additional scripts</small>&nbsp
-                                <img data-toggle="tooltip" data-placement="top" src="img/help_icon.png" title="Universal Security plugin will write protection code to index.php file by default. If your contact or registration contact forms are located in different files/scripts, list them here separated by commas. Example: register.php, contact.php" style="width:10px; height:10px;" alt="">
-                            </p>
+                            <p><b><small>Additional scripts</small></b></p>
                             <input type="text" class="input-field" name="addition_scripts" />
+                                <small>Universal Security plugin will write protection code to index.php file by default.</small>
+                                <small>If your contact or registration contact forms are located in different files/scripts, list them here separated by commas.</small>
+                                <small>Example: register.php, contact.php</small>
+                            </div>
                         </div>
                         <button type="submit" class="btn btn-setup" disabled>Install</button>
-
+                        <div id="install_preloader" style="display: none;">
+                            <img class="preloader" src="img/preloader.gif" style="display: block;" alt="">
+                        </div>
 	                    <?php if( CT_USP__NO_SQL ): ?>
                             <input type="hidden" name="no_sql" value="1" />
 	                    <?php endif; ?>
 
                     </form>
-
                     <div class="setup-links">
-                        <a href="https://cleantalk.org/publicoffer" target="_blank">
-                            License agreement
-                        </a>
-                        <br />
-                        <a href="https://cleantalk.org/register?platform=uniforce&website=<?php echo Server::get( 'SERVER_NAME' ); ?>&product_name=security" target="_blank">
-                            Don't have an account? <strong>Create here!</strong>
-                        </a>
+                            Sign up or sign in at <a href="https://cleantalk.org/register?platform=uniforce&website=<?php echo Server::get( 'SERVER_NAME' ); ?>&product_name=security" target="_blank">cleantalk.org</a> to get the key.
                     </div>
+                    <br />
+                    <a href="https://cleantalk.org/publicoffer" target="_blank">
+                        License agreement
+                    </a>
                     <!-- End Installation form -->
 
                 </div>
