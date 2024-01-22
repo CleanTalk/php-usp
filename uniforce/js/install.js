@@ -53,11 +53,9 @@ jQuery(document).ready(function($) {
         validate_installation();
 
         if( is_password ){
-            $('#password_requirements').hide();
             field.css('border', '1px solid #04B66B');
             field.css('box-shadow', '0 0 8px #04B66B');
         }else{
-            $('#password_requirements').show();
             field.css('box-shadow', '0 0 8px #F44336');
             field.css('border', '1px solid #F44336');
         }

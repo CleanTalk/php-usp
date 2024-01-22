@@ -37,7 +37,7 @@ $usp = \Cleantalk\USP\Common\State::getInstance();
                         <br />
                         <p>UniForce dashboard is <?php echo '<a href="' . CT_USP_URI . '">here</a>'; ?>. Password was sent to your email.</p>
                         <br />
-                        <p>Use Security Dashboard at <a class="underlined" href="https://cleantalk.org/my/">cleantalk.org</a> to view statistics and manage some cloud settings.</p>
+                        <p>Use <a class="underlined" href="https://cleantalk.org/my/?cp_mode=security" target="_blank">Security Dashboard</a> at <a class="underlined" href="https://cleantalk.org/">cleantalk.org</a> to view statistics and manage some cloud settings.</p>
                         <br />
                     </div>
                     <!-- End Success box -->
@@ -60,12 +60,16 @@ $usp = \Cleantalk\USP\Common\State::getInstance();
                     <!-- Start Installation form -->
                     <form action = 'javascript:void(null);' method="post" id='setup-form'>
                         <p class="text-center">Please, enter your e-mail and password to protect UniForce dashboard</></p>
-                        <div style="text-align: center">
-                            <input type="text" placeholder="E-mail" class="input-field" name="email_field" required style="display: inline;"/>
+                        <div class="setup-hint">
+                            <input type="text" placeholder="E-mail" class="input-field" name="email_field" required "/>
                             <img class="preloader" src="img/preloader.gif" style="display: none;" alt="">
+                            <small>This email will be used to sign up at <a class="underlined" href="https://cleantalk.org/">cleantalk.org</a> or add a new site to an existing account under the email.</small>
                         </div>
-                        <input type="password" name="admin_password" class="input-field" placeholder="New password" />
-                        <p class="text-center --hide" id='password_requirements'><small>Password requirements are 4 symbols minimum, and no spaces.</small></p>
+                        <div class="setup-hint">
+                            <input type="password" name="admin_password" class="input-field" placeholder="New password" />
+                            <small>Password should contain 4 symbols minimum and contain no spaces.</small>
+                        </div>
+
                         <p>
                             <button type="button" class="btn" id="show_more_btn" style="background-color:transparent">
                                 Advanced configuration (optional)
@@ -96,10 +100,13 @@ $usp = \Cleantalk\USP\Common\State::getInstance();
 	                    <?php endif; ?>
 
                     </form>
-
                     <div class="setup-links">
                             Sign up or sign in at <a href="https://cleantalk.org/register?platform=uniforce&website=<?php echo Server::get( 'SERVER_NAME' ); ?>&product_name=security" target="_blank">cleantalk.org</a> to get the key.
                     </div>
+                    <br />
+                    <a href="https://cleantalk.org/publicoffer" target="_blank">
+                        License agreement
+                    </a>
                     <!-- End Installation form -->
 
                 </div>
