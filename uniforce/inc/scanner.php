@@ -380,12 +380,12 @@ function usp_scanner__display(){
 	// Key is bad
 	if(!$usp->valid) {
 
-		$button = '<input type="button" class="button button-primary" value="' . __( 'To setting', 'security-malware-firewall' ) . '"  />';
+		$button = '<input type="button" class="button button-primary" value="' . uniforce_translate( 'To setting', 'security-malware-firewall' ) . '"  />';
 		$link   = sprintf(
 			'<a	href="#" onclick="usp_switchTab(\'settings\', {target: \'#ctusp_field---key\', action: \'highlight\', times: 3});">%s</a>',
 			$button
 		);
-		echo '<div style="margin: 10px auto; text-align: center;"><h3 style="margin: 5px; display: inline-block;">' . __( 'Please, enter valid API key.', 'security-malware-firewall' ) . '</h3>' . $link . '</div>';
+		echo '<div style="margin: 10px auto; text-align: center;"><h3 style="margin: 5px; display: inline-block;">' . uniforce_translate( 'Please, enter valid API key.', 'security-malware-firewall' ) . '</h3>' . $link . '</div>';
 
 		return;
 	}
@@ -393,9 +393,9 @@ function usp_scanner__display(){
 	// Key is ok
 	if ( $usp->valid && ! $usp->moderate ) {
 
-		$button = '<input type="button" class="button button-primary" value="' . __( 'RENEW', 'security-malware-firewall' ) . '"  />';
+		$button = '<input type="button" class="button button-primary" value="' . uniforce_translate( 'RENEW', 'security-malware-firewall' ) . '"  />';
 		$link   = sprintf( '<a target="_blank" href="https://cleantalk.org/my/bill/security?cp_mode=security&utm_source=wp-backend&utm_medium=cpc&utm_campaign=WP%%20backend%%20trial_security&user_token=%s">%s</a>', $usp->user_token, $button );
-		echo '<div style="margin-top: 10px;"><h3 style="margin: 5px; display: inline-block;">' . __( 'Please renew your security license.', 'security-malware-firewall' ) . '</h3>' . $link . '</div>';
+		echo '<div style="margin-top: 10px;"><h3 style="margin: 5px; display: inline-block;">' . uniforce_translate( 'Please renew your security license.', 'security-malware-firewall' ) . '</h3>' . $link . '</div>';
 
 		return;
 	}
@@ -403,12 +403,12 @@ function usp_scanner__display(){
 	// Key is ok
 	if ( ! $usp->settings->scanner_heuristic_analysis && ! $usp->settings->scanner_signature_analysis ) {
 
-		$button = '<input type="button" class="button button-primary" value="' . __( 'To setting', 'security-malware-firewall' ) . '"  />';
+		$button = '<input type="button" class="button button-primary" value="' . uniforce_translate( 'To setting', 'security-malware-firewall' ) . '"  />';
 		$link   = sprintf(
 			'<a	href="#" onclick="usp_switchTab(\'settings\', {target: \'.ctusp_group---malware_scanner\', action: \'highlight\', times: 3});">%s</a>',
 			$button
 		);
-		echo '<div style="margin: 10px auto; text-align: center;"><h3 style="margin: 5px; display: inline-block;">' . __( 'All types of scannig is switched off, please, enable at least one.', 'security-malware-firewall' ) . '</h3>' . $link . '</div>';
+		echo '<div style="margin: 10px auto; text-align: center;"><h3 style="margin: 5px; display: inline-block;">' . uniforce_translate( 'All types of scannig is switched off, please, enable at least one.', 'security-malware-firewall' ) . '</h3>' . $link . '</div>';
 
 		return;
 	}
@@ -416,12 +416,12 @@ function usp_scanner__display(){
 	// Info about last scanning
 	echo '<p class="spbc_hint text-center">';
 		if( !$usp->data->stat->scanner->last_scan )
-			echo __('System hasn\'t been scanned yet. Please, perform the scan to secure the website. ', 'security-malware-firewall');
+			echo uniforce_translate('System hasn\'t been scanned yet. Please, perform the scan to secure the website. ', 'security-malware-firewall');
 		else{
 			if ( $usp->data->stat->scanner->last_scan < time() - 86400 * 7 )
-				echo  __('Website hasn\'t been scanned for a long time.', 'security-malware-firewall');
+				echo  uniforce_translate('Website hasn\'t been scanned for a long time.', 'security-malware-firewall');
 			printf(
-				__('Website last scan was performed on %s, %d files were scanned. ', 'security-malware-firewall'),
+				uniforce_translate('Website last scan was performed on %s, %d files were scanned. ', 'security-malware-firewall'),
 				date( 'M d Y H:i:s', $usp->data->stat->scanner->last_scan ),
 				$usp->data->stat->scanner->last_scan_amount
 			);
@@ -432,7 +432,7 @@ function usp_scanner__display(){
 	// Statistics link
 	echo '<p class="spbc_hint text-center">';
 		echo sprintf(
-			__('%sView all scan results for this website%s', 'security-malware-firewall'),
+			uniforce_translate('%sView all scan results for this website%s', 'security-malware-firewall'),
 			'<a target="blank" href="https://cleantalk.org/my/logs_mscan?service='.$usp->service_id . '&user_token='. Cleantalk\USP\Common\State::getInstance()->user_token .'">',
 			'</a>'
 		);
@@ -441,7 +441,7 @@ function usp_scanner__display(){
 	// Start scan button
 	echo '<div style="text-align: center;">'
 	     .'<button id="spbc_perform_scan" class="btn btn-setup" type="button">'
-	     .__('Perform scan', 'security-malware-firewall')
+	     .uniforce_translate('Perform scan', 'security-malware-firewall')
 	     .'</button>'
 	     .'<img  class="preloader" src="'.CT_USP_URI.'img/preloader.gif" />'
      .'</div>'
@@ -449,18 +449,18 @@ function usp_scanner__display(){
 
 
 	echo '<p class="spbc_hint spbc_hint_warning spbc_hint_warning__long_scan text-center" style="display: none; margin-top: 5px;">'
-		. __('A lot of files found to scan. It would take time.', 'security-malware-firewall')
+		. uniforce_translate('A lot of files found to scan. It would take time.', 'security-malware-firewall')
 		. '</p>';
 	// Stages
 	echo '<div id="spbc_scaner_progress_overall text-center" class="--hide" style="padding-bottom: 10px;">';
 
-		echo '<span class="spbc_overall_scan_status_clear_table">'      .__('Preparing', 'security-malware-firewall')                          .'</span> -> '
-			.'<span class="spbc_overall_scan_status_count_files">'            .__('Counting files', 'security-malware-firewall')                     .'</span> -> ';
+		echo '<span class="spbc_overall_scan_status_clear_table">'      .uniforce_translate('Preparing', 'security-malware-firewall')                          .'</span> -> '
+			.'<span class="spbc_overall_scan_status_count_files">'            .uniforce_translate('Counting files', 'security-malware-firewall')                     .'</span> -> ';
 		if ( $usp->settings->scanner_signature_analysis )
-			echo '<span class="spbc_overall_scan_status_scan_signatures">'.__('Signature analysis', 'security-malware-firewall').'</span> -> ';
+			echo '<span class="spbc_overall_scan_status_scan_signatures">'.uniforce_translate('Signature analysis', 'security-malware-firewall').'</span> -> ';
 		if ( $usp->settings->scanner_heuristic_analysis )
-			echo '<span class="spbc_overall_scan_status_scan_heuristic">'.__('Heuristic analysis', 'security-malware-firewall').'</span> -> ';
-		echo '<span class="spbc_overall_scan_status_send_results">'.__('Sending results', 'security-malware-firewall').'</span>';
+			echo '<span class="spbc_overall_scan_status_scan_heuristic">'.uniforce_translate('Heuristic analysis', 'security-malware-firewall').'</span> -> ';
+		echo '<span class="spbc_overall_scan_status_send_results">'.uniforce_translate('Sending results', 'security-malware-firewall').'</span>';
 
 	echo '</div>';
 
@@ -498,8 +498,8 @@ function usp_scanner__display(){
 						'mtime'      => array( 'heading' => 'Last Modified', ),
 					),
 					'func_data_prepare' => 'spbc_scanner__display__prepare_data__files',
-					'if_empty_items'    => '<p class="text-center" style="margin-top: 20px;">' . __( 'No threats to display', 'security-malware-firewall' ) . '</p>',
-					'html_before'       => '<p>' . __( 'These files may not contain malicious code but they use very dangerous PHP functions and constructions! PHP developers don\'t recommend to use it and it looks very suspicious.', 'security-malware-firewall' ) . '</p>',
+					'if_empty_items'    => '<p class="text-center" style="margin-top: 20px;">' . uniforce_translate( 'No threats to display', 'security-malware-firewall' ) . '</p>',
+					'html_before'       => '<p>' . uniforce_translate( 'These files may not contain malicious code but they use very dangerous PHP functions and constructions! PHP developers don\'t recommend to use it and it looks very suspicious.', 'security-malware-firewall' ) . '</p>',
 					'actions'           => array(
 						'send'   => array( 'name' => 'Send for Analysis', ),
 						'view'   => array( 'name'    => 'View',
@@ -646,12 +646,12 @@ function usp_scanner__display___no_sql(){
 	// Key is bad
 	if(!$usp->valid) {
 
-		$button = '<input type="button" class="button button-primary" value="' . __( 'To setting', 'security-malware-firewall' ) . '"  />';
+		$button = '<input type="button" class="button button-primary" value="' . uniforce_translate( 'To setting', 'security-malware-firewall' ) . '"  />';
 		$link   = sprintf(
 			'<a	href="#" onclick="usp_switchTab(\'settings\', {target: \'#ctusp_field---key\', action: \'highlight\', times: 3});">%s</a>',
 			$button
 		);
-		echo '<div style="margin: 10px auto; text-align: center;"><h3 style="margin: 5px; display: inline-block;">' . __( 'Please, enter valid API key.', 'security-malware-firewall' ) . '</h3>' . $link . '</div>';
+		echo '<div style="margin: 10px auto; text-align: center;"><h3 style="margin: 5px; display: inline-block;">' . uniforce_translate( 'Please, enter valid API key.', 'security-malware-firewall' ) . '</h3>' . $link . '</div>';
 
 		return;
 	}
@@ -659,9 +659,9 @@ function usp_scanner__display___no_sql(){
 	// Key is ok
 	if ( $usp->valid && ! $usp->moderate ) {
 
-		$button = '<input type="button" class="button button-primary" value="' . __( 'RENEW', 'security-malware-firewall' ) . '"  />';
+		$button = '<input type="button" class="button button-primary" value="' . uniforce_translate( 'RENEW', 'security-malware-firewall' ) . '"  />';
 		$link   = sprintf( '<a target="_blank" href="https://cleantalk.org/my/bill/security?cp_mode=security&utm_source=wp-backend&utm_medium=cpc&utm_campaign=WP%%20backend%%20trial_security&user_token=%s">%s</a>', $usp->user_token, $button );
-		echo '<div style="margin-top: 10px;"><h3 style="margin: 5px; display: inline-block;">' . __( 'Please renew your security license.', 'security-malware-firewall' ) . '</h3>' . $link . '</div>';
+		echo '<div style="margin-top: 10px;"><h3 style="margin: 5px; display: inline-block;">' . uniforce_translate( 'Please renew your security license.', 'security-malware-firewall' ) . '</h3>' . $link . '</div>';
 
 		return;
 	}
@@ -669,12 +669,12 @@ function usp_scanner__display___no_sql(){
 	// Key is ok
 	if ( ! $usp->settings->scanner_heuristic_analysis && ! $usp->settings->scanner_signature_analysis ) {
 
-		$button = '<input type="button" class="button button-primary" value="' . __( 'To setting', 'security-malware-firewall' ) . '"  />';
+		$button = '<input type="button" class="button button-primary" value="' . uniforce_translate( 'To setting', 'security-malware-firewall' ) . '"  />';
 		$link   = sprintf(
 			'<a	href="#" onclick="usp_switchTab(\'settings\', {target: \'.ctusp_group---malware_scanner\', action: \'highlight\', times: 3});">%s</a>',
 			$button
 		);
-		echo '<div style="margin: 10px auto; text-align: center;"><h3 style="margin: 5px; display: inline-block;">' . __( 'All types of scannig is switched off, please, enable at least one.', 'security-malware-firewall' ) . '</h3>' . $link . '</div>';
+		echo '<div style="margin: 10px auto; text-align: center;"><h3 style="margin: 5px; display: inline-block;">' . uniforce_translate( 'All types of scannig is switched off, please, enable at least one.', 'security-malware-firewall' ) . '</h3>' . $link . '</div>';
 
 		return;
 	}
@@ -682,12 +682,12 @@ function usp_scanner__display___no_sql(){
 	// Info about last scanning
 	echo '<p class="spbc_hint text-center">';
 	if( !$usp->data->stat->scanner->last_scan )
-		echo __('System hasn\'t been scanned yet. Please, perform the scan to secure the website. ', 'security-malware-firewall');
+		echo uniforce_translate('System hasn\'t been scanned yet. Please, perform the scan to secure the website. ', 'security-malware-firewall');
 	else{
 		if ( $usp->data->stat->scanner->last_scan < time() - 86400 * 7 )
-			echo  __('Website hasn\'t been scanned for a long time.', 'security-malware-firewall');
+			echo  uniforce_translate('Website hasn\'t been scanned for a long time.', 'security-malware-firewall');
 		printf(
-			__('Website last scan was performed on %s, %d files were scanned. ', 'security-malware-firewall'),
+			uniforce_translate('Website last scan was performed on %s, %d files were scanned. ', 'security-malware-firewall'),
 			date( 'M d Y H:i:s', $usp->data->stat->scanner->last_scan ),
 			$usp->data->stat->scanner->last_scan_amount
 		);
@@ -698,7 +698,7 @@ function usp_scanner__display___no_sql(){
 	// Statistics link
 	echo '<p class="spbc_hint text-center">';
 	echo sprintf(
-		__('%sView all scan results for this website%s', 'security-malware-firewall'),
+		uniforce_translate('%sView all scan results for this website%s', 'security-malware-firewall'),
 		'<a target="blank" href="https://cleantalk.org/my/logs_mscan?service='.$usp->service_id . '&user_token='. Cleantalk\USP\Common\State::getInstance()->user_token .'">',
 		'</a>'
 	);
@@ -707,25 +707,25 @@ function usp_scanner__display___no_sql(){
 	// Start scan button
 	echo '<div style="text-align: center;">'
 	     .'<button id="spbc_perform_scan" class="btn btn-setup" type="button">'
-	     .__('Perform scan', 'security-malware-firewall')
+	     .uniforce_translate('Perform scan', 'security-malware-firewall')
 	     .'</button>'
 	     .'<img  class="preloader" src="'.CT_USP_URI.'img/preloader.gif" />'
 	     .'</div>';
 	echo '<br>';
 
 	echo '<p class="spbc_hint spbc_hint_warning spbc_hint_warning__long_scan text-center" style="display: none; margin-top: 5px;">'
-	     . __('A lot of files found to scan. It would take time.', 'security-malware-firewall')
+	     . uniforce_translate('A lot of files found to scan. It would take time.', 'security-malware-firewall')
 	     . '</p>';
 	// Stages
 	echo '<div id="spbc_scaner_progress_overall text-center" class="--hide" style="padding-bottom: 10px;">';
 
-	echo '<span class="spbc_overall_scan_status_clear_table">'      .__('Preparing', 'security-malware-firewall')                          .'</span> -> '
-	     .'<span class="spbc_overall_scan_status_count_files">'            .__('Counting files', 'security-malware-firewall')                     .'</span> -> ';
+	echo '<span class="spbc_overall_scan_status_clear_table">'      .uniforce_translate('Preparing', 'security-malware-firewall')                          .'</span> -> '
+	     .'<span class="spbc_overall_scan_status_count_files">'            .uniforce_translate('Counting files', 'security-malware-firewall')                     .'</span> -> ';
 	if ( $usp->settings->scanner_signature_analysis )
-		echo '<span class="spbc_overall_scan_status_scan_signatures">'.__('Signature analysis', 'security-malware-firewall').'</span> -> ';
+		echo '<span class="spbc_overall_scan_status_scan_signatures">'.uniforce_translate('Signature analysis', 'security-malware-firewall').'</span> -> ';
 	if ( $usp->settings->scanner_heuristic_analysis )
-		echo '<span class="spbc_overall_scan_status_scan_heuristic">'.__('Heuristic analysis', 'security-malware-firewall').'</span> -> ';
-	echo '<span class="spbc_overall_scan_status_send_results">'.__('Sending results', 'security-malware-firewall').'</span>';
+		echo '<span class="spbc_overall_scan_status_scan_heuristic">'.uniforce_translate('Heuristic analysis', 'security-malware-firewall').'</span> -> ';
+	echo '<span class="spbc_overall_scan_status_send_results">'.uniforce_translate('Sending results', 'security-malware-firewall').'</span>';
 
 	echo '</div>';
 
@@ -748,8 +748,8 @@ function usp_scanner__display___no_sql(){
 			'func_data_total'   => 'usp_scanner__display__count__files___no_sql',
 			'func_data_get'     => 'usp_scanner__display__get_data__files___no_sql',
 			'func_data_prepare' => 'usp_scanner__display__prepare_data__files___no_sql',
-			'if_empty_items' => '<p class="text-center" style="margin-top: 20px;">'.__('No threats to display', 'security-malware-firewall').'</p>',
-			'html_before' => '<p>' . __('These files may not contain malicious code but they use very dangerous PHP functions and constructions! PHP developers don\'t recommend to use it and it looks very suspicious.', 'security-malware-firewall') . '</p>',
+			'if_empty_items' => '<p class="text-center" style="margin-top: 20px;">'.uniforce_translate('No threats to display', 'security-malware-firewall').'</p>',
+			'html_before' => '<p>' . uniforce_translate('These files may not contain malicious code but they use very dangerous PHP functions and constructions! PHP developers don\'t recommend to use it and it looks very suspicious.', 'security-malware-firewall') . '</p>',
 			'actions' => array(
 				'send'       => array('name' => 'Send for Analysis',),
 				'view'    => array('name' => 'View', 'handler' => 'spbc_scanner_button_file_view_event(this);',),

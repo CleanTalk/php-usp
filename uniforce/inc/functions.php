@@ -26,7 +26,7 @@ function spbct_js_test() {
  *
  * @return string
  */
-function __( $string, $text_domain ='' ){
+function uniforce_translate( $string, $text_domain ='' ){
 	return $string;
 }
 

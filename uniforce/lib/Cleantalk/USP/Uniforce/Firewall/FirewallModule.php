@@ -128,15 +128,15 @@ class FirewallModule extends \Cleantalk\USP\Security\Firewall\FirewallModule {
 		
 		// Adding block reason
 		switch( $result['status'] ){
-			case 'DENY':                $reason = __('Blacklisted', 'security-malware-firewall');                      break;
-			case 'DENY_BY_NETWORK':	    $reason = __('Hazardous network', 'security-malware-firewall');	               break;
-			case 'DENY_BY_DOS':         $reason = __('Blocked by DoS prevention system', 'security-malware-firewall'); break;
-			case 'DENY_BY_WAF_XSS':	    $reason = __('Blocked by Web Application Firewall: XSS attack detected.',    'security-malware-firewall'); break;
-			case 'DENY_BY_WAF_SQL':	    $reason = __('Blocked by Web Application Firewall: SQL-injection detected.', 'security-malware-firewall'); break;
-			case 'DENY_BY_WAF_EXPLOIT':	$reason = __('Blocked by Web Application Firewall: Exploit detected.',       'security-malware-firewall'); break;
-			case 'DENY_BY_WAF_FILE':    $reason = __('Blocked by Web Application Firewall: Malicious files upload.', 'security-malware-firewall'); break;
-			case 'DENY_BY_BFP':         $reason = __('Blocked by BruteForce Protection: Too many invalid logins.',   'security-malware-firewall'); break;
-			default :                   $reason = __('Blacklisted', 'security-malware-firewall');                      break;
+			case 'DENY':                $reason = uniforce_translate('Blacklisted', 'security-malware-firewall');                      break;
+			case 'DENY_BY_NETWORK':	    $reason = uniforce_translate('Hazardous network', 'security-malware-firewall');	               break;
+			case 'DENY_BY_DOS':         $reason = uniforce_translate('Blocked by DoS prevention system', 'security-malware-firewall'); break;
+			case 'DENY_BY_WAF_XSS':	    $reason = uniforce_translate('Blocked by Web Application Firewall: XSS attack detected.',    'security-malware-firewall'); break;
+			case 'DENY_BY_WAF_SQL':	    $reason = uniforce_translate('Blocked by Web Application Firewall: SQL-injection detected.', 'security-malware-firewall'); break;
+			case 'DENY_BY_WAF_EXPLOIT':	$reason = uniforce_translate('Blocked by Web Application Firewall: Exploit detected.',       'security-malware-firewall'); break;
+			case 'DENY_BY_WAF_FILE':    $reason = uniforce_translate('Blocked by Web Application Firewall: Malicious files upload.', 'security-malware-firewall'); break;
+			case 'DENY_BY_BFP':         $reason = uniforce_translate('Blocked by BruteForce Protection: Too many invalid logins.',   'security-malware-firewall'); break;
+			default :                   $reason = uniforce_translate('Blacklisted', 'security-malware-firewall');                      break;
 		}
 		
 		if( $this->die_page__file ){
@@ -148,13 +148,13 @@ class FirewallModule extends \Cleantalk\USP\Security\Firewall\FirewallModule {
 			
 			// Translation
 			$replaces = array(
-				'{TITLE}' => __('Blocked: Security by CleanTalk', 'security-malware-firewall'),
+				'{TITLE}' => uniforce_translate('Blocked: Security by CleanTalk', 'security-malware-firewall'),
 				'{TEST_TITLE}' => Get::get('spbct_test')
-					? __('This is the testing page for Security FireWall', 'security-malware-firewall')
+					? uniforce_translate('This is the testing page for Security FireWall', 'security-malware-firewall')
 					: '',
 				'{REASON}' => $reason,
 				'{GENERATED_TIMESTAMP}' => time(),
-				'{FALSE_POSITIVE_WARNING}' => __('Maybe you\'ve been blocked by a mistake. Please refresh the page (press CTRL + F5) or try again later.', 'security-malware-firewall'),
+				'{FALSE_POSITIVE_WARNING}' => uniforce_translate('Maybe you\'ve been blocked by a mistake. Please refresh the page (press CTRL + F5) or try again later.', 'security-malware-firewall'),
 				
 				
 				'{REMOTE_ADDRESS}'                 => $result['ip'],
