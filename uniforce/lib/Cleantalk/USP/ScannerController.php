@@ -535,7 +535,7 @@ class ScannerController {
                 $decoded_signatures = array();
                 foreach ($signatures as $signature => $value){
                     $decoded_signatures[$signature] = $value;
-                    $decoded_signatures[$signature]['body'] = base64_decode($signature['body']);
+                    $decoded_signatures[$signature]['body'] = base64_decode($value['body']);
                 }
 
                 $signatures_ok_hashes = array();
