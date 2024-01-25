@@ -186,9 +186,10 @@ class Storage {
                 return false;
             }
         }
-    
-        $this->buffer_size = strlen( $this->buffer );
-        
+
+        $buffer = is_null($this->buffer) ? '' : $this->buffer;
+        $this->buffer_size = strlen( $buffer );
+
         return true;
     }
     

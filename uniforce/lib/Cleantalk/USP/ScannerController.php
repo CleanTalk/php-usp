@@ -520,6 +520,7 @@ class ScannerController {
 							.' WHERE fast_hash = :fast_hash'
 					);
 
+
                 $signatures = new Storage('signatures', null, '', 'csv', array(
                     'id',
                     'name',
@@ -534,40 +535,62 @@ class ScannerController {
                 $decoded_signatures = array();
                 foreach ($signatures as $signature => $value){
                     $decoded_signatures[$signature] = $value;
-                    $decoded_signatures[$signature]['body'] = base64_decode($signature['body']);
+                    $decoded_signatures[$signature]['body'] = base64_decode($value['body']);
                 }
 
-				// Initialing results
+                $signatures_ok_hashes = array();
+
+				// Start of iteration check
 				foreach ( $files_to_check as $file ) {
 
 					$result = Scanner::file__scan__for_signatures( $this->root, $file, $decoded_signatures );
 
 					if ( empty( $result['error'] ) ) {
-
                         $status =     ! empty( $file['status'] ) && $file['status'] === 'MODIFIED' ? 'MODIFIED' : $result['status'];
                         $weak_spots = ! empty( $result['weak_spots'] ) ? json_encode( $result['weak_spots'] ) : NULL;
                         $severity =   ! empty( $file['severity'] )
                             ? $file['severity']
                             : ( $result['severity'] ? $result['severity'] : null );
 
-                        $result_db = $prepared_query
-                            ->execute(
-                                array(
-                                    ':status' => $status,
-                                    ':severity' => $severity,
-                                    ':weak_spots' => $weak_spots,
-                                    ':fast_hash' =>  $file['fast_hash'],
-                                )
-                            );
+                        if ($weak_spots === null && $severity === null && $status === 'OK') {
+                            //if file is OK, collect it's hash string for further bulk update
+                            $signatures_ok_hashes[] = '\'' . $file['fast_hash'] . '\'';
+                        } else {
+                            //do update a single file only if file is not OK
+                            $result_db = $prepared_query
+                                ->execute(
+                                    array(
+                                        ':status' => $status,
+                                        ':severity' => $severity,
+                                        ':weak_spots' => $weak_spots,
+                                        ':fast_hash' =>  $file['fast_hash'],
+                                    )
+                                );
 
-                        $result['status'] !== 'OK' ? $out['found']++   : $out['found'];
-                        $result_db !== false       ? $out['scanned']++ : $out['scanned'];
+                            if ($result['status'] !== 'OK') {
+                                $out['found']++;
+                            }
+                            if ($result_db !== false ) {
+                                $out['scanned']++;
+                            }
+                            $out['processed']++;
+                        }
 
-					}else
-						 return array( 'error' => 'Signature scan: ' . $result['error']);
-
-					$out['processed']++;
+					}else {
+                        return array( 'error' => 'Signature scan: ' . $result['error']);
+                    }
 				}
+                //end of iteration check
+
+                //do bulk update for every good file
+                try {
+                   $update_ok_files_count = $this->scanner__db_update_ok_files($signatures_ok_hashes, 'signatures');
+                } catch (\Exception $e) {
+                   return array('error' => 'Signature scan: ' . $e->getMessage());
+                }
+
+                $out['scanned'] += $update_ok_files_count;
+                $out['processed'] += $update_ok_files_count;
 			}
 		}
 
@@ -619,6 +642,9 @@ class ScannerController {
 				.' WHERE fast_hash = ?'
 			);
 
+            $heuristic_ok_hashes = array();
+
+            //Start of iteration check
 			foreach ( $files_to_check as $file ) {
 
 				$result = Scanner::file__scan__heuristic( $this->root, $file );
@@ -631,31 +657,92 @@ class ScannerController {
 						? $file['severity']
 						: ( $result['severity'] ? $result['severity'] : NULL );
 
-					$result_db = $prepared_query->execute(
-						array(
-							$status,
-							$severity,
-							$weak_spots,
-							$file['fast_hash'],
-						)
-					);
+                    if ($weak_spots === null && $severity === null && $status === 'OK') {
+                        //if file is OK, collect it's hash string for further bulk update
+                        $heuristic_ok_hashes[] = '\'' . $file['fast_hash'] . '\'';
+                    } else {
+                        //do update a single file only if file is not OK
+                        $result_db = $prepared_query
+                            ->execute(
+                                array(
+                                    $status,
+                                    $severity,
+                                    $weak_spots,
+                                    $file['fast_hash'],
+                                )
+                            );
 
-					$result['status'] !== 'OK' ? $out['found']++   : $out['found'];
-					$result_db !== false       ? $out['scanned']++ : $out['scanned'];
+                        if ($result['status'] !== 'OK') {
+                            $out['found']++;
+                        }
+                        if ($result_db !== false ) {
+                            $out['scanned']++;
+                        }
+                        $out['processed']++;
+                    }
 
-				}else
-					return array( 'error' => 'Heuristic scan: ' . $result['error']);
-
-				$out['processed']++;
-
+				}else {
+                    return array( 'error' => 'Heuristic scan: ' . $result['error']);
+                }
 			}
+            //end of iteration check
+
+            //do bulk update for every good file
+            try {
+                $update_ok_files_count = $this->scanner__db_update_ok_files($heuristic_ok_hashes, 'heuristic');
+            } catch (\Exception $e) {
+                return array('error' => 'Heuristic scan: ' . $e->getMessage());
+            }
+
+            $out['scanned'] += $update_ok_files_count;
+            $out['processed'] += $update_ok_files_count;
 		}
 
 		$out['end'] = $out['processed'] < $amount;
 
 		return $out;
 
+        return $out;
 	}
+
+    private function scanner__db_update_ok_files($list_of_ok_hashes, $check_type)
+    {
+        $ok_hashes_string = '(' . implode(',', $list_of_ok_hashes) . ')';
+
+        if (!is_array($list_of_ok_hashes) || empty($list_of_ok_hashes)) {
+            throw new \Exception( 'Heuristic scan: OK hashes is empty or has wrong format.');
+        }
+
+        if ($check_type === 'heuristic') {
+            $sql_chunk_check_type = 'checked_heuristic = 1';
+        } elseif ($check_type === 'signatures') {
+            $sql_chunk_check_type = 'checked_signature = 1';
+        }
+
+        $query = $this
+            ->db
+            ->prepare(
+                'UPDATE ' . self::table__scanner___files
+                . ' SET'
+                .' ' . $sql_chunk_check_type . ','
+                .' status = "OK",'
+                .' severity = NULL,'
+                .' weak_spots = NULL'
+                .' WHERE fast_hash IN ' . $ok_hashes_string
+            );
+
+        try {
+            $result_db = $query->execute();
+        } catch (\Exception $e) {
+            throw new \Exception( 'Heuristic scan: ' . $e->getMessage());
+        }
+
+        if ($result_db === false) {
+            throw new \Exception( 'Heuristic scan: can`t update table.');
+        }
+
+        return count($list_of_ok_hashes);
+    }
 
 	public function action__scanner__send_results( ) {
 

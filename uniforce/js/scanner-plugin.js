@@ -25,6 +25,41 @@ class spbc_Scanner{
     total_scanned = 0;
     scan_percent = 0;
     percent_completed = 0;
+    current_estimated_time = 30;
+    total_files_count = null;
+    stages_estimated_data = {
+        clear_table : {
+            'seconds_to_add' : 0,
+            'exec_time': 2,
+            'exec_time_collected' : false,
+            'stage_start_time' : false,
+            'est_stage_time': null
+        },
+        signature_analysis : {
+            'seconds_to_add' : 0,
+            'exec_time': 5,
+            'exec_time_collected' : false,
+            'stage_start_time' : false,
+            'est_stage_time': null
+        },
+        heuristic_analysis : {
+            'seconds_to_add' : 0,
+            'exec_time': 5,
+            'stage_start_time' : false,
+            'exec_time_collected' : false,
+            'est_stage_time': null
+        },
+        surface_analysis : {
+            'seconds_to_add' : 0,
+            'exec_time': 2,
+            'stage_start_time' : false,
+            'exec_time_collected' : false,
+            'est_stage_time': null
+        },
+    }
+    estimated_output = null;
+    elapsed_output = null;
+    scanner_start_time = null;
 
     paused_status = '';
     paused = false;
@@ -77,6 +112,8 @@ class spbc_Scanner{
 
         console.log( result );
 
+        this.calculate_estimated_time(result);
+
         setTimeout(() => {
 
             // Changing text and percent
@@ -103,6 +140,91 @@ class spbc_Scanner{
         }, 2000);
 
     };
+
+    calculate_estimated_time(result) {
+        let current_time = Math.floor(Date.now() / 1000);
+        let elapsedTime = current_time - this.scanner_start_time;
+
+        //cheat to keep the estimated time more than 0
+        if ((this.current_estimated_time - elapsedTime) < 15) {
+            this.current_estimated_time += 15
+        }
+
+        //desc elapsed time
+        this.estimated_time_output = this.current_estimated_time - elapsedTime;
+
+        //collect total files and estimated efficiency
+        if (result.hasOwnProperty('total') && !this.total_files_count) {
+            this.total_files_count = result.total;
+        }
+
+        const stage = this.state.toString();
+
+        let currentStageData = this.stages_estimated_data[stage];
+
+        if (!this.stages_estimated_data.hasOwnProperty(stage)) {
+            currentStageData = {
+                'seconds_to_add' : 0,
+                'exec_time': 2,
+                'exec_time_collected' : false,
+                'stage_start_time' : false,
+                'est_stage_time': null
+            };
+        }
+
+        //collect stage avg time
+        if (currentStageData.exec_time_collected === false && +currentStageData.stage_start_time) {
+            currentStageData.exec_time =
+                current_time - currentStageData.stage_start_time;
+            currentStageData.exec_time_collected = true;
+            //add est_stage_time
+            if (typeof this.amount !== undefined && this.total_files_count && !currentStageData.est_stage_time) {
+                currentStageData.est_stage_time = Math.floor(this.total_files_count / this.amount) * currentStageData.exec_time
+                this.current_estimated_time += currentStageData.est_stage_time;
+            }
+        } else {
+            currentStageData.stage_start_time = current_time;
+        }
+
+        // remove est_stage_time from global estimated
+        if (result.hasOwnProperty('end') && result.end && currentStageData.exec_time_collected) {
+            const realTimeGoneForStage = current_time - currentStageData.stage_start_time;
+            const diffBetweenRealAndEstimatedStageTime = currentStageData.est_stage_time - realTimeGoneForStage;
+            this.current_estimated_time = this.current_estimated_time - diffBetweenRealAndEstimatedStageTime;
+        }
+
+        //collect how much seconds need to be added for total time
+        if (+this.total_files_count && currentStageData.exec_time_collected && typeof this.amount !== undefined) {
+            //calc secs
+            if (this.amount !== 0 && currentStageData.seconds_to_add === 0) {
+                currentStageData.seconds_to_add =
+                    Math.floor(this.total_files_count / this.amount) * currentStageData.exec_time
+                this.current_estimated_time += currentStageData.seconds_to_add;
+            }
+        }
+
+        this.stages_estimated_data[stage] = currentStageData;
+
+        function secondsToHms(fullTime) {
+            fullTime = Number(fullTime);
+            var h = Math.floor(fullTime / 3600);
+            var m = Math.floor(fullTime % 3600 / 60);
+            var s = Math.floor(fullTime % 3600 % 60);
+
+            var hDisplay = h > 0 ? h + (h == 1 ? " hour, " : " hours, ") : "";
+            var mDisplay = m > 0 ? m + (m == 1 ? " minute, " : " minutes, ") : "";
+            var sDisplay = s > 0 ? s + (s == 1 ? " second" : " seconds") : "";
+            return hDisplay + mDisplay + sDisplay;
+        }
+
+        //convert to human-readable
+        this.estimated_time_output = secondsToHms(this.estimated_time_output);
+
+        elapsedTime = secondsToHms(elapsedTime);
+        //output the result
+        this.estimated_output.text(this.estimated_time_output);
+        this.elapsed_output.text(elapsedTime);
+    }
 
     set_percents( percent ){
         this.percent_completed = Math.floor( percent * 100 ) / 100;
@@ -175,8 +297,8 @@ class spbc_Scanner{
             case 'get_signatures':     params.timeout = 60000; break;
             case 'clear_table':        this.amount = 1000;     break;
             case 'surface_analysis':   this.amount = 500;      break;
-            case 'signature_analysis': this.amount = this.settings['no_sql'] === 1 ? 200 : 50;       break;
-            case 'heuristic_analysis': this.amount = this.settings['no_sql'] === 1 ? 200 : 50;      break;
+            case 'signature_analysis': this.amount = this.settings['no_sql'] === 1 ? 200 : 250;       break;
+            case 'heuristic_analysis': this.amount = this.settings['no_sql'] === 1 ? 200 : 250;      break;
             case 'auto_cure':          this.amount = 5;        break;
             case 'send_results':                               break;
             default:                                           break;
@@ -198,6 +320,7 @@ class spbc_Scanner{
         this.progress_overall.show(500);
         this.button.attr('disabled', 'disabled');
         this.spinner.css({display: 'inline'});
+        this.scanner_start_time = Math.floor(Date.now() / 1000);
 
         setTimeout(() => {
             this.controller();

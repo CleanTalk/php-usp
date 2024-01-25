@@ -345,7 +345,7 @@ class Scanner
                         $file_content = file_get_contents( $root_path . $file_info['path'] );
                         $is_regexp = preg_match( '/^\/.*\/$/', $signature['body'] );
                         if(
-                            ( $is_regexp   && preg_match( $signature, $file_content ) ) ||
+                            ( $is_regexp   && preg_match( $signature['body'], $file_content ) ) ||
                             ( ! $is_regexp && strripos( $file_content, stripslashes( $signature['body'] ) ) !== false )
                         ){
                             $line_number = ScannerHelper::file__get_string_number_with_needle( $root_path . $file_info['path'], $signature['body'], $is_regexp );
