@@ -52,14 +52,15 @@ class DB extends \PDO implements Common\DB {
 
 	/**
 	 * Safely replace place holders
-	 *
+	 * !!! READ THE TODO IN THE METHOD CODE BEFORE USE THIS IN NEW FEATURES !!!
 	 * @param string $query
-	 * @param array $param
+	 * @param array $options
 	 *
 	 * @return bool|\PDOStatement
 	 */
-	public function prepare( $query, $param = array() ) {
-		return parent::prepare( $query, $param );
+    #[\ReturnTypeWillChange]
+	public function prepare($query, $options = array() ) {
+		return parent::prepare( $query, $options );
 	}
 
 	/**
