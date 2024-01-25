@@ -28,11 +28,8 @@ class RemoteCalls
 			$cooldown = isset($usp->remote_calls->$action->cooldown)
 				? $usp->remote_calls->$action->cooldown
 				: self::COOLDOWN;
-			$pass_cooldown = Helper::ip__get(array('real')) === $_SERVER['SERVER_ADDR'];
 
-			if(time() - $usp->remote_calls->$action->last_call >= $cooldown
-				 || $pass_cooldown
-			){
+			if( time() - $usp->remote_calls->$action->last_call >= $cooldown ){
 
 				$usp->remote_calls->$action->last_call = time();
 				$usp->remote_calls->save();
