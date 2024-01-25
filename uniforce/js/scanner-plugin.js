@@ -9,7 +9,7 @@ class spbc_Scanner{
     states = [
         'create_db',
         'get_signatures',
-        //'clear_table',
+        'clear_table',
         'surface_analysis',
         'get_approved',
         'signature_analysis',
