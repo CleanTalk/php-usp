@@ -6,7 +6,7 @@ use Cleantalk\USP\Common\State;
 use Cleantalk\USP\DB;
 use Cleantalk\USP\Variables\Post;
 
-class ListTable
+class ListTable extends \stdClass
 {
     static $NUMBER_ELEMENTS_TO_VIEW = 20;
 
