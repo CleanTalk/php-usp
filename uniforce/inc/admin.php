@@ -217,6 +217,8 @@ function usp_install($files, $api_key, $cms, $exclusions ){
         usp_install_cron();
 
 	usp_check_account_status( $api_key );
+
+    setcookie('authentificated', State::getInstance()->data->security_key, 0, '/', '', false, true);
 }
 
 /**
