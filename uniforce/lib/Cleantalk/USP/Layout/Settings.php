@@ -9,7 +9,7 @@ use Cleantalk\USP\Common\State;
  * @method \Cleantalk\USP\Layout\Plain add_plain( string $name )
  */
 
-class Settings {
+class Settings extends \stdClass {
 
 	use \Cleantalk\USP\Templates\Tree;
 

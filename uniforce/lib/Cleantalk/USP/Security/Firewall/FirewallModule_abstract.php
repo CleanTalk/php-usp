@@ -12,8 +12,8 @@ namespace Cleantalk\USP\Security\Firewall;
  * @license       GNU/GPL: http://www.gnu.org/copyleft/gpl.html
  * @since 2.49
  */
-abstract class FirewallModule_abstract {
-	
+abstract class FirewallModule_abstract extends \stdClass {
+
 	/**
 	 * FireWall_module constructor.
 	 * Use this method to prepare any data for the module working.
