@@ -80,7 +80,7 @@ jQuery(document).ready(function($) {
     // Install button
     $('.btn-setup').on('click', function(event){
         $('#install_preloader').css("display", "block");
-        if( ! key_valid ){
+        if( ! key_valid && ! $('input[name="access_key_field"]').val() ){
             get_key();
             $('#install_preloader').css("display", "none");
         }
