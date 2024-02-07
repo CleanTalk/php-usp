@@ -35,5 +35,5 @@ if( version_compare( phpversion(), '5.6', '<' ) ){ ?>
     </div>
     <?php
 }else{
-    header('Location: router.php');
+    require_once(__DIR__ . '/router.php');
 }
