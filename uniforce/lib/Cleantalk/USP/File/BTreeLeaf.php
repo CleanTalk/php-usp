@@ -2,7 +2,7 @@
 
 namespace Cleantalk\USP\File;
 
-class BTreeLeaf {
+class BTreeLeaf extends \stdClass {
 	
 	// Node structure
 	private $max_elems_in_node;
@@ -211,23 +211,26 @@ class BTreeLeaf {
 
 	public function serialize( $raw = '' ){
 
-		$raw .= str_pad( $this->link_left, $this->link_size, "\x00" );
+        $link_left = ! $this->link_left ? '' : $this->link_left;
+        $raw .= str_pad( $link_left, $this->link_size, "\x00" );
 
-		$raw .= str_pad( $this->link_parent, $this->link_size, "\x00" );
+        $link_parent = ! $this->link_parent ? '' : $this->link_parent;
+        $raw .= str_pad( $link_parent, $this->link_size, "\x00" );
 
-		foreach ( $this->elements as $elem ) {
-			$raw .= str_pad( $elem['key'], $this->key_size, "\x00" );
-			$raw .= str_pad( $elem['val'], $this->val_size, "\x00" );
-			$raw .= str_pad( $elem['link'], $this->link_size, "\x00" );
-		}
+        foreach ( $this->elements as $elem ) {
+            $link = isset($elem['link']) ? $elem['link'] : '';
+            $raw .= str_pad( $elem['key'], $this->key_size, "\x00" );
+            $raw .= str_pad( $elem['val'], $this->val_size, "\x00" );
+            $raw .= str_pad( $link, $this->link_size, "\x00" );
+        }
 
-		$raw .= $this->eod;
+        $raw .= $this->eod;
 
-		$raw = str_pad( $raw, $this->leaf_size - strlen( $this->end_of_node ), "\x00" );
+        $raw = str_pad( $raw, $this->leaf_size - strlen( $this->end_of_node ), "\x00" );
 
-		$raw .= $this->end_of_node;
+        $raw .= $this->end_of_node;
 
-		return $raw;
+        return $raw;
 	}
 	
 	public function save( $position = 0 ){

@@ -304,7 +304,7 @@ class FileDB {
             }
             
             // Filter by limit
-            $result = array_slice( $result, $this->offset, $this->amount );
+            $result = array_slice( $result, (int) $this->offset, $this->amount );
         }
         
         return $result;
