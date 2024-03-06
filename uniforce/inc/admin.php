@@ -306,14 +306,58 @@ function usp_send_pass_to_email($to, $login, $pass)
  * Modify cron
  */
 function usp_install_cron(){
+    $tasks = [
+        'sfw_update' => [
+            'handler' => 'uniforce_fw_update',
+            'period' => 86400,
+            'next_call' => time() + 20,
+            'executed' => 0,
+            'last_executed' => 0,
+            'params' => [],
+        ],
+        'security_send_logs' => [
+            'handler' => 'uniforce_security_send_logs',
+            'period' => 3600,
+            'next_call' => null,
+            'executed' => 0,
+            'last_executed' => 0,
+            'params' => [],
+        ],
+        'fw_send_logs' => [
+            'handler' => 'uniforce_fw_send_logs',
+            'period' => 3600,
+            'next_call' => null,
+            'executed' => 0,
+            'last_executed' => 0,
+            'params' => [],
+        ],
+        'clean_black_lists' => [
+            'handler' => 'uniforce_clean_black_lists',
+            'period' => 86400,
+            'next_call' => null,
+            'executed' => 0,
+            'last_executed' => 0,
+            'params' => [],
+        ],
+        'update_signatures' => [
+            'handler' => 'usp_scanner__get_signatures',
+            'period' => 86400,
+            'next_call' => time() + 10,
+            'executed' => 0,
+            'last_executed' => 0,
+            'params' => [],
+        ],
+        'check_for_updates' => [
+            'handler' => 'usp_get_latest_version',
+            'period' => 86400,
+            'next_call' => time(),
+            'executed' => 0,
+            'last_executed' => 0,
+            'params' => [],
+        ]
+    ];
 
-	Cron::addTask( 'sfw_update', 'uniforce_fw_update', 86400, time() + 20 );
-	Cron::addTask( 'security_send_logs', 'uniforce_security_send_logs', 3600 );
-    Cron::addTask( 'fw_send_logs', 'uniforce_fw_send_logs', 3600 );
-    Cron::addTask( 'clean_black_lists', 'uniforce_clean_black_lists', 86400 );
-    Cron::addTask( 'update_signatures', 'usp_scanner__get_signatures', 86400, time() + 10 );
-    Cron::addTask( 'check_for_updates', 'usp_get_latest_version', 86400, time() );
-
+    Cron::saveTasks($tasks);
 }
 
 /**
