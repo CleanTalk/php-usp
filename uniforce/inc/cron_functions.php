@@ -7,9 +7,9 @@ use Cleantalk\USP\Uniforce\Helper;
 use Cleantalk\USP\Variables\Server;
 
 function uniforce_fw_update( $immediate = false ){
-	
+
 	$usp = State::getInstance();
-	
+
 	// SFW actions
 	if( $usp->key && $usp->settings->fw ){
 
@@ -35,16 +35,16 @@ function uniforce_fw_update( $immediate = false ){
 function uniforce_fw_send_logs(){
 
 	$usp = State::getInstance();
-	
+
 	// SFW actions
 	if( $usp->key && $usp->settings->fw ){
 
 		// Send SFW logs
 		$result = \Cleantalk\USP\Uniforce\Firewall\FW::send_log( $usp->key );
-		
+
 		if( ! empty( $result['error'] ) )
 			Err::add( $result['error'] );
-		
+
 		if( ! Err::check() ) {
 			$usp->fw_stats->logs_sent_time = time();
 			$usp->fw_stats->count = 0;
@@ -52,7 +52,7 @@ function uniforce_fw_send_logs(){
         }
 
 	}
-	
+
 	return ! Err::check() ? true : false;
 }
 
@@ -135,8 +135,9 @@ function usp_scanner__launch(){
 
 	$usp = State::getInstance();
 
-	if ( $usp->scanner_status === false || ! $usp->settings->scanner_auto_start )
-		return true;
+	if ( $usp->scanner_status === false || ! $usp->settings->scanner_auto_start ){
+        return true;
+    }
 
     return Helper::http__request(
         CT_USP_URI,
@@ -151,9 +152,9 @@ function usp_scanner__launch(){
 }
 
 function usp_scanner__get_signatures() {
-	
+
 	$usp = State::getInstance();
-	
+
 	$scanner_controller = new \Cleantalk\USP\ScannerController( CT_USP_SITE_ROOT );
 	$out = $scanner_controller->action__scanner__get_signatures();
 
