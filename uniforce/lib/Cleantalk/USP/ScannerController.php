@@ -155,6 +155,9 @@ class ScannerController {
 
 				break;
 		}
+        $state = (string)($this->state);
+        $usp->data->stat->scanner_background_log->$state = (array)$result;
+        $usp->data->save();
 
 		// Make next call if everything is ok
 		if( ! isset( $end ) && empty( $result['error'] ) ){

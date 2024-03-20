@@ -3,9 +3,9 @@
 namespace Cleantalk\USP\Common;
 
 /*
- * 
+ *
  * CleanTalk Security State class
- * 
+ *
  * @package Security Plugin by CleanTalk
  * @subpackage State
  * @Version 2.0
@@ -77,7 +77,7 @@ class State extends \Cleantalk\USP\Common\Storage{
 		'db_user' => '',
 		'db_password' => '',
 		'db_created' => '',
-		
+
 		// Application
 		'is_installed'   => false,
 		'detected_cms'   => 'Unknown',
@@ -114,6 +114,19 @@ class State extends \Cleantalk\USP\Common\Storage{
 			'php_logs' => array(
 				'last_sent' => 0,
 			),
+            'scanner_background_log' => array(
+                'create_db' => array(),
+                'clear_table' => array(),
+                'get_signatures' => array(),
+                'surface_analysis' => array(),
+                'get_approved' => array(),
+                'signature_analysis' => array(),
+                'heuristic_analysis' => array(),
+                'auto_cure' => array(),
+                //'frontend_analysis',
+                //'outbound_links',
+                'send_results' => array()
+            ),
 		),
 
 		// Account
@@ -187,13 +200,13 @@ class State extends \Cleantalk\USP\Common\Storage{
 		'logs_sent_time' => 0,
 		'last_update'    => 0,
 	);
-	
+
 	private $default_plugin_meta = array(
 		'version' => '1.0.0',
 		'latest_version' => '1.0.0',
 		'is_installed' => false,
 	);
-	
+
 	public function __construct( ...$options )
 	{
 		// Default options to get
@@ -211,7 +224,7 @@ class State extends \Cleantalk\USP\Common\Storage{
 			$option = is_array( $option )
 				? array_merge( $this->$def_option_name, $option )
 				: $this->$def_option_name;
-			
+
 			// Generating salt
 			if($option_name === 'data'){
 
