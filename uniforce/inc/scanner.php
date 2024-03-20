@@ -6,6 +6,7 @@ use Cleantalk\USP\DB;
 use Cleantalk\USP\Layout\ListTable;
 use Cleantalk\USP\Scanner\Scanner;
 use Cleantalk\USP\Uniforce\API;
+use Cleantalk\USP\Uniforce\Cron;
 use Cleantalk\USP\Uniforce\Helper;
 use Cleantalk\USP\Variables\Post;
 
@@ -412,6 +413,15 @@ function usp_scanner__display(){
 
 		return;
 	}
+    $scanner_next_launch = Cron::getTaskNextCall('scanner_launch', 'Y-m-d H:i:s');
+    if ($scanner_next_launch) {
+        echo '<p class="spbc_hint text-center">';
+        printf(
+            uniforce_translate('Next automatic scan is scheduled on: %s', 'security-malware-firewall'),
+            $scanner_next_launch
+        );
+        echo '</p>';
+    }
 
 	// Info about last scanning
 	echo '<p class="spbc_hint text-center">';

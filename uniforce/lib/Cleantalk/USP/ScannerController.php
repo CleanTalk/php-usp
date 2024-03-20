@@ -2,6 +2,7 @@
 
 namespace Cleantalk\USP;
 
+use Cleantalk\USP\Uniforce\Cron;
 use Cleantalk\USP\Common\Err;
 use Cleantalk\USP\Common\State;
 use Cleantalk\USP\Common\Storage;
@@ -73,8 +74,9 @@ class ScannerController {
 		'signature_analysis',
 		'heuristic_analysis',
 		'auto_cure',
-		'frontend_analysis',
-		'outbound_links',
+		//'frontend_analysis',
+		//'outbound_links',
+        'send_results'
 	);
 
 	public function action__scanner__controller(){
@@ -131,7 +133,7 @@ class ScannerController {
 				break;
 
 			// Heuristic
-			case 'analysis_heuristic':
+			case 'heuristic_analysis':
 
 				$result = $this->action__scanner__heuristic_analysis(
 					$this->offset,
@@ -140,6 +142,10 @@ class ScannerController {
 				);
 
 				break;
+
+            case 'auto_cure':
+                $result['end'] = true;
+                break;
 
 			// Send result
 			case 'send_results':
@@ -162,7 +168,7 @@ class ScannerController {
 			);
 
 			Helper::http__request(
-				CT_USP_AJAX_URI,
+                CT_USP_URI,
 				$remote_call_params,
 				'get async'
 			);
@@ -173,6 +179,8 @@ class ScannerController {
 		empty( $result['error'] )
 			? $usp->error_delete( $this->state, 'and_save_data', 'cron_scan' )
 			: $usp->error_add( $this->state, $result, 'cron_scan' );
+
+        Cron::updateTask( 'scanner_launch', 'usp_scanner__launch', 86400, time() + 86400 );
 
 		return true;
 	}
@@ -701,8 +709,6 @@ class ScannerController {
 		$out['end'] = $out['processed'] < $amount;
 
 		return $out;
-
-        return $out;
 	}
 
     private function scanner__db_update_ok_files($list_of_ok_hashes, $check_type)
@@ -802,6 +808,7 @@ class ScannerController {
 		$usp->data->save();
 
 		$result['end'] = 1;
+
 		return $result;
 
 	}

@@ -138,13 +138,13 @@ function usp_scanner__launch(){
 	if ( $usp->scanner_status === false || ! $usp->settings->scanner_auto_start )
 		return true;
 
-	return Helper::http__request(
-		CT_USP_AJAX_URI,
+    return Helper::http__request(
+        CT_USP_URI,
 		array(
 			'plugin_name' => 'security',
 			'spbc_remote_call_token' => md5($usp->settings->key),
 			'spbc_remote_call_action' => 'scanner__controller',
-			'state'                   => 'get_hashes'
+			'state'                   => 'create_db'
 		),
 		'get async'
 	);
