@@ -125,7 +125,8 @@ class State extends \Cleantalk\USP\Common\Storage{
                 'auto_cure' => array(),
                 //'frontend_analysis',
                 //'outbound_links',
-                'send_results' => array()
+                'send_results' => array(),
+                'last_executed' => array()
             ),
 		),
 

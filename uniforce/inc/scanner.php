@@ -442,72 +442,82 @@ function usp_scanner__display(){
 	echo '</p>';
 
     //background log layout
-    $background_log = !empty($usp->data->stat->scanner_background_log->convertToArray())
+    $background_log = is_object($usp->data->stat->scanner_background_log) && !empty($usp->data->stat->scanner_background_log->convertToArray())
         ? $usp->data->stat->scanner_background_log->convertToArray()
-        : false;
-    $background_log_formatted = array();
-    foreach ($background_log as $stage => $values) {
-        $additional_info = '';
-        if (!empty($values['processed'])) {
-            $additional_info = ', files processed ' . $values['processed'];
-        }
-        if (!empty($values['updated'])) {
-            $additional_info = ', signatures updated ' . $values['updated'];
-        }
-        switch ($stage) {
-            case 'create_db':
-                $stage_name = 'Database creating';
-                break;
-            case 'clear_table':
-                $stage_name = 'Database clearing';
-                break;
-            case 'get_signatures':
-                $stage_name = 'Signatures getting';
-                break;
-            case 'surface_analysis':
-                $stage_name = 'Surface analysis';
-                break;
-            case 'get_approved':
-                $stage_name = 'Approved hashes get';
-                break;
-            case 'signature_analysis':
-                $stage_name = 'Signature analysis';
-                break;
-            case 'heuristic_analysis':
-                $stage_name = 'Heuristic analysis';
-                break;
-            case 'auto_cure':
-                $stage_name = 'Automatic cure';
-                break;
+        : array();
+    $has_ran = !empty($background_log) && !empty($background_log['last_executed']);
+    if ($has_ran) {
+        $background_log_formatted = array();
+        foreach ($background_log as $stage => $values) {
+            $additional_info = '';
+            if (!empty($values['processed'])) {
+                $additional_info = ', files processed on last iteration ' . $values['processed'];
+            }
+            if (!empty($values['updated'])) {
+                $additional_info = ', signatures updated ' . $values['updated'];
+            }
+            if (!empty($values['time'])) {
+                $additional_info = ', on ' . date('Y-m-d H:i:s', (int)$values['time']);
+            }
+            switch ($stage) {
+                case 'create_db':
+                    $stage_name = 'Database creating';
+                    break;
+                case 'clear_table':
+                    $stage_name = 'Database clearing';
+                    break;
+                case 'get_signatures':
+                    $stage_name = 'Signatures getting';
+                    break;
+                case 'surface_analysis':
+                    $stage_name = 'Surface analysis';
+                    break;
+                case 'get_approved':
+                    $stage_name = 'Approved hashes get';
+                    break;
+                case 'signature_analysis':
+                    $stage_name = 'Signature analysis';
+                    break;
+                case 'heuristic_analysis':
+                    $stage_name = 'Heuristic analysis';
+                    break;
+                case 'auto_cure':
+                    $stage_name = 'Automatic cure';
+                    break;
                 //'frontend_analysis',
                 //'outbound_links',
-            case 'send_results':
-                $stage_name = 'Sending results';
-                break;
-            default:
-                $stage_name = $stage;
+                case 'send_results':
+                    $stage_name = 'Sending results';
+                    break;
+                case 'last_executed':
+                    $stage_name = 'Last run';
+                    break;
+                default:
+                    $stage_name = $stage;
+            }
+            $background_log_formatted[$stage_name] = array(
+                'success' => isset($values['end']) && $values['end'] ? '<span style="color: green">OK</span>' : '<span style="color: red">FAIL</span>',
+                'additional_info' => $additional_info,
+            );
         }
-        $background_log_formatted[$stage_name] = array(
-            'success' => isset($values['end']) && $values['end'] ? '<span style="color: green">OK</span>' : '<span style="color: red">FAIL</span>',
-            'additional_info' => $additional_info,
-        );
-    }
-    $background_templated = '';
-    foreach ($background_log_formatted as $stage => $states)
-    {
-        $background_templated .= '<span style="font-size: small; display: block">';
-        $background_templated .= $stage . ': ' . $states['success'] . $states['additional_info'];
-        $background_templated .= '</span>';
-    }
-    if ($background_log) {
-        echo '<p id="background_scan_log_toggler" class="spbc_hint text-center"><a>Click to show/hide last background scheduled scan log</a></p>';
-        $template = '
+        $background_templated = '';
+        foreach ($background_log_formatted as $stage => $states)
+        {
+            $background_templated .= '<span style="font-size: small; display: block">';
+            $background_templated .= $stage . ': ' . $states['success'] . $states['additional_info'];
+            $background_templated .= '</span>';
+        }
+        if (!empty($background_templated)) {
+            echo '<p id="background_scan_log_toggler" class="spbc_hint text-center"><a>Click to show/hide last background scheduled scan log</a></p>';
+            $template = '
         <div id="background_scan_log" style="border: 1px solid lightgrey; padding: 5px; display: none">
             %s
         </div>
         ';
-        printf($template, $background_templated);
+            printf($template, $background_templated);
+        }
     }
+
 
 	// Statistics link
 	echo '<p class="spbc_hint text-center">';

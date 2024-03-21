@@ -150,7 +150,8 @@ function usp_scanner__launch(){
         'auto_cure' => array(),
         //'frontend_analysis',
         //'outbound_links',
-        'send_results' => array()
+        'send_results' => array(),
+        'last_executed' => array()
     );
     $usp->data->save();
 

@@ -126,7 +126,7 @@ class ScannerController {
 
 				$result = $this->action__scanner__signature_analysis(
 					$this->offset,
-					10,
+					100,
 					$this->root
 				);
 
@@ -137,7 +137,7 @@ class ScannerController {
 
 				$result = $this->action__scanner__heuristic_analysis(
 					$this->offset,
-					10,
+                    100,
 					$this->root
 				);
 
@@ -183,7 +183,12 @@ class ScannerController {
 			? $usp->error_delete( $this->state, 'and_save_data', 'cron_scan' )
 			: $usp->error_add( $this->state, $result, 'cron_scan' );
 
-        Cron::updateTask( 'scanner_launch', 'usp_scanner__launch', 86400, time() + 86400 );
+        if (isset($end)) {
+            $usp->data->stat->scanner_background_log->last_executed = array('end' => empty( $result['error'] ), 'time' => time());
+            $usp->data->save();
+
+            Cron::updateTask( 'scanner_launch', 'usp_scanner__launch', 86400, time() + 86400 );
+        }
 
 		return true;
 	}
@@ -592,6 +597,8 @@ class ScannerController {
                     }
 				}
                 //end of iteration check
+
+                error_log('CTDEBUG: [' . __FUNCTION__ . '] [$signatures_ok_hashes]: ' . var_export($signatures_ok_hashes,true));
 
                 //do bulk update for every good file
                 try {
