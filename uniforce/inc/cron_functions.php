@@ -139,21 +139,10 @@ function usp_scanner__launch(){
         return true;
     }
 
-    $usp->data->stat->scanner_background_log = array(
-        'create_db' => array(),
-        'clear_table' => array(),
-        'get_signatures' => array(),
-        'surface_analysis' => array(),
-        'get_approved' => array(),
-        'signature_analysis' => array(),
-        'heuristic_analysis' => array(),
-        'auto_cure' => array(),
-        //'frontend_analysis',
-        //'outbound_links',
-        'send_results' => array(),
-        'last_executed' => array()
-    );
+    \Cleantalk\USP\ScannerController::clearBackgroundScanLog($usp);
+    $usp->data->scanner->background_scan_stop = false;
     $usp->data->save();
+
 
     return Helper::http__request(
         CT_USP_URI,

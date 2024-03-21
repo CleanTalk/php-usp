@@ -83,6 +83,11 @@ class ScannerController {
 
 		$usp = State::getInstance();
 
+        if ($usp->data->scanner->background_scan_stop) {
+            static::clearBackgroundScanLog($usp);
+            return true;
+        }
+
 		sleep(5);
 
 		switch( $this->state ){
@@ -597,8 +602,6 @@ class ScannerController {
                     }
 				}
                 //end of iteration check
-
-                error_log('CTDEBUG: [' . __FUNCTION__ . '] [$signatures_ok_hashes]: ' . var_export($signatures_ok_hashes,true));
 
                 //do bulk update for every good file
                 try {
@@ -1211,4 +1214,23 @@ class ScannerController {
 			? $scanner->files
 			: false;
 	}
+
+    public static function clearBackgroundScanLog($usp)
+    {
+        $usp->data->stat->scanner_background_log = array(
+            'create_db' => array(),
+            'clear_table' => array(),
+            'get_signatures' => array(),
+            'surface_analysis' => array(),
+            'get_approved' => array(),
+            'signature_analysis' => array(),
+            'heuristic_analysis' => array(),
+            'auto_cure' => array(),
+            //'frontend_analysis',
+            //'outbound_links',
+            'send_results' => array(),
+            'last_executed' => array()
+        );
+        $usp->data->save();
+    }
 }

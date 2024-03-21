@@ -37,6 +37,15 @@ class RemoteCalls
 				// Check API key
 				if($token == strtolower(md5($usp->settings->key)) ){
 
+                    //stop background scan if GET param provided
+                    if (
+                        isset($_GET['background_scan_stop']) &&
+                        $usp->data->scanner->background_scan_stop !== (bool)$_GET['background_scan_stop']
+                    ) {
+                        $usp->data->scanner->background_scan_stop = (bool)$_GET['background_scan_stop'];
+                        $usp->data->save();
+                    }
+
 					$action = 'action__'.$action;
 
 					// Scanner actions

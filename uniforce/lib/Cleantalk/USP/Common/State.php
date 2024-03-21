@@ -155,6 +155,7 @@ class State extends \Cleantalk\USP\Common\Storage{
 				'offset'        => 0,
 			),
 			'cured' => array(),
+            'background_scan_stop' => false,
 		),
 		'2fa_keys'          => array(),
 	);
