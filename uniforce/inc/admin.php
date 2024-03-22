@@ -354,6 +354,14 @@ function usp_install_cron(){
             'executed' => 0,
             'last_executed' => 0,
             'params' => [],
+        ],
+        'scanner_launch' => [
+            'handler' => 'usp_scanner__launch',
+            'period' => 86400,
+            'next_call' => time() + 86400,
+            'executed' => 0,
+            'last_executed' => 0,
+            'params' => [],
         ]
     ];
 
@@ -542,6 +550,15 @@ function usp_do_save_settings() {
 
 	// Recognizing new key
 	$new_key_is_set = $usp->settings->key !== $settings['key'];
+
+
+    if( $settings['scanner_auto_start'] != $usp->settings->scanner_auto_start ) {
+        if ($settings['scanner_auto_start'] == 1) {
+            Cron::updateTask( 'scanner_launch', 'usp_scanner__launch', 86400, time() + 86400 );
+        } else {
+            Cron::removeTask( 'scanner_launch');
+        }
+    }
 
 	// Set values
 	foreach ( $settings as $setting => $value) {

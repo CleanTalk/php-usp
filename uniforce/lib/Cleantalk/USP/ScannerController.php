@@ -2,6 +2,7 @@
 
 namespace Cleantalk\USP;
 
+use Cleantalk\USP\Uniforce\Cron;
 use Cleantalk\USP\Common\Err;
 use Cleantalk\USP\Common\State;
 use Cleantalk\USP\Common\Storage;
@@ -73,13 +74,19 @@ class ScannerController {
 		'signature_analysis',
 		'heuristic_analysis',
 		'auto_cure',
-		'frontend_analysis',
-		'outbound_links',
+		//'frontend_analysis',
+		//'outbound_links',
+        'send_results'
 	);
 
 	public function action__scanner__controller(){
 
 		$usp = State::getInstance();
+
+        if ($usp->data->scanner->background_scan_stop) {
+            static::clearBackgroundScanLog($usp);
+            return true;
+        }
 
 		sleep(5);
 
@@ -124,22 +131,26 @@ class ScannerController {
 
 				$result = $this->action__scanner__signature_analysis(
 					$this->offset,
-					10,
+					100,
 					$this->root
 				);
 
 				break;
 
 			// Heuristic
-			case 'analysis_heuristic':
+			case 'heuristic_analysis':
 
 				$result = $this->action__scanner__heuristic_analysis(
 					$this->offset,
-					10,
+                    100,
 					$this->root
 				);
 
 				break;
+
+            case 'auto_cure':
+                $result['end'] = true;
+                break;
 
 			// Send result
 			case 'send_results':
@@ -149,6 +160,9 @@ class ScannerController {
 
 				break;
 		}
+        $state = (string)($this->state);
+        $usp->data->stat->scanner_background_log->$state = (array)$result;
+        $usp->data->save();
 
 		// Make next call if everything is ok
 		if( ! isset( $end ) && empty( $result['error'] ) ){
@@ -162,7 +176,7 @@ class ScannerController {
 			);
 
 			Helper::http__request(
-				CT_USP_AJAX_URI,
+                CT_USP_URI,
 				$remote_call_params,
 				'get async'
 			);
@@ -173,6 +187,11 @@ class ScannerController {
 		empty( $result['error'] )
 			? $usp->error_delete( $this->state, 'and_save_data', 'cron_scan' )
 			: $usp->error_add( $this->state, $result, 'cron_scan' );
+
+        if (isset($end)) {
+            $usp->data->stat->scanner_background_log->last_executed = array('end' => empty( $result['error'] ), 'time' => time());
+            $usp->data->save();
+        }
 
 		return true;
 	}
@@ -701,8 +720,6 @@ class ScannerController {
 		$out['end'] = $out['processed'] < $amount;
 
 		return $out;
-
-        return $out;
 	}
 
     private function scanner__db_update_ok_files($list_of_ok_hashes, $check_type)
@@ -802,6 +819,7 @@ class ScannerController {
 		$usp->data->save();
 
 		$result['end'] = 1;
+
 		return $result;
 
 	}
@@ -1194,4 +1212,23 @@ class ScannerController {
 			? $scanner->files
 			: false;
 	}
+
+    public static function clearBackgroundScanLog($usp)
+    {
+        $usp->data->stat->scanner_background_log = array(
+            'create_db' => array(),
+            'clear_table' => array(),
+            'get_signatures' => array(),
+            'surface_analysis' => array(),
+            'get_approved' => array(),
+            'signature_analysis' => array(),
+            'heuristic_analysis' => array(),
+            'auto_cure' => array(),
+            //'frontend_analysis',
+            //'outbound_links',
+            'send_results' => array(),
+            'last_executed' => array()
+        );
+        $usp->data->save();
+    }
 }

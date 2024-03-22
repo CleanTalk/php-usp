@@ -1,2 +1,2 @@
 <?php
-$uniforce_tasks = array ();
+global $uniforce_tasks;

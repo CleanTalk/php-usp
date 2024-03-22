@@ -34,6 +34,11 @@ jQuery(document).ready(function() {
         update();
     });
 
+    //show background scan log
+    $("#background_scan_log_toggler").on('click', function(event){
+        $("#background_scan_log").toggle('slow');
+    });
+
     jQuery('.ctusp_tab_navigation').on('click', '.ctusp_tab_navigation-title', function (event) {
         usp_switchTab(event.currentTarget);
     });

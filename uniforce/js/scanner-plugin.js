@@ -280,6 +280,7 @@ class spbc_Scanner{
             plugin_name: 'spbc', // Adding security code
             offset: this.offset,
             no_sql: this.settings['no_sql'],
+            background_scan_stop: true,
         };
 
         var params = {
@@ -289,7 +290,7 @@ class spbc_Scanner{
             complete: null,
             errorOutput: this.errorOutput,
             context: this,
-            timeout: 40000
+            timeout: 40000,
         };
 
         switch (this.state) {
