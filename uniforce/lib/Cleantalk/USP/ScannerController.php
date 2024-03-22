@@ -191,8 +191,6 @@ class ScannerController {
         if (isset($end)) {
             $usp->data->stat->scanner_background_log->last_executed = array('end' => empty( $result['error'] ), 'time' => time());
             $usp->data->save();
-
-            Cron::updateTask( 'scanner_launch', 'usp_scanner__launch', 86400, time() + 86400 );
         }
 
 		return true;
