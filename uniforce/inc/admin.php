@@ -551,6 +551,15 @@ function usp_do_save_settings() {
 	// Recognizing new key
 	$new_key_is_set = $usp->settings->key !== $settings['key'];
 
+
+    if( $settings['scanner_auto_start'] != $usp->settings->scanner_auto_start ) {
+        if ($settings['scanner_auto_start'] == 1) {
+            Cron::updateTask( 'scanner_launch', 'usp_scanner__launch', 86400, time() + 86400 );
+        } else {
+            Cron::removeTask( 'scanner_launch');
+        }
+    }
+
 	// Set values
 	foreach ( $settings as $setting => $value) {
 		$usp->settings->$setting = $value;
