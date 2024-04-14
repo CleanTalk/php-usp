@@ -597,7 +597,7 @@ function usp_do_save_settings() {
 	$usp->settings->save();
 
 	// FireWall actions
-	// Last in the list because it can overwrite the data in the the remote call it makes
+	// Last in the list because it can overwrite the data in the remote call it makes
 	if( ( $usp->settings->fw || $usp->settings->waf ) && $usp->settings->key ){
 
 		// Update SFW
@@ -650,37 +650,18 @@ function usp_check_account_status( $key = null ){
 		preg_replace( '/http[s]?:\/\//', '', Server::get( 'SERVER_NAME' ), 1 ),
 		'security'
 	);
-	if( ! empty( $result['error'] ) ){
-		Err::add('Checking key failed', $result['error']);
-		$usp->data->notice_show     = 0;
-		$usp->data->notice_renew    = 0;
-		$usp->data->notice_trial    = 0;
-		$usp->data->notice_review   = 0;
-		$usp->data->user_token      = '';
-		$usp->data->spam_count      = 0;
-		$usp->data->moderate_ip     = 0;
-		$usp->data->moderate        = 0;
-		$usp->data->service_id      = 0;
-		$usp->data->license_trial   = 0;
-		$usp->data->account_name = '';
-		$usp->data->account_name_ob = '';
-		$usp->data->ip_license      = 0;
-		$usp->data->valid           = 0;
+    $error = false;
+    if (! empty( $result['error']) ) {
+        $error = $result['error'];
+    } elseif ( isset($result['valid']) && $result['valid'] == 0 ){
+        $error = 'key is invalid';
+    }
+	if( false !== $error ){
+		Err::add('Checking key failed', $error);
+        processInvalidKeyState($usp);
 		// $usp->data->notice_were_updated = $result[''];
 	} else {
-		$usp->data->notice_show     = isset( $result['show_notice'] ) ? $result['show_notice'] : 0;
-		$usp->data->notice_renew    = isset( $result['renew'] ) ? $result['renew'] : 0;
-		$usp->data->notice_trial    = isset( $result['trial'] ) ? $result['trial'] : 0;
-		$usp->data->notice_review   = isset( $result['show_review'] ) ? $result['show_review'] : 0;
-		$usp->data->user_token      = isset( $result['user_token'] ) ? $result['user_token'] : '';
-		$usp->data->spam_count      = isset( $result['spam_count'] ) ? $result['spam_count'] : 0;
-		$usp->data->moderate_ip     = isset( $result['moderate_ip'] ) ? $result['moderate_ip'] : 0;
-		$usp->data->moderate        = isset( $result['moderate'] ) ? $result['moderate'] : 0;
-		$usp->data->service_id      = isset( $result['service_id'] ) ? $result['service_id'] : 0;
-		$usp->data->license_trial   = isset( $result['license_trial'] ) ? $result['license_trial'] : 0;
-		$usp->data->account_name_ob = isset( $result['account_name_ob'] ) ? $result['account_name_ob'] : '';
-		$usp->data->ip_license      = isset( $result['ip_license'] ) ? $result['ip_license'] : 0;
-		$usp->data->valid           = isset( $result['valid'] ) ? $result['valid'] : 0;
+        processValidKeyState($usp, $result);
 		// $usp->data->notice_were_updated = $result[''];
 	}
 
@@ -747,4 +728,68 @@ function usp_do_change_admin_password()
 
     Err::check() or die(json_encode(array('success' => true)));
     die(Err::check_and_output( 'as_json' ));
+}
+
+/**
+ * @param State $usp
+ * @return void
+ */
+function processInvalidKeyState(State $usp)
+{
+    $usp->data->notice_show     = 0;
+    $usp->data->notice_renew    = 0;
+    $usp->data->notice_trial    = 0;
+    $usp->data->notice_review   = 0;
+    $usp->data->user_token      = '';
+    $usp->data->spam_count      = 0;
+    $usp->data->moderate_ip     = 0;
+    $usp->data->moderate        = 0;
+    $usp->data->service_id      = 0;
+    $usp->data->license_trial   = 0;
+    $usp->data->account_name = '';
+    $usp->data->account_name_ob = '';
+    $usp->data->ip_license      = 0;
+    $usp->data->valid           = 0;
+    $usp->data->scanner->background_scan_stop = true;
+
+    // Deleting options and their files
+    $usp->delete( 'scan_result' );
+    $usp->delete( 'fw_stats' );
+
+    $usp->data->stat->scanner_background_log = $usp->default_data['stat']['scanner_background_log'];
+    @file_put_contents(
+        Cron::CRON_FILE,
+        "<?php\n\n\$uniforce_tasks = array ();"
+    );
+    // Deleting FW data
+    $db = new \Cleantalk\USP\File\FileDB( 'fw_nets' );
+    $db->delete();
+    $db->deleteTemp();
+    require 'cron_functions.php';
+    uniforce_clean_black_lists();
+
+    // Deleting any logs
+    usp_uninstall_logs();
+}
+
+/**
+ * @param $usp
+ * @return void
+ */
+function processValidKeyState($usp, $result)
+{
+    $usp->data->notice_show     = isset( $result['show_notice'] ) ? $result['show_notice'] : 0;
+    $usp->data->notice_renew    = isset( $result['renew'] ) ? $result['renew'] : 0;
+    $usp->data->notice_trial    = isset( $result['trial'] ) ? $result['trial'] : 0;
+    $usp->data->notice_review   = isset( $result['show_review'] ) ? $result['show_review'] : 0;
+    $usp->data->user_token      = isset( $result['user_token'] ) ? $result['user_token'] : '';
+    $usp->data->spam_count      = isset( $result['spam_count'] ) ? $result['spam_count'] : 0;
+    $usp->data->moderate_ip     = isset( $result['moderate_ip'] ) ? $result['moderate_ip'] : 0;
+    $usp->data->moderate        = isset( $result['moderate'] ) ? $result['moderate'] : 0;
+    $usp->data->service_id      = isset( $result['service_id'] ) ? $result['service_id'] : 0;
+    $usp->data->license_trial   = isset( $result['license_trial'] ) ? $result['license_trial'] : 0;
+    $usp->data->account_name_ob = isset( $result['account_name_ob'] ) ? $result['account_name_ob'] : '';
+    $usp->data->ip_license      = isset( $result['ip_license'] ) ? $result['ip_license'] : 0;
+    $usp->data->valid           = isset( $result['valid'] ) ? $result['valid'] : 0;
+    usp_install_cron();
 }

@@ -144,6 +144,10 @@ usp_localize_script( 'usp',
 
                             <?php
 
+                            $key_validation_chunk = State::getInstance()->data->key_is_ok == 0
+                                ? '<p class="--red" style="margin-left: 6px;">Access key is incorrect or expired!</p>'
+                                : '<p style="margin-left: 6px;">Account registered for email: ' . State::getInstance()->data->account_name_ob . '</p>';
+
                             $settings = new \Cleantalk\USP\Layout\Settings();
 
                             // Tab summary
@@ -183,7 +187,7 @@ usp_localize_script( 'usp',
                                             ->add_field('key')
                                                 ->setInput_type('text')
                                                 ->setTitle('')
-                                                ->setHtml_after('</p>Account registered for email: ' . State::getInstance()->data->account_name_ob . '</p>')
+                                        ->setHtml_after($key_validation_chunk)
                                         ->getParent( 2)
                                         ->add_group( 'firewall')
                                             ->add_field( 'fw' )

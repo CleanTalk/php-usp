@@ -10,8 +10,9 @@ require_once 'inc' . DIRECTORY_SEPARATOR . 'common.php';
 
 $usp = State::getInstance();
 
-if( ! $usp->key )
+if( ! $usp->data->key_is_ok) {
     return;
+}
 
 // Helper functions
 require_once( CT_USP_INC . 'functions.php' );
@@ -24,7 +25,7 @@ if( $usp->settings->fw || $usp->settings->waf || $usp->settings->bfp ){
 
 	// Security FireWall
 	$firewall = new \Cleantalk\USP\Uniforce\Firewall();
-	
+
 	if( $usp->settings->fw && $usp->fw_stats->entries )
 		$firewall->module__load( new \Cleantalk\USP\Uniforce\Firewall\FW(
 			array(
@@ -32,7 +33,7 @@ if( $usp->settings->fw || $usp->settings->waf || $usp->settings->bfp ){
 				'api_key' => $usp->key,
 			)
 		) );
-	
+
 	if( $usp->settings->waf )
 		$firewall->module__load( new \Cleantalk\USP\Uniforce\Firewall\WAF(
 			array(
@@ -44,9 +45,9 @@ if( $usp->settings->fw || $usp->settings->waf || $usp->settings->bfp ){
                 'state'   => $usp,
 			)
 		) );
-	
+
 	if( $usp->settings->bfp ){
-		
+
 		$firewall->module__load( new \Cleantalk\USP\Uniforce\Firewall\BFP(
             array(
                 'is_login_page' => \Cleantalk\USP\Uniforce\Firewall\BFP::is_login_page(),
@@ -58,17 +59,17 @@ if( $usp->settings->fw || $usp->settings->waf || $usp->settings->bfp ){
             )
 		) );
 	}
-	
+
 	//Pass the check if cookie is set.
 	foreach( $firewall->ip_array as $spbc_cur_ip ) {
 		if( Cookie::get( 'spbc_firewall_pass_key' ) == md5( $spbc_cur_ip . $usp->key ) )
 			return;
 	}
-	
+
 	if( $firewall->module__is_loaded__any() && ! usp__is_admin() ){
 		$firewall->run();
 	}
-	
+
 }
 
 // Catching buffer and doing protection
@@ -109,7 +110,7 @@ function uniforce_attach_js( $buffer ){
 			    \Cleantalk\USP\Uniforce\Firewall\BFP::update_log( 'login' );
 			    \Cleantalk\USP\Uniforce\Firewall\BFP::send_log( State::getInstance()->key );
 		    }
-		    
+
 	    }else{
 
 		    if( Cookie::get('spbct_authorized') ) {
