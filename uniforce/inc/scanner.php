@@ -304,15 +304,14 @@ function spbc_scanner__display__prepare_data__files( &$table ){
 				unset($row->actions['view_bad']);
 			if( isset( $row->status ) && $row->status === 'quarantined' )
 				unset($row->actions['quarantine']);
-
 			$table->items[] = array(
 				'cb'       => $row->fast_hash,
 				'uid'      => $row->fast_hash,
 				'size'     => substr(number_format($row->size, 2, ',', ' '), 0, -3),
 				'perms'    => $row->perms,
 				'mtime'    => date('M d Y H:i:s', $row->mtime),
-				'path'     => strlen($root.$row->path) >= 40
-					? '<div class="spbcShortText">...' . substr($row->path, -40) . '</div><div class="spbcFullText --hide">' . $root . $row->path . '</div>'
+				'path'     => strlen($root . $row->path) >= 120
+					? '<div class="spbcShortText">...' . substr($row->path, -120) . '</div><div class="spbcFullText --hide">' . $root . $row->path . '</div>'
 					: $root . $row->path,
 				'actions' => $row->actions,
 			);
