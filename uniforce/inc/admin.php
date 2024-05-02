@@ -566,7 +566,7 @@ function usp_do_save_settings() {
 	} unset($setting, $value);
 
     // validate the new key
-	$usp->data->key_is_ok = usp_check_account_status();
+	usp_check_account_status();
 
     // BFP actions
     if( $usp->settings->key ){
@@ -751,6 +751,7 @@ function processInvalidKeyState(State $usp)
     $usp->data->ip_license      = 0;
     $usp->data->valid           = 0;
     $usp->data->scanner->background_scan_stop = true;
+    $usp->data->key_is_ok = 0;
 
     // Deleting options and their files
     $usp->delete( 'scan_result' );
@@ -791,5 +792,6 @@ function processValidKeyState($usp, $result)
     $usp->data->account_name_ob = isset( $result['account_name_ob'] ) ? $result['account_name_ob'] : '';
     $usp->data->ip_license      = isset( $result['ip_license'] ) ? $result['ip_license'] : 0;
     $usp->data->valid           = isset( $result['valid'] ) ? $result['valid'] : 0;
+    $usp->data->key_is_ok       = $usp->data->moderate && $usp->data->valid ? 1 : 0;
     usp_install_cron();
 }
