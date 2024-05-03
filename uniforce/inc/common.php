@@ -5,7 +5,7 @@
  *
  * Sets all main constants
  *
- * Version: 3.9.0
+ * Version: 3.10.0
  */
 
 use Cleantalk\USP\Common\Err;
@@ -14,7 +14,7 @@ use Cleantalk\USP\Variables\Server;
 use Cleantalk\USP\Common\RemoteCalls;
 
 if( ! defined( 'SPBCT_PLUGIN' ) )     define( 'SPBCT_PLUGIN', 'uniforce' );
-if( ! defined( 'SPBCT_VERSION' ) )    define( 'SPBCT_VERSION', '3.9.0' );
+if( ! defined( 'SPBCT_VERSION' ) )    define( 'SPBCT_VERSION', '3.10.0' );
 if( ! defined( 'SPBCT_AGENT' ) )      define( 'SPBCT_AGENT', SPBCT_PLUGIN . '-' . str_replace( '.', '', SPBCT_VERSION ) );
 if( ! defined( 'SPBCT_USER_AGENT' ) ) define( 'SPBCT_USER_AGENT', 'Cleantalk-Security-Universal-Plugin/' . SPBCT_VERSION );
 
