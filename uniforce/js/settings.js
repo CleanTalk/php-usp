@@ -159,7 +159,10 @@ function save_settings(){
                 duration: 43200,
                 overlay: true,
                 closeConfirm: true,
-                easing: 'linear'
+                easing: 'linear',
+                callback: function(){
+                    location.href='?tab=settings';
+                }
             });
         }
     });
