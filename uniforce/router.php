@@ -11,7 +11,11 @@ require_once 'inc' . DIRECTORY_SEPARATOR . 'actions.php'; // Actions
 $first_load = 0;
 foreach ($_GET as $key => $value) {
 	if ($key == 'first_load') {
-		$first_load = (int)$value;
+		if ((int)$value !== 1) {
+			$first_load = 0;
+		} else {
+			$first_load = 1;
+		}
 	}
 }
 
