@@ -306,14 +306,66 @@ function usp_send_pass_to_email($to, $login, $pass)
  * Modify cron
  */
 function usp_install_cron(){
+    $tasks = [
+        'sfw_update' => [
+            'handler' => 'uniforce_fw_update',
+            'period' => 86400,
+            'next_call' => time() + 20,
+            'executed' => 0,
+            'last_executed' => 0,
+            'params' => [],
+        ],
+        'security_send_logs' => [
+            'handler' => 'uniforce_security_send_logs',
+            'period' => 3600,
+            'next_call' => null,
+            'executed' => 0,
+            'last_executed' => 0,
+            'params' => [],
+        ],
+        'fw_send_logs' => [
+            'handler' => 'uniforce_fw_send_logs',
+            'period' => 3600,
+            'next_call' => null,
+            'executed' => 0,
+            'last_executed' => 0,
+            'params' => [],
+        ],
+        'clean_black_lists' => [
+            'handler' => 'uniforce_clean_black_lists',
+            'period' => 86400,
+            'next_call' => null,
+            'executed' => 0,
+            'last_executed' => 0,
+            'params' => [],
+        ],
+        'update_signatures' => [
+            'handler' => 'usp_scanner__get_signatures',
+            'period' => 86400,
+            'next_call' => time() + 10,
+            'executed' => 0,
+            'last_executed' => 0,
+            'params' => [],
+        ],
+        'check_for_updates' => [
+            'handler' => 'usp_get_latest_version',
+            'period' => 86400,
+            'next_call' => time(),
+            'executed' => 0,
+            'last_executed' => 0,
+            'params' => [],
+        ],
+        'scanner_launch' => [
+            'handler' => 'usp_scanner__launch',
+            'period' => 86400,
+            'next_call' => time() + 86400,
+            'executed' => 0,
+            'last_executed' => 0,
+            'params' => [],
+        ]
+    ];
 
-	Cron::addTask( 'sfw_update', 'uniforce_fw_update', 86400, time() + 20 );
-	Cron::addTask( 'security_send_logs', 'uniforce_security_send_logs', 3600 );
-    Cron::addTask( 'fw_send_logs', 'uniforce_fw_send_logs', 3600 );
-    Cron::addTask( 'clean_black_lists', 'uniforce_clean_black_lists', 86400 );
-    Cron::addTask( 'update_signatures', 'usp_scanner__get_signatures', 86400, time() + 10 );
-    Cron::addTask( 'check_for_updates', 'usp_get_latest_version', 86400, time() );
-
+    Cron::saveTasks($tasks);
 }
 
 /**
@@ -451,19 +503,24 @@ function usp_do_login($apikey, $password, $email ) {
     // Simple brute force protection
     sleep(2);
 
+
     // If password is set in config
     if( $password ){
-
-        if( ( Post::get( 'login' ) == $apikey || Post::get( 'login' ) === $email ) && hash( 'sha256', trim( Post::get( 'password' ) ) ) == $password )
-            setcookie('authentificated', State::getInstance()->data->security_key, 0, '/', '', false, true);
-        else
+        if (
+            ( Post::get( 'login' ) == $apikey || Post::get( 'login' ) === $email ) &&
+            hash( 'sha256', trim( Post::get( 'password' ) ) ) == $password ) {
+            //if session cookies is cached will try to set cookie via js
+            $sec_key = State::getInstance()->data->security_key;
+            setcookie('authentificated', $sec_key, strtotime( '+30 days' ), '/', '', false, false);
+        }
+        else {
             Err::add('Incorrect login or password');
-
+        }
     // No match
-    }else
+    } else {
         Err::add('Incorrect login');
-
-    Err::check() or die(json_encode(array('passed' => true)));
+    }
+    Err::check() or die(json_encode(array('passed' => true, 'hash' => isset($sec_key) ? $sec_key : '')));
     die(Err::check_and_output( 'as_json' ));
 
 }
@@ -499,13 +556,22 @@ function usp_do_save_settings() {
 	// Recognizing new key
 	$new_key_is_set = $usp->settings->key !== $settings['key'];
 
+
+    if( $settings['scanner_auto_start'] != $usp->settings->scanner_auto_start ) {
+        if ($settings['scanner_auto_start'] == 1) {
+            Cron::updateTask( 'scanner_launch', 'usp_scanner__launch', 86400, time() + 86400 );
+        } else {
+            Cron::removeTask( 'scanner_launch');
+        }
+    }
+
 	// Set values
 	foreach ( $settings as $setting => $value) {
 		$usp->settings->$setting = $value;
 	} unset($setting, $value);
 
     // validate the new key
-	$usp->data->key_is_ok = usp_check_account_status();
+	usp_check_account_status();
 
     // BFP actions
     if( $usp->settings->key ){
@@ -536,7 +602,7 @@ function usp_do_save_settings() {
 	$usp->settings->save();
 
 	// FireWall actions
-	// Last in the list because it can overwrite the data in the the remote call it makes
+	// Last in the list because it can overwrite the data in the remote call it makes
 	if( ( $usp->settings->fw || $usp->settings->waf ) && $usp->settings->key ){
 
 		// Update SFW
@@ -589,37 +655,18 @@ function usp_check_account_status( $key = null ){
 		preg_replace( '/http[s]?:\/\//', '', Server::get( 'SERVER_NAME' ), 1 ),
 		'security'
 	);
-	if( ! empty( $result['error'] ) ){
-		Err::add('Checking key failed', $result['error']);
-		$usp->data->notice_show     = 0;
-		$usp->data->notice_renew    = 0;
-		$usp->data->notice_trial    = 0;
-		$usp->data->notice_review   = 0;
-		$usp->data->user_token      = '';
-		$usp->data->spam_count      = 0;
-		$usp->data->moderate_ip     = 0;
-		$usp->data->moderate        = 0;
-		$usp->data->service_id      = 0;
-		$usp->data->license_trial   = 0;
-		$usp->data->account_name = '';
-		$usp->data->account_name_ob = '';
-		$usp->data->ip_license      = 0;
-		$usp->data->valid           = 0;
+    $error = false;
+    if (! empty( $result['error']) ) {
+        $error = $result['error'];
+    } elseif ( isset($result['valid']) && $result['valid'] == 0 ){
+        $error = 'key is invalid';
+    }
+	if( false !== $error ){
+		Err::add('Checking key failed', $error);
+        processInvalidKeyState($usp);
 		// $usp->data->notice_were_updated = $result[''];
 	} else {
-		$usp->data->notice_show     = isset( $result['show_notice'] ) ? $result['show_notice'] : 0;
-		$usp->data->notice_renew    = isset( $result['renew'] ) ? $result['renew'] : 0;
-		$usp->data->notice_trial    = isset( $result['trial'] ) ? $result['trial'] : 0;
-		$usp->data->notice_review   = isset( $result['show_review'] ) ? $result['show_review'] : 0;
-		$usp->data->user_token      = isset( $result['user_token'] ) ? $result['user_token'] : '';
-		$usp->data->spam_count      = isset( $result['spam_count'] ) ? $result['spam_count'] : 0;
-		$usp->data->moderate_ip     = isset( $result['moderate_ip'] ) ? $result['moderate_ip'] : 0;
-		$usp->data->moderate        = isset( $result['moderate'] ) ? $result['moderate'] : 0;
-		$usp->data->service_id      = isset( $result['service_id'] ) ? $result['service_id'] : 0;
-		$usp->data->license_trial   = isset( $result['license_trial'] ) ? $result['license_trial'] : 0;
-		$usp->data->account_name_ob = isset( $result['account_name_ob'] ) ? $result['account_name_ob'] : '';
-		$usp->data->ip_license      = isset( $result['ip_license'] ) ? $result['ip_license'] : 0;
-		$usp->data->valid           = isset( $result['valid'] ) ? $result['valid'] : 0;
+        processValidKeyState($usp, $result);
 		// $usp->data->notice_were_updated = $result[''];
 	}
 
@@ -686,4 +733,70 @@ function usp_do_change_admin_password()
 
     Err::check() or die(json_encode(array('success' => true)));
     die(Err::check_and_output( 'as_json' ));
+}
+
+/**
+ * @param State $usp
+ * @return void
+ */
+function processInvalidKeyState(State $usp)
+{
+    $usp->data->notice_show     = 0;
+    $usp->data->notice_renew    = 0;
+    $usp->data->notice_trial    = 0;
+    $usp->data->notice_review   = 0;
+    $usp->data->user_token      = '';
+    $usp->data->spam_count      = 0;
+    $usp->data->moderate_ip     = 0;
+    $usp->data->moderate        = 0;
+    $usp->data->service_id      = 0;
+    $usp->data->license_trial   = 0;
+    $usp->data->account_name = '';
+    $usp->data->account_name_ob = '';
+    $usp->data->ip_license      = 0;
+    $usp->data->valid           = 0;
+    $usp->data->scanner->background_scan_stop = true;
+    $usp->data->key_is_ok = 0;
+
+    // Deleting options and their files
+    $usp->delete( 'scan_result' );
+    $usp->delete( 'fw_stats' );
+
+    $usp->data->stat->scanner_background_log = $usp->default_data['stat']['scanner_background_log'];
+    @file_put_contents(
+        Cron::CRON_FILE,
+        "<?php\n\n\$uniforce_tasks = array ();"
+    );
+    // Deleting FW data
+    $db = new \Cleantalk\USP\File\FileDB( 'fw_nets' );
+    $db->delete();
+    $db->deleteTemp();
+    require 'cron_functions.php';
+    uniforce_clean_black_lists();
+
+    // Deleting any logs
+    usp_uninstall_logs();
+}
+
+/**
+ * @param $usp
+ * @return void
+ */
+function processValidKeyState($usp, $result)
+{
+    $usp->data->notice_show     = isset( $result['show_notice'] ) ? $result['show_notice'] : 0;
+    $usp->data->notice_renew    = isset( $result['renew'] ) ? $result['renew'] : 0;
+    $usp->data->notice_trial    = isset( $result['trial'] ) ? $result['trial'] : 0;
+    $usp->data->notice_review   = isset( $result['show_review'] ) ? $result['show_review'] : 0;
+    $usp->data->user_token      = isset( $result['user_token'] ) ? $result['user_token'] : '';
+    $usp->data->spam_count      = isset( $result['spam_count'] ) ? $result['spam_count'] : 0;
+    $usp->data->moderate_ip     = isset( $result['moderate_ip'] ) ? $result['moderate_ip'] : 0;
+    $usp->data->moderate        = isset( $result['moderate'] ) ? $result['moderate'] : 0;
+    $usp->data->service_id      = isset( $result['service_id'] ) ? $result['service_id'] : 0;
+    $usp->data->license_trial   = isset( $result['license_trial'] ) ? $result['license_trial'] : 0;
+    $usp->data->account_name_ob = isset( $result['account_name_ob'] ) ? $result['account_name_ob'] : '';
+    $usp->data->ip_license      = isset( $result['ip_license'] ) ? $result['ip_license'] : 0;
+    $usp->data->valid           = isset( $result['valid'] ) ? $result['valid'] : 0;
+    $usp->data->key_is_ok       = $usp->data->moderate && $usp->data->valid ? 1 : 0;
+    usp_install_cron();
 }

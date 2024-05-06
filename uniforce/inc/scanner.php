@@ -6,6 +6,7 @@ use Cleantalk\USP\DB;
 use Cleantalk\USP\Layout\ListTable;
 use Cleantalk\USP\Scanner\Scanner;
 use Cleantalk\USP\Uniforce\API;
+use Cleantalk\USP\Uniforce\Cron;
 use Cleantalk\USP\Uniforce\Helper;
 use Cleantalk\USP\Variables\Post;
 
@@ -303,15 +304,14 @@ function spbc_scanner__display__prepare_data__files( &$table ){
 				unset($row->actions['view_bad']);
 			if( isset( $row->status ) && $row->status === 'quarantined' )
 				unset($row->actions['quarantine']);
-
 			$table->items[] = array(
 				'cb'       => $row->fast_hash,
 				'uid'      => $row->fast_hash,
 				'size'     => substr(number_format($row->size, 2, ',', ' '), 0, -3),
 				'perms'    => $row->perms,
 				'mtime'    => date('M d Y H:i:s', $row->mtime),
-				'path'     => strlen($root.$row->path) >= 40
-					? '<div class="spbcShortText">...' . substr($row->path, -40) . '</div><div class="spbcFullText --hide">' . $root . $row->path . '</div>'
+				'path'     => strlen($root . $row->path) >= 120
+					? '<div class="spbcShortText">...' . substr($row->path, -120) . '</div><div class="spbcFullText --hide">' . $root . $row->path . '</div>'
 					: $root . $row->path,
 				'actions' => $row->actions,
 			);
@@ -413,6 +413,17 @@ function usp_scanner__display(){
 		return;
 	}
 
+    //get next scan launch block
+    $scanner_next_launch = Cron::getTaskNextCall('scanner_launch', 'Y-m-d H:i:s');
+    if ($scanner_next_launch) {
+        echo '<p class="spbc_hint text-center">';
+        printf(
+            uniforce_translate('Next automatic scan is scheduled on: %s', 'security-malware-firewall'),
+            $scanner_next_launch
+        );
+        echo '</p>';
+    }
+
 	// Info about last scanning
 	echo '<p class="spbc_hint text-center">';
 		if( !$usp->data->stat->scanner->last_scan )
@@ -428,6 +439,84 @@ function usp_scanner__display(){
 
 		}
 	echo '</p>';
+
+    //background log layout
+    $background_log = is_object($usp->data->stat->scanner_background_log) && !empty($usp->data->stat->scanner_background_log->convertToArray())
+        ? $usp->data->stat->scanner_background_log->convertToArray()
+        : array();
+    $has_ran = !empty($background_log) && !empty($background_log['last_executed']);
+    if ($has_ran) {
+        $background_log_formatted = array();
+        foreach ($background_log as $stage => $values) {
+            $additional_info = '';
+            if (!empty($values['processed'])) {
+                $additional_info = ', files processed on last iteration ' . $values['processed'];
+            }
+            if (!empty($values['updated'])) {
+                $additional_info = ', signatures updated ' . $values['updated'];
+            }
+            if (!empty($values['time'])) {
+                $additional_info = ', on ' . date('Y-m-d H:i:s', (int)$values['time']);
+            }
+            switch ($stage) {
+                case 'create_db':
+                    $stage_name = 'Database creating';
+                    break;
+                case 'clear_table':
+                    $stage_name = 'Database clearing';
+                    break;
+                case 'get_signatures':
+                    $stage_name = 'Signatures getting';
+                    break;
+                case 'surface_analysis':
+                    $stage_name = 'Surface analysis';
+                    break;
+                case 'get_approved':
+                    $stage_name = 'Approved hashes get';
+                    break;
+                case 'signature_analysis':
+                    $stage_name = 'Signature analysis';
+                    break;
+                case 'heuristic_analysis':
+                    $stage_name = 'Heuristic analysis';
+                    break;
+                case 'auto_cure':
+                    $stage_name = 'Automatic cure';
+                    break;
+                //'frontend_analysis',
+                //'outbound_links',
+                case 'send_results':
+                    $stage_name = 'Sending results';
+                    break;
+                case 'last_executed':
+                    $stage_name = 'Last run';
+                    break;
+                default:
+                    $stage_name = $stage;
+            }
+            $background_log_formatted[$stage_name] = array(
+                'success' => isset($values['end']) && $values['end'] ? '<span style="color: green">OK</span>' : '<span style="color: red">FAIL</span>',
+                'additional_info' => $additional_info,
+            );
+        }
+        $background_templated = '';
+        foreach ($background_log_formatted as $stage => $states)
+        {
+            $background_templated .= '<span style="font-size: small; display: block">';
+            $background_templated .= $stage . ': ' . $states['success'] . $states['additional_info'];
+            $background_templated .= '</span>';
+        }
+        if (!empty($background_templated)) {
+            echo '<p id="background_scan_log_toggler" class="spbc_hint text-center"><a>Click to show/hide last background scheduled scan log</a></p>';
+            $template = '
+        <div id="background_scan_log" style="border: 1px solid lightgrey; padding: 5px; display: none">
+            %s
+        </div>
+        ';
+            printf($template, $background_templated);
+        }
+    }
+
 
 	// Statistics link
 	echo '<p class="spbc_hint text-center">';

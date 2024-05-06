@@ -154,7 +154,7 @@ class Field extends Element {
 		     .($this->child_fields ? ' onchange="uspSettingsDependencies([\''.implode("','",$this->child_fields).'\'])"' : '')
 		     .' />';
 		echo isset($this->title)
-			? '<label for="ctusp_setting---'.$this->getName().'" class="ctusp_field-title ctusp_field-title--'.$this->input_type.'">'.$this->title.'</label>'
+			? '<label for="ctusp_field---'.$this->getName().'" class="ctusp_field-title ctusp_field-title--'.$this->input_type.'">'.$this->title.'</label>'
 			: '';
 		echo $this->description
 			?'<div class="ctusp_field-description">'. $this->description .'</div>'
