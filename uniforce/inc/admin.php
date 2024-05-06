@@ -503,19 +503,24 @@ function usp_do_login($apikey, $password, $email ) {
     // Simple brute force protection
     sleep(2);
 
+
     // If password is set in config
     if( $password ){
-
-        if( ( Post::get( 'login' ) == $apikey || Post::get( 'login' ) === $email ) && hash( 'sha256', trim( Post::get( 'password' ) ) ) == $password )
-            setcookie('authentificated', State::getInstance()->data->security_key, 0, '/', '', false, true);
-        else
+        if (
+            ( Post::get( 'login' ) == $apikey || Post::get( 'login' ) === $email ) &&
+            hash( 'sha256', trim( Post::get( 'password' ) ) ) == $password ) {
+            //if session cookies is cached will try to set cookie via js
+            $sec_key = State::getInstance()->data->security_key;
+            setcookie('authentificated', $sec_key, strtotime( '+30 days' ), '/', '', false, false);
+        }
+        else {
             Err::add('Incorrect login or password');
-
+        }
     // No match
-    }else
+    } else {
         Err::add('Incorrect login');
-
-    Err::check() or die(json_encode(array('passed' => true)));
+    }
+    Err::check() or die(json_encode(array('passed' => true, 'hash' => isset($sec_key) ? $sec_key : '')));
     die(Err::check_and_output( 'as_json' ));
 
 }
