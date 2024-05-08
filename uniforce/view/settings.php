@@ -117,10 +117,14 @@ usp_localize_script( 'usp',
             <div class="col-sm-12 settings-box">
                 <div class="clearfix"></div>
 
-                <!-- Uninstall Logout buttons -->
-                <div class="settings-links">
-                    <a href="#" id='btn-logout'>Log out </a>
-                </div>
+                <?php if ( ! CT_USP_UNIFORCE_LITE ) { ?>
+
+                    <!-- Uninstall Logout buttons -->
+                    <div class="settings-links">
+                        <a href="#" id='btn-logout'>Log out </a>
+                    </div>
+
+                <?php } ?>
 
                 <!-- Icon and title -->
                 <div class="page-icon animated bounceInDown">

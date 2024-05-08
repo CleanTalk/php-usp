@@ -666,29 +666,6 @@ function usp_scanner__display___no_sql(){
 
 	$usp = State::getInstance();
 
-	// Key is bad
-	if(!$usp->valid) {
-
-		$button = '<input type="button" class="button button-primary" value="' . uniforce_translate( 'To setting', 'security-malware-firewall' ) . '"  />';
-		$link   = sprintf(
-			'<a	href="#" onclick="usp_switchTab(\'settings\', {target: \'#ctusp_field---key\', action: \'highlight\', times: 3});">%s</a>',
-			$button
-		);
-		echo '<div style="margin: 10px auto; text-align: center;"><h3 style="margin: 5px; display: inline-block;">' . uniforce_translate( 'Please, enter valid API key.', 'security-malware-firewall' ) . '</h3>' . $link . '</div>';
-
-		return;
-	}
-
-	// Key is ok
-	if ( $usp->valid && ! $usp->moderate ) {
-
-		$button = '<input type="button" class="button button-primary" value="' . uniforce_translate( 'RENEW', 'security-malware-firewall' ) . '"  />';
-		$link   = sprintf( '<a target="_blank" href="https://cleantalk.org/my/bill/security?cp_mode=security&utm_source=wp-backend&utm_medium=cpc&utm_campaign=WP%%20backend%%20trial_security&user_token=%s">%s</a>', $usp->user_token, $button );
-		echo '<div style="margin-top: 10px;"><h3 style="margin: 5px; display: inline-block;">' . uniforce_translate( 'Please renew your security license.', 'security-malware-firewall' ) . '</h3>' . $link . '</div>';
-
-		return;
-	}
-
 	// Key is ok
 	if ( ! $usp->settings->scanner_heuristic_analysis && ! $usp->settings->scanner_signature_analysis ) {
 

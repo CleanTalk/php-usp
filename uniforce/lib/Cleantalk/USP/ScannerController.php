@@ -1122,6 +1122,11 @@ class ScannerController {
 
 		$usp = State::getInstance();
 
+        if ( ! $usp->key ) {
+            $result['end'] = 1;
+            return $result;
+        }
+
 		$total_scanned = $total_scanned ? $total_scanned : Get::get( 'total_scanned' );
 
 		$files = $usp->scan_result->convertToArray();
