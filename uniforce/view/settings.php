@@ -146,110 +146,111 @@ usp_localize_script( 'usp',
 
                             $settings = new \Cleantalk\USP\Layout\Settings();
 
-                            // Tab summary
-                            $settings
-                                ->add_tab('summary')
+                            if ( ! ( isset($_GET['first_load']) && $_GET['first_load'] === '1' )  ) {
+                                // Tab summary
+                                $settings
+                                    ->add_tab('summary')
                                     ->setActive()
                                     ->add_group('your_security_dashboard')
-                                        ->add_plain('dashboard')
-                                            ->setHtml('<p class="text-center">Check detailed statistics on <a href="https://cleantalk.org/my' . ( State::getInstance()->data->user_token ? '?cp_mode=security&user_token=' . State::getInstance()->data->user_token : '') . '" target="_blank">your Security dashboard</a></p>')
+                                    ->add_plain('dashboard')
+                                    ->setHtml('<p class="text-center">Check detailed statistics on <a href="https://cleantalk.org/my' . ( State::getInstance()->data->user_token ? '?cp_mode=security&user_token=' . State::getInstance()->data->user_token : '') . '" target="_blank">your Security dashboard</a></p>')
                                     ->getParent(2)
                                     ->add_group('plugin_state')
-                                        ->add_plain('123')
-                                            ->setCallback('usp_settings__plugin_state')
-                                                ->getParent(2)
+                                    ->add_plain('123')
+                                    ->setCallback('usp_settings__plugin_state')
+                                    ->getParent(2)
                                     ->add_group('statistics')
-                                        ->add_plain('stat')
-                                            ->setCallback('usp_settings__show_fw_statistics')
+                                    ->add_plain('stat')
+                                    ->setCallback('usp_settings__show_fw_statistics')
                                     ->getParent(2)
-                                        ->add_group('malware_scanner_statistics')
-                                            ->add_plain('stat')
-                                                ->setCallback('usp_settings__show_scanner_statistics')
+                                    ->add_group('malware_scanner_statistics')
+                                    ->add_plain('stat')
+                                    ->setCallback('usp_settings__show_scanner_statistics')
                                     ->getParent(2)
-                                        ->add_group('detected_cms')
-                                            ->add_plain('detected_cms')
-                                                ->setCallback('ctusp_settings__show_cms')
+                                    ->add_group('detected_cms')
+                                    ->add_plain('detected_cms')
+                                    ->setCallback('ctusp_settings__show_cms')
                                     ->getParent(2)
                                     ->add_group('modified_files')
-                                        ->add_plain('modified_files')
-                                            ->setCallback('ctusp_settings__show_modified_files');
+                                    ->add_plain('modified_files')
+                                    ->setCallback('ctusp_settings__show_modified_files');
 
                                 // Settings
                                 $settings
                                     ->add_tab( 'settings' )
-                                        ->setHtml_before('<form id="usp_form-settings" action="javascript:void(null);">')
-                                        ->setHtml_after('</form>')
-                                        ->add_group('access_key')
-                                            ->add_field('key')
-                                                ->setInput_type('text')
-                                                ->setTitle('')
-                                                ->setHtml_after('</p>Account registered for email: ' . State::getInstance()->data->account_name_ob . '</p>')
-                                        ->getParent( 2)
-                                        ->add_group( 'firewall')
-                                            ->add_field( 'fw' )
-                                                ->setTitle('Security Firewall')
-                                                ->setDescription('Firewall filters requests from malicious IP addresses.')
-                                            ->getParent()
-                                            ->add_field('waf')
-                                                ->setTitle('Web Application Firewall')
-                                                ->setDescription('Catches dangerous stuff like: XSS, MySQL-injections and malicious uploaded files.')
-                                        ->getParent(2)
-                                        ->add_group('miscellaneous')
-                                            ->add_field( 'bfp')
-                                                ->setTitle('Bruteforce protection')
-                                                ->setDescription('Bruteforce protection for login forms.')
-                                        ->getParent()
-                                            ->add_field('bfp_admin_page')
-                                                ->setInput_type('text')
-                                                ->setTitle('Admin page URI')
-                                                ->setDescription('Specify the site admin area page address to protect it from brute-force attacks. <br />Example: http://yoursite.com/admin_area')
-                                        ->getParent()
-                                            ->add_field('bfp_login_form_fields')
-                                                ->setInput_type('text')
-                                                ->setTitle('Add the field names presented in the login form (For unknown CMS)')
-                                                ->setDescription('Specify the unique fields names of the login form. These fields input will be checked by brute-force protection. No quotes, separated by comma. <br /> Example: user_name_custom, user_pwd_custom')
-	                                    ->getParent( 2)
-	                                    ->add_group( 'malware_scanner')
-                                            ->add_field( 'scanner_auto_start' )
-                                                ->setTitle('Automatically start scanner')
-                                                ->setDescription('Scan website automatically each 24 hours.')
-                                            ->getParent()
-                                            ->add_field('scanner_heuristic_analysis')
-                                                ->setTitle('Heuristic analysis')
-                                                ->setDescription('Will search for dangerous code in modified file unknown files.')
-                                            ->getParent()
-                                            ->add_field('scanner_signature_analysis')
-                                                ->setTitle('Signature analysis')
-                                                ->setDescription('Will search for known malicious signatures in files.')
-                                        ->getParent( 2)
-                                        ->add_group('Change password')
-                                            ->add_field('old_password')
-                                                ->set_title('Type the old password')
-                                                ->setInput_type('password')
-                                            ->getParent()
-                                            ->add_field('new_password')
-                                                ->set_title('Type the new password')
-                                                ->setInput_type('password')
-                                            ->getParent()
-                                            ->add_field('new_password_confirm')
-                                                ->set_title('Confirm the new password')
-                                                ->setInput_type('password')
-                                            ->getParent()
-                                            ->add_field('change_admin_password')
-                                                ->setInput_type('button')
-                                                ->setTitle('Change password')
-                                                ->setDescription('Changing admin password<img class="preloader" src="img/preloader.gif">')
-                                            ->getParent()
-                                        ->add_group( 'Danger Zone' )
-                                            ->add_field( 'uninstall' )
-                                                ->setInput_type( 'button' )
-                                                ->setDisabled( true )
-                                                ->setTitle( 'Uninstall' )
-                                                ->setDescription( 'Completely uninstall the module from site.' )
-	                                    ->getParent()
-                                        ->add_plain()
-                                            ->setHtml(
-                                                '<input
+                                    ->setHtml_before('<form id="usp_form-settings" action="javascript:void(null);">')
+                                    ->setHtml_after('</form>')
+                                    ->add_group('access_key')
+                                    ->add_field('key')
+                                    ->setInput_type('text')
+                                    ->setTitle('')
+                                    ->setHtml_after('</p>Account registered for email: ' . State::getInstance()->data->account_name_ob . '</p>')
+                                    ->getParent( 2)
+                                    ->add_group( 'firewall')
+                                    ->add_field( 'fw' )
+                                    ->setTitle('Security Firewall')
+                                    ->setDescription('Firewall filters requests from malicious IP addresses.')
+                                    ->getParent()
+                                    ->add_field('waf')
+                                    ->setTitle('Web Application Firewall')
+                                    ->setDescription('Catches dangerous stuff like: XSS, MySQL-injections and malicious uploaded files.')
+                                    ->getParent(2)
+                                    ->add_group('miscellaneous')
+                                    ->add_field( 'bfp')
+                                    ->setTitle('Bruteforce protection')
+                                    ->setDescription('Bruteforce protection for login forms.')
+                                    ->getParent()
+                                    ->add_field('bfp_admin_page')
+                                    ->setInput_type('text')
+                                    ->setTitle('Admin page URI')
+                                    ->setDescription('Specify the site admin area page address to protect it from brute-force attacks. <br />Example: http://yoursite.com/admin_area')
+                                    ->getParent()
+                                    ->add_field('bfp_login_form_fields')
+                                    ->setInput_type('text')
+                                    ->setTitle('Add the field names presented in the login form (For unknown CMS)')
+                                    ->setDescription('Specify the unique fields names of the login form. These fields input will be checked by brute-force protection. No quotes, separated by comma. <br /> Example: user_name_custom, user_pwd_custom')
+                                    ->getParent( 2)
+                                    ->add_group( 'malware_scanner')
+                                    ->add_field( 'scanner_auto_start' )
+                                    ->setTitle('Automatically start scanner')
+                                    ->setDescription('Scan website automatically each 24 hours.')
+                                    ->getParent()
+                                    ->add_field('scanner_heuristic_analysis')
+                                    ->setTitle('Heuristic analysis')
+                                    ->setDescription('Will search for dangerous code in modified file unknown files.')
+                                    ->getParent()
+                                    ->add_field('scanner_signature_analysis')
+                                    ->setTitle('Signature analysis')
+                                    ->setDescription('Will search for known malicious signatures in files.')
+                                    ->getParent( 2)
+                                    ->add_group('Change password')
+                                    ->add_field('old_password')
+                                    ->set_title('Type the old password')
+                                    ->setInput_type('password')
+                                    ->getParent()
+                                    ->add_field('new_password')
+                                    ->set_title('Type the new password')
+                                    ->setInput_type('password')
+                                    ->getParent()
+                                    ->add_field('new_password_confirm')
+                                    ->set_title('Confirm the new password')
+                                    ->setInput_type('password')
+                                    ->getParent()
+                                    ->add_field('change_admin_password')
+                                    ->setInput_type('button')
+                                    ->setTitle('Change password')
+                                    ->setDescription('Changing admin password<img class="preloader" src="img/preloader.gif">')
+                                    ->getParent()
+                                    ->add_group( 'Danger Zone' )
+                                    ->add_field( 'uninstall' )
+                                    ->setInput_type( 'button' )
+                                    ->setDisabled( true )
+                                    ->setTitle( 'Uninstall' )
+                                    ->setDescription( 'Completely uninstall the module from site.' )
+                                    ->getParent()
+                                    ->add_plain()
+                                    ->setHtml(
+                                        '<input
                                                     id="ctusp_field---uninstall_confirmation"
                                                     form="none"
                                                     type="text"
@@ -257,27 +258,26 @@ usp_localize_script( 'usp',
                                                     class="" value=""
                                                     style="display: inline-block; width: 220px; padding: 6px 12px; border-radius: 4px; border: 1px #999 solid;">
                                                  ')
-                                        ->getParent(2)
-                                        ->add_plain()
-                                            ->setHtml(
-                                                '<div class="text-center">
+                                    ->getParent(2)
+                                    ->add_plain()
+                                    ->setHtml(
+                                        '<div class="text-center">
                                                     <button type="submit" class="btn btn-setup" id=\'btn-save-settings\' name="action" value="save_settings">Save</button>
                                                     <img class="preloader" src="img/preloader.gif">
                                                 </div>');
+                            }
+                            // Controller
+                            $settings
+                                ->add_tab( 'malware_scanner' )
+                                ->add_group( 'common')
+                                ->setTitle('')
+                                ->add_group( 'common2')
+                                ->setCallback(
+                                    'usp_scanner__display'
+                                    . ( State::getInstance()->data->no_sql ? '___no_sql' : '' )
+                                );
 
-                                // Controller
-                                $settings
-                                     ->add_tab( 'malware_scanner' )
-                                        ->add_group( 'common')
-                                            ->setTitle('')
-	                                        ->add_group( 'common2')
-                                            ->setCallback(
-                                                    'usp_scanner__display'
-                                                  . ( State::getInstance()->data->no_sql ? '___no_sql' : '' )
-                                            );
-
-                                $settings->draw();
-
+                            $settings->draw();
                             ?>
                         </div>
                     </div>
