@@ -146,7 +146,7 @@ usp_localize_script( 'usp',
 
                             $settings = new \Cleantalk\USP\Layout\Settings();
 
-                            if ( ! ( isset($_GET['first_load']) && $_GET['first_load'] === '1' )  ) {
+                            if ( ! CT_USP_UNIFORCE_LITE  ) {
                                 // Tab summary
                                 $settings
                                     ->add_tab('summary')

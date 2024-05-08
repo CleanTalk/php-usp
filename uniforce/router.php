@@ -8,32 +8,21 @@ require_once 'uniforce.php';
 
 require_once 'inc' . DIRECTORY_SEPARATOR . 'actions.php'; // Actions
 
-$first_load = 0;
-foreach ($_GET as $key => $value) {
-	if ($key == 'first_load') {
-		if ((int)$value !== 1) {
-			$first_load = 0;
-		} else {
-			$first_load = 1;
-		}
-	}
-}
-
 // URL ROUTING
 switch (true){
 	// Installation
-	case \Cleantalk\USP\Common\State::getInstance()->data->is_installed === false && $first_load === 0:
+	case \Cleantalk\USP\Common\State::getInstance()->data->is_installed === false && ! CT_USP_UNIFORCE_LITE:
 		$page = 'install';
 		break;
 	// Login
-	case \Cleantalk\USP\Variables\Cookie::get('authentificated') !== \Cleantalk\USP\Common\State::getInstance()->data->security_key && $first_load === 0:
+	case \Cleantalk\USP\Variables\Cookie::get('authentificated') !== \Cleantalk\USP\Common\State::getInstance()->data->security_key && ! CT_USP_UNIFORCE_LITE:
         $additional_js = array(
             'ct_js_test',
         );
 	    $page = 'login';
         break;
     // Settings
-    case \Cleantalk\USP\Variables\Cookie::get('authentificated') === \Cleantalk\USP\Common\State::getInstance()->data->security_key || $first_load === 1:
+    case \Cleantalk\USP\Variables\Cookie::get('authentificated') === \Cleantalk\USP\Common\State::getInstance()->data->security_key || CT_USP_UNIFORCE_LITE:
 	    $additional_js = array(
 	    	'scanner-plugin',
 	    	'scanner',
