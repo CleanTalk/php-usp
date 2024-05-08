@@ -884,9 +884,10 @@ class ScannerController {
 					break;
 				}
 
-				$result = self::action__scanner__scan_heuristic___no_sql(
+				$result = self::action__scanner__heuristic_analysis___no_sql(
 					(int) Get::get('offset'),
-					10
+					10,
+                    substr( CT_USP_SITE_ROOT, 0, - 1 )
 				);
 
 				if(empty($result['error'])){

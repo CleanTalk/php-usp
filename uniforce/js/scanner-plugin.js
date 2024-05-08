@@ -282,6 +282,13 @@ class spbc_Scanner{
             no_sql: this.settings['no_sql'],
         };
 
+        // Check UniforceLite installer
+        let uriParams = new URL(document.location.toString()).searchParams;
+        let uniforceLite = uriParams.get("uniforce_lite");
+        if ( uniforceLite === '1' ) {
+            data.uniforce_lite = 1;
+        }
+
         var params = {
             data: data,
             type: 'GET',
