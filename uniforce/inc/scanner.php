@@ -695,14 +695,16 @@ function usp_scanner__display___no_sql(){
 	}
 	echo '</p>';
 
-	// Statistics link
-	echo '<p class="spbc_hint text-center">';
-	echo sprintf(
-		uniforce_translate('%sView all scan results for this website%s', 'security-malware-firewall'),
-		'<a target="blank" href="https://cleantalk.org/my/logs_mscan?service='.$usp->service_id . '&user_token='. Cleantalk\USP\Common\State::getInstance()->user_token .'">',
-		'</a>'
-	);
-	echo '</p>';
+    if ( ! CT_USP_UNIFORCE_LITE ) {
+        // Statistics link
+        echo '<p class="spbc_hint text-center">';
+        echo sprintf(
+            uniforce_translate('%sView all scan results for this website%s', 'security-malware-firewall'),
+            '<a target="blank" href="https://cleantalk.org/my/logs_mscan?service='.$usp->service_id . '&user_token='. Cleantalk\USP\Common\State::getInstance()->user_token .'">',
+            '</a>'
+        );
+        echo '</p>';
+    }
 
 	// Start scan button
 	echo '<div style="text-align: center;">'
