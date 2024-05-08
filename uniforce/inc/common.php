@@ -48,9 +48,6 @@ define( 'CT_USP_URI',      'http://' . Server::get('HTTP_HOST') . preg_replace( 
 $result = parse_url( Server::get('REQUEST_URI') );
 define( 'CT_USP_AJAX_URI', isset( $result['path'] ) ? $result['path'] : '/uniforce/router.php' );
 
-// Uniforce Lite installer
-define('CT_USP_UNIFORCE_LITE', isset($_GET['uniforce_lite']) && $_GET['uniforce_lite'] === '1');
-
 // Load settings, data and remote calls data
 new \Cleantalk\USP\Common\State( 'settings', 'data', 'remote_calls', 'fw_stats' );
 
