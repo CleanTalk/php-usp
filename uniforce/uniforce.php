@@ -81,14 +81,27 @@ if( Cookie::get('spbct_authorized') )
 
 function uniforce_attach_js( $buffer ){
     global $usp_is_js_attached;
+
+    //init custom ajax event flag
+    $custom_ajax_flag = false;
+
     if ($usp_is_js_attached){
         return $buffer;
     }
 
-    if(
+    //phpBB ajax detection on superglobals deactivated
+    if (State::getInstance()->detected_cms === 'phpBB') {
+        global $request;
+        if (!empty($request) && is_object($request) && method_exists($request, 'is_ajax')) {
+            $custom_ajax_flag = $request->is_ajax();
+        }
+    }
+
+    if (
+        !$custom_ajax_flag &&
         !(isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') // No ajax
         && preg_match('/^\s*(<!doctype|<!DOCTYPE|<html)/i', $buffer) == 1 // Only for HTML documents
-    ){
+    ) {
         $html_addition =
             '<script>var spbct_checkjs_val = "' . md5( State::getInstance()->key ) . '";</script>'
             .'<script src="/uniforce/js/ct_js_test.js"></script>'
