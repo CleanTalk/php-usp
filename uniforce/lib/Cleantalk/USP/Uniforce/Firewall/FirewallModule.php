@@ -136,6 +136,9 @@ class FirewallModule extends \Cleantalk\USP\Security\Firewall\FirewallModule {
 			case 'DENY_BY_WAF_EXPLOIT':	$reason = uniforce_translate('Blocked by Web Application Firewall: Exploit detected.',       'security-malware-firewall'); break;
 			case 'DENY_BY_WAF_FILE':    $reason = uniforce_translate('Blocked by Web Application Firewall: Malicious files upload.', 'security-malware-firewall'); break;
 			case 'DENY_BY_BFP':         $reason = uniforce_translate('Blocked by BruteForce Protection: Too many invalid logins.',   'security-malware-firewall'); break;
+            case 'PASS_BY_TRUSTED_NETWORK': $reason = uniforce_translate('Pass by trusted network', 'security-malware-firewall'); break;
+            case 'PASS_BY_WHITELIST':   $reason = uniforce_translate('Pass by whitelisted', 'security-malware-firewall'); break;
+            case 'PASS_AS_SKIPPED_NETWORK': $reason = uniforce_translate('Pass by skipped network', 'security-malware-firewall'); break;
 			default :                   $reason = uniforce_translate('Blacklisted', 'security-malware-firewall');                      break;
 		}
 		
