@@ -141,6 +141,10 @@ class FirewallModule extends \Cleantalk\USP\Security\Firewall\FirewallModule {
             case 'PASS_AS_SKIPPED_NETWORK': $reason = uniforce_translate('Pass by skipped network', 'security-malware-firewall'); break;
 			default :                   $reason = uniforce_translate('Blacklisted', 'security-malware-firewall');                      break;
 		}
+
+        if ( $result['is_personal'] ) {
+            $reason .= ' ' . uniforce_translate('by Personal Lists', 'security-malware-firewall');
+        }
 		
 		if( $this->die_page__file ){
 			
