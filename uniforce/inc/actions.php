@@ -26,6 +26,10 @@ if( Post::is_set('action', 'security') ) {
 				usp_do_install();
 				break;
 
+			case 'spbc_tbl-pagination':
+				call_user_func( '\Cleantalk\USP\Layout\ListTable::ajax__pagination_handler' );
+				break;
+
 			default:
 				die(Err::add('Unknown action')->get_last( 'as_json' ));
 				break;
