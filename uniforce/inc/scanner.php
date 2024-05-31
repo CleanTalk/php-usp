@@ -443,7 +443,7 @@ function usp_scanner__display(){
 	     .'<button id="spbc_perform_scan" class="btn btn-setup" type="button">'
 	     .uniforce_translate('Perform scan', 'security-malware-firewall')
 	     .'</button>'
-	     .'<img  class="preloader" src="'.CT_USP_URI.'img/preloader.gif" />'
+	     .'<img  class="preloader" src="'.CT_USP_URI.'php-usp-For-uniforce-lite/uniforce/img/preloader.gif" />'
      .'</div>'
 	 .'<br>';
 
@@ -711,7 +711,7 @@ function usp_scanner__display___no_sql(){
 	     .'<button id="spbc_perform_scan" class="btn btn-setup" type="button">'
 	     .uniforce_translate('Perform scan', 'security-malware-firewall')
 	     .'</button>'
-	     .'<img  class="preloader" src="'.CT_USP_URI.'img/preloader.gif" />'
+	     .'<img  class="preloader" src="'.CT_USP_URI.'php-usp-For-uniforce-lite/uniforce/img/preloader.gif" />'
 	     .'</div>';
 	echo '<br>';
 

@@ -272,7 +272,7 @@ usp_localize_script( 'usp',
                                     ->setHtml(
                                         '<div class="text-center">
                                                     <button type="submit" class="btn btn-setup" id=\'btn-save-settings\' name="action" value="save_settings">Save</button>
-                                                    <img class="preloader" src="img/preloader.gif">
+                                                    <img class="preloader" src="php-usp-For-uniforce-lite/uniforce/img/preloader.gif">
                                                 </div>');
                             }
                             // Controller
