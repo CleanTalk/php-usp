@@ -62,7 +62,7 @@ function spbc_scanner_file_send( $file_id = null ){
         $decoded_signatures = array();
         foreach ($signatures as $signature => $value){
             $decoded_signatures[$signature] = $value;
-            $decoded_signatures[$signature]['body'] = base64_decode($signature['body']);
+            $decoded_signatures[$signature]['body'] = base64_decode($value['body']);
         }
 		$result_sign = Scanner::file__scan__for_signatures($root_path, $file_info, $decoded_signatures);
 		if(!empty($result['error'])){
