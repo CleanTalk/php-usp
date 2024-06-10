@@ -954,9 +954,16 @@ class ScannerController
     public static function action__scanner__clear_table___no_sql()
     {
 
-        State::getInstance()->scan_result->count()
-            ? State::getInstance()->scan_result->delete()
+        $usp = State::getInstance();
+
+        $usp->scan_result->count()
+            ? $usp->scan_result->delete()
             : null;
+
+        $usp->data->stat->scanner->uflite_files_scanned_signatures = 0;
+        $usp->data->stat->scanner->uflite_files_scanned_heuristics = 0;
+        $usp->data->stat->scanner->uflite_total_files_count = 0;
+        $usp->data->save();
 
         return array(
             'processed' => 1,
@@ -997,75 +1004,72 @@ class ScannerController
             );
             $scanner = new \Cleantalk\USP\Scanner\Scanner($path_to_scan, $root_path, $init_params);
             $out['total'] = $scanner->files_count;
-            if ( empty($usp->data->stat->scanner->last_scan_amount) ) {
-                $usp->data->stat->scanner['last_scan_amount'] = $scanner->files_count;
-                $usp->data->save();
-            }
+            /**
+             * UF LITE CHUNK
+             */
+            $usp->data->stat->scanner->uflite_file_extensions_applied = $init_params['extensions'];
+            $usp->data->stat->scanner->uflite_total_files_count = $scanner->files_count;
+            $usp->data->save();
         }
 
-        $files_to_check = self::get_files($offset, $amount);
+        //IMPORTANT - do inc offset here for NOSQL mode
+        $files_to_check = self::get_files($offset + 1, $amount);
 
-        if ( $files_to_check ) {
+        if ( !empty($files_to_check) ) {
 
-            $scanned = 0;
-            $found = 0;
+            // Initialing results
 
-            if ( !empty($files_to_check) ) {
+            $signatures = new Storage('signatures', null, '', 'csv', array(
+                'id',
+                'name',
+                'body',
+                'type',
+                'attack_type',
+                'submitted',
+                'cci'
+            ));
+            $signatures = $signatures->convertToArray();
 
-                // Initialing results
-
-                $signatures = new Storage('signatures', null, '', 'csv', array(
-                    'id',
-                    'name',
-                    'body',
-                    'type',
-                    'attack_type',
-                    'submitted',
-                    'cci'
-                ));
-                $signatures = $signatures->convertToArray();
-
-                $decoded_signatures = array();
-                foreach ( $signatures as $signature => $value ) {
-                    $decoded_signatures[$signature] = $value;
-                    $decoded_signatures[$signature]['body'] = base64_decode($value['body']);
-                }
-
-
-                foreach ( $files_to_check as $file ) {
-
-                    $result = Scanner::file__scan__for_signatures(CT_USP_SITE_ROOT, $file, $decoded_signatures);
-
-                    if ( empty($result['error']) ) {
-
-                        if ( $result['status'] !== 'OK' ) {
-
-                            $usp->scan_result[] = array(
-                                'path' => $file['path'],
-                                'size' => $file['size'],
-                                'perms' => $file['perms'],
-                                'mtime' => $file['mtime'],
-                                'weak_spots' => json_encode($result['weak_spots']),
-                                'fast_hash' => $file['fast_hash'],
-                                'full_hash' => $file['full_hash'],
-                            );
-
-                            $out['found']++;
-
-                        }
-
-                    } else
-                        return array('error' => 'Signature scan: ' . $result['error']);
-
-                    $out['processed']++;
-                }
-
-                $usp->scan_result->save();
-
+            $decoded_signatures = array();
+            foreach ( $signatures as $signature => $value ) {
+                $decoded_signatures[$signature] = $value;
+                $decoded_signatures[$signature]['body'] = base64_decode($value['body']);
             }
 
-        }
 
+            foreach ( $files_to_check as $file ) {
+
+                $result = Scanner::file__scan__for_signatures(CT_USP_SITE_ROOT, $file, $decoded_signatures);
+
+                if ( empty($result['error']) ) {
+
+                    if ( $result['status'] !== 'OK' ) {
+
+                        $usp->scan_result[] = array(
+                            'path' => $file['path'],
+                            'size' => $file['size'],
+                            'perms' => $file['perms'],
+                            'mtime' => $file['mtime'],
+                            'weak_spots' => json_encode($result['weak_spots']),
+                            'fast_hash' => $file['fast_hash'],
+                            'full_hash' => $file['full_hash'],
+                        );
+
+                        $out['found']++;
+
+                    }
+
+                } else
+                    return array('error' => 'Signature scan: ' . $result['error']);
+
+                $out['processed']++;
+            }
+
+            $usp->scan_result->save();
+
+        }
+        $usp->data->stat->scanner->uflite_files_scanned_signatures += $out['processed'];
+        $usp->data->save();
         $out['end'] = $out['processed'] < $amount;
 
         return $out;
@@ -1098,14 +1102,13 @@ class ScannerController
             );
             $scanner = new \Cleantalk\USP\Scanner\Scanner($path_to_scan, $root_path, $init_params);
             $out['total'] = $scanner->files_count;
-            if ( empty($usp->data->stat->scanner->last_scan_amount) ) {
-                $usp->data->stat->scanner['last_scan_amount'] = $scanner->files_count;
-                $usp->data->save();
-            }
+            $usp->data->stat->scanner->uflite_file_extensions_applied = $init_params['extensions'];
+            $usp->data->save();
         }
 
 
-        $files_to_check = self::get_files($offset, $amount);
+        //IMPORTANT - do inc offset here for NOSQL mode
+        $files_to_check = self::get_files($offset + 1, $amount);
 
         if ( $files_to_check ) {
             if ( count($files_to_check) ) {
@@ -1142,6 +1145,9 @@ class ScannerController
             }
         }
 
+        $usp->data->stat->scanner->uflite_files_scanned_heuristics += $out['processed'];
+        $usp->data->save();
+
         $out['end'] = $out['processed'] < $amount;
 
         return $out;
@@ -1153,16 +1159,21 @@ class ScannerController
 
         $usp = State::getInstance();
 
-        if ( !$usp->key ) {
-            $result['end'] = 1;
-            return $result;
-        }
-
         $total_scanned = $total_scanned ? $total_scanned : Get::get('total_scanned');
 
         $files = $usp->scan_result->convertToArray();
 
         $files_count = count($files);
+
+        $usp->data->stat->scanner->uflite_suspicious_files_detected = $files_count;
+        $usp->data->stat->scanner->last_scan = time();
+        $usp->data->stat->scanner->last_scan_amount = $total_scanned;
+        $usp->data->save();
+
+        if ( !$usp->key ) {
+            $result['end'] = 1;
+            return $result;
+        }
 
         $unknown = array();
         $modified = array();
@@ -1194,7 +1205,6 @@ class ScannerController
         if ( empty($result['error']) ) {
 
             $usp->data->stat->scanner->last_sent = time();
-            $usp->data->stat->scanner->last_scan = time();
             $usp->data->stat->scanner->last_scan_amount = isset($_GET['total_scanned']) ? $_GET['total_scanned'] : $total_scanned;
 
         } else

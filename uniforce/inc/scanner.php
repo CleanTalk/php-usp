@@ -413,21 +413,21 @@ function usp_scanner__display(){
 		return;
 	}
 
-	// Info about last scanning
-	echo '<p class="spbc_hint text-center">';
-		if( !$usp->data->stat->scanner->last_scan )
-			echo uniforce_translate('System hasn\'t been scanned yet. Please, perform the scan to secure the website. ', 'security-malware-firewall');
-		else{
-			if ( $usp->data->stat->scanner->last_scan < time() - 86400 * 7 )
-				echo  uniforce_translate('Website hasn\'t been scanned for a long time.', 'security-malware-firewall');
-			printf(
-				uniforce_translate('Website last scan was performed on %s, %d files were scanned. ', 'security-malware-firewall'),
-				date( 'M d Y H:i:s', $usp->data->stat->scanner->last_scan ),
-				$usp->data->stat->scanner->last_scan_amount
-			);
+    // Info about last scanning
+    echo '<p class="spbc_hint text-center">';
+    if( !$usp->data->stat->scanner->last_scan )
+        echo uniforce_translate('System hasn\'t been scanned yet. Please, perform the scan to secure the website. ', 'security-malware-firewall');
+    else{
+        if ( $usp->data->stat->scanner->last_scan < time() - 86400 * 7 )
+            echo  uniforce_translate('Website hasn\'t been scanned for a long time.', 'security-malware-firewall');
+        printf(
+            uniforce_translate('Website last scan was performed on %s, %d files were scanned. ', 'security-malware-firewall'),
+            date( 'M d Y H:i:s', $usp->data->stat->scanner->last_scan ),
+            $usp->data->stat->scanner->last_scan_amount
+        );
 
-		}
-	echo '</p>';
+    }
+    echo '</p>';
 
 	// Statistics link
 	echo '<p class="spbc_hint text-center">';
@@ -679,21 +679,37 @@ function usp_scanner__display___no_sql(){
 		return;
 	}
 
-	// Info about last scanning
-	echo '<p class="spbc_hint text-center">';
-	if( !$usp->data->stat->scanner->last_scan )
-		echo uniforce_translate('System hasn\'t been scanned yet. Please, perform the scan to secure the website. ', 'security-malware-firewall');
-	else{
-		if ( $usp->data->stat->scanner->last_scan < time() - 86400 * 7 )
-			echo  uniforce_translate('Website hasn\'t been scanned for a long time.', 'security-malware-firewall');
-		printf(
-			uniforce_translate('Website last scan was performed on %s, %d files were scanned. ', 'security-malware-firewall'),
-			date( 'M d Y H:i:s', $usp->data->stat->scanner->last_scan ),
-			$usp->data->stat->scanner->last_scan_amount
-		);
-
-	}
-	echo '</p>';
+    // Info about last scanning
+    echo '<div class="spbc_hint text-center">';
+    if( !$usp->data->stat->scanner->last_scan )
+        echo uniforce_translate('System hasn\'t been scanned yet. Please, perform the scan to secure the website. ', 'security-malware-firewall');
+    else{
+        if ( $usp->data->stat->scanner->last_scan < time() - 86400 * 7 ) {
+            echo  uniforce_translate('Website hasn\'t been scanned for a long time.', 'security-malware-firewall');
+        }
+        $scan_results_tmpl = '
+            Website last scan was performed on %s.
+            <div class="spbc_scan_results_div">
+                <p class="spbc_scan_results_item">Total site files<b>*</b>: %d, files scanned<b>*</b>: %d, suspicious files detected: %d
+            </div>
+            <div style="text-align: left; font-size: 12px">
+            <p><b>*</b>Total site files - only executable files (%s) except for the quarantined files, files of zero size and files larger than the acceptable size (2 MB).</p>
+            <p><b>*</b>Files scanned - files have been checked. Some files will be added to the scan if the scanner deems it necessary.</p>
+            </div>
+        ';
+        $total_files_count = !empty($usp->data->stat->scanner->uflite_total_files_count)
+            ? $usp->data->stat->scanner->uflite_total_files_count
+            : $usp->data->stat->scanner->last_scan_amount;
+        printf(
+            $scan_results_tmpl,
+            date( 'M d Y H:i:s', $usp->data->stat->scanner->last_scan ),
+            $total_files_count,
+            max($usp->data->stat->scanner->uflite_files_scanned_signatures, $usp->data->stat->scanner->uflite_files_scanned_heuristics),
+            $usp->data->stat->scanner->uflite_suspicious_files_detected,
+            $usp->data->stat->scanner->uflite_file_extensions_applied,
+        );
+    }
+    echo '</div>';
 
     if ( ! CT_USP_UNIFORCE_LITE ) {
         // Statistics link
