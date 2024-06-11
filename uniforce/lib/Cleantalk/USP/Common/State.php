@@ -119,6 +119,20 @@ class State extends \Cleantalk\USP\Common\Storage{
 			'php_logs' => array(
 				'last_sent' => 0,
 			),
+            'scanner_background_log' => array(
+                'create_db' => array(),
+                'clear_table' => array(),
+                'get_signatures' => array(),
+                'surface_analysis' => array(),
+                'get_approved' => array(),
+                'signature_analysis' => array(),
+                'heuristic_analysis' => array(),
+                'auto_cure' => array(),
+                //'frontend_analysis',
+                //'outbound_links',
+                'send_results' => array(),
+                'last_executed' => array()
+            ),
 		),
 
 		// Account
@@ -146,6 +160,7 @@ class State extends \Cleantalk\USP\Common\Storage{
 				'offset'        => 0,
 			),
 			'cured' => array(),
+            'background_scan_stop' => false,
 		),
 		'2fa_keys'          => array(),
 		'no_sql'            => true,

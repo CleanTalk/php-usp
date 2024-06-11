@@ -19,8 +19,13 @@ function login() {
             password: password,
         },
         successCallback: function(result, data, params, obj) {
-            if (result.passed)
+            if (result.passed) {
+                //if session cookies is cached try to set cookie via js
+                if (document.cookie.indexOf("authentificated") === -1 && typeof result.hash !== 'undefined') {
+                    ctSetCookie("authentificated", result.hash);
+                }
                 location.reload();
+            }
         },
         spinner: function(){ login.toggleClass('loading') }
     });
