@@ -86,12 +86,12 @@ class ScannerController
 
         $usp = State::getInstance();
 
-        if ($usp->data->scanner->background_scan_stop) {
+        if ( $usp->data->scanner->background_scan_stop ) {
             static::clearBackgroundScanLog($usp);
             return true;
         }
 
-		sleep(5);
+        sleep(5);
 
         switch ( $this->state ) {
 
@@ -191,10 +191,12 @@ class ScannerController
             ? $usp->error_delete($this->state, 'and_save_data', 'cron_scan')
             : $usp->error_add($this->state, $result, 'cron_scan');
 
-        if (isset($end)) {
-            $usp->data->stat->scanner_background_log->last_executed = array('end' => empty( $result['error'] ), 'time' => time());
+        if ( isset($end) ) {
+            $usp->data->stat->scanner_background_log->last_executed = array('end' => empty($result['error']), 'time' => time());
             $usp->data->save();
-        }return true;
+        }
+
+        return true;
     }
 
     /**
