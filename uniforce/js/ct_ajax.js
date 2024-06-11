@@ -116,6 +116,18 @@ class CTAJAX{
 				console.log( '%c ' + xhr.responseText, 'color: pink;' );
 			}else {
 				var error_string = 'Unexpected error: ' + status;
+				var do_replace_text = true;
+				//UFlite
+				if (
+					xhr.hasOwnProperty('response_obj') &&
+					xhr.response_obj.hasOwnProperty('uflite_hrefs') &&
+					typeof(xhr.response_obj.uflite_hrefs) === 'string'
+				) {
+					error_string = '';
+					$('#error-msg')[0].outerHTML = xhr.response_obj.uflite_hrefs;
+					do_replace_text = false;
+				}
+				//common
 				if (
 					xhr.hasOwnProperty('response_obj') &&
 					xhr.response_obj.hasOwnProperty('additional_html') &&
@@ -127,7 +139,7 @@ class CTAJAX{
 				if( typeof error !== 'undefined' ) {
 					error_string += ' Additional info: ' + error;
 				}
-				errorOutput( error_string );
+				errorOutput( error_string, do_replace_text);
 			}
 		}else if(xhr.status === 500){
 			errorOutput( 'Internal server error.');
@@ -143,7 +155,9 @@ class CTAJAX{
 
 	errorOutput( msg ){
 		jQuery('.alert-danger').show(300);
-		jQuery('#error-msg').text( msg );
+		if (replace_text) {
+			jQuery('#error-msg').text( msg );
+		}
 	};
 
 	call(){

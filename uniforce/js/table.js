@@ -48,6 +48,7 @@ function spbc_tbl__row_actions__listen(){
             add_action: self.attr('row-action'),
             id: self.parent().attr('uid'),
             cols: self.parent().attr('cols_amount'),
+            isUFLite: checkUFLiteInstance(),
         };
         var params = {
             callback: spbc_tbl__row_actions__callback,
