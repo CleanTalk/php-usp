@@ -11,281 +11,288 @@ use Cleantalk\USP\Uniforce\Helper;
 use Cleantalk\USP\Scanner\Helper as ScannerHelper;
 use Cleantalk\USP\Variables\Get;
 
-class ScannerController {
+class ScannerController
+{
 
-	const table__scanner___files        = 'scanner_files';
-	const table__scanner___links        = 'scanner_links';
-	const table__scanner___backups      = 'scanner_backups';
-	const table__scanner___backup_files = 'scanner_backup_files';
+    const table__scanner___files = 'scanner_files';
+    const table__scanner___links = 'scanner_links';
+    const table__scanner___backups = 'scanner_backups';
+    const table__scanner___backup_files = 'scanner_backup_files';
 
-	private static $instance;
+    private static $instance;
 
-	/**
-	 * DB handler
-	 *
-	 * @var DB
-	 */
-	public $db = null;
+    /**
+     * DB handler
+     *
+     * @var DB
+     */
+    public $db = null;
 
-	/**
-	 * Site root directory
-	 *
-	 * @var string
-	 */
-	private $root = '';
+    /**
+     * Site root directory
+     *
+     * @var string
+     */
+    private $root = '';
 
-	/**
-	 * Current action offset
-	 *
-	 * @var int
-	 */
-	private $offset = 0;
+    /**
+     * Current action offset
+     *
+     * @var int
+     */
+    private $offset = 0;
 
-	/**
-	 * Current action
-	 *
-	 * @var string
-	 */
-	private $state = '';
+    /**
+     * Current action
+     *
+     * @var string
+     */
+    private $state = '';
 
-	function __construct( $root_dir, $db_params = null ){
+    function __construct($root_dir, $db_params = null)
+    {
 
-		if( $db_params ){
-			@$this->db = DB::getInstance(
-				$db_params[0],
-				$db_params[1],
-				$db_params[2]
-			);
-		}
+        if ( $db_params ) {
+            @$this->db = DB::getInstance(
+                $db_params[0],
+                $db_params[1],
+                $db_params[2]
+            );
+        }
 
-		$this->root   = $root_dir;
-		$this->offset = intval( Get::get( 'offset' ) ) ?: $this->offset;
-		$this->offset = intval( Get::get( 'amount' ) ) ?: $this->offset;
-		$this->state  = strval( Get::get( 'state' ) )  ?: $this->state;
-	}
+        $this->root = $root_dir;
+        $this->offset = intval(Get::get('offset')) ?: $this->offset;
+        $this->offset = intval(Get::get('amount')) ?: $this->offset;
+        $this->state = strval(Get::get('state')) ?: $this->state;
+    }
 
-	private static $states = array(
-		'create_db',
-		'clear_table',
-		'get_signatures',
-		'surface_analysis',
-		'get_approved',
-		'signature_analysis',
-		'heuristic_analysis',
-		'auto_cure',
-		'frontend_analysis',
-		'outbound_links',
-	);
+    private static $states = array(
+        'create_db',
+        'clear_table',
+        'get_signatures',
+        'surface_analysis',
+        'get_approved',
+        'signature_analysis',
+        'heuristic_analysis',
+        'auto_cure',
+        'frontend_analysis',
+        'outbound_links',
+    );
 
-	public function action__scanner__controller(){
+    public function action__scanner__controller()
+    {
 
-		$usp = State::getInstance();
+        $usp = State::getInstance();
 
-		sleep(5);
+        sleep(5);
 
-		switch( $this->state ){
+        switch ( $this->state ) {
 
-			// Creating DB
-			case 'create_db':
-				$result = $this->action__scanner__create_db();
-				break;
+            // Creating DB
+            case 'create_db':
+                $result = $this->action__scanner__create_db();
+                break;
 
-			// Cleaning table
-			case 'clear_table':
-				$result = $this->action__scanner__clear_table(
-					$this->offset,
-					10000
-				);
-				break;
+            // Cleaning table
+            case 'clear_table':
+                $result = $this->action__scanner__clear_table(
+                    $this->offset,
+                    10000
+                );
+                break;
 
-			//Signatures
-			case 'get_signatures':
+            //Signatures
+            case 'get_signatures':
 
-				$result = $this->action__scanner__get_signatures();
+                $result = $this->action__scanner__get_signatures();
 
-				break;
+                break;
 
-			// Searching for new files
-			case 'surface_analysis':
-				$result = $this->action__scanner__surface_analysis(
-					$this->offset,
-					1500,
-					$this->root
-				);
-				break;
+            // Searching for new files
+            case 'surface_analysis':
+                $result = $this->action__scanner__surface_analysis(
+                    $this->offset,
+                    1500,
+                    $this->root
+                );
+                break;
 
-			// Searching for new files
-			case 'get_approved':
-				$result = $this->action__scanner__get_approved();
-				break;
+            // Searching for new files
+            case 'get_approved':
+                $result = $this->action__scanner__get_approved();
+                break;
 
-			// Signatures
-			case 'signature_analysis':
+            // Signatures
+            case 'signature_analysis':
 
-				$result = $this->action__scanner__signature_analysis(
-					$this->offset,
-					10,
-					$this->root
-				);
+                $result = $this->action__scanner__signature_analysis(
+                    $this->offset,
+                    10,
+                    $this->root
+                );
 
-				break;
+                break;
 
-			// Heuristic
-			case 'analysis_heuristic':
+            // Heuristic
+            case 'analysis_heuristic':
 
-				$result = $this->action__scanner__heuristic_analysis(
-					$this->offset,
-					10,
-					$this->root
-				);
+                $result = $this->action__scanner__heuristic_analysis(
+                    $this->offset,
+                    10,
+                    $this->root
+                );
 
-				break;
+                break;
 
-			// Send result
-			case 'send_results':
+            // Send result
+            case 'send_results':
 
-				$result = self::action__scanner__send_results( );
-				$end = true;
+                $result = self::action__scanner__send_results();
+                $end = true;
 
-				break;
-		}
+                break;
+        }
 
-		// Make next call if everything is ok
-		if( ! isset( $end ) && empty( $result['error'] ) ){
+        // Make next call if everything is ok
+        if ( !isset($end) && empty($result['error']) ) {
 
-			$remote_call_params = array(
-				'plugin_name'             => 'security',
-				'spbc_remote_call_token'  => md5( $usp->settings->key ),
-				'spbc_remote_call_action' => 'scanner__controller',
-				'state'                   => $result['end'] ? $this->next_state( $this->state ) : $this->state,
-				'offset'                  => $result['end'] ? 0 : $this->offset + $result['processed'],
-			);
+            $remote_call_params = array(
+                'plugin_name' => 'security',
+                'spbc_remote_call_token' => md5($usp->settings->key),
+                'spbc_remote_call_action' => 'scanner__controller',
+                'state' => $result['end'] ? $this->next_state($this->state) : $this->state,
+                'offset' => $result['end'] ? 0 : $this->offset + $result['processed'],
+            );
 
-			Helper::http__request(
-				CT_USP_AJAX_URI,
-				$remote_call_params,
-				'get async'
-			);
+            Helper::http__request(
+                CT_USP_AJAX_URI,
+                $remote_call_params,
+                'get async'
+            );
 
-		}
+        }
 
-		// Delete or add an error
-		empty( $result['error'] )
-			? $usp->error_delete( $this->state, 'and_save_data', 'cron_scan' )
-			: $usp->error_add( $this->state, $result, 'cron_scan' );
+        // Delete or add an error
+        empty($result['error'])
+            ? $usp->error_delete($this->state, 'and_save_data', 'cron_scan')
+            : $usp->error_add($this->state, $result, 'cron_scan');
 
-		return true;
-	}
+        return true;
+    }
 
-	/**
-	 * Creates remote DB and get DB params
-	 *
-	 * @return array|bool[]
-	 */
-	public function action__scanner__create_db(){
+    /**
+     * Creates remote DB and get DB params
+     *
+     * @return array|bool[]
+     */
+    public function action__scanner__create_db()
+    {
 
-		$usp = State::getInstance();
+        $usp = State::getInstance();
 
-		$result = API::method__dbc2c_get_info( $usp->key );
+        $result = API::method__dbc2c_get_info($usp->key);
 
-		if( empty( $result['error'] ) ){
-			$usp->data->db_request_string = 'mysql:host=' . $result['db_host'] . ';dbname=' . $result['db_name'] . ';charset=utf8';
-			$usp->data->db_user           = $result['db_user'];
-			$usp->data->db_password       = $result['db_password'];
-			$usp->data->db_created        = $result['created'];
-			$usp->data->save();
+        if ( empty($result['error']) ) {
+            $usp->data->db_request_string = 'mysql:host=' . $result['db_host'] . ';dbname=' . $result['db_name'] . ';charset=utf8';
+            $usp->data->db_user = $result['db_user'];
+            $usp->data->db_password = $result['db_password'];
+            $usp->data->db_created = $result['created'];
+            $usp->data->save();
 
-			$out = array('success' => true, 'end' => true);
+            $out = array('success' => true, 'end' => true);
 
-		}else
-			$out = $result;
+        } else
+            $out = $result;
 
-		return $out;
+        return $out;
 
-	}
+    }
 
-	/**
-	 * Clears all data about scanned files
-	 *
-	 * @param int $offset
-	 * @param int $amount
-	 *
-	 * @return array
-	 */
-	public function action__scanner__clear_table( $offset = null, $amount = null ){
+    /**
+     * Clears all data about scanned files
+     *
+     * @param int $offset
+     * @param int $amount
+     *
+     * @return array
+     */
+    public function action__scanner__clear_table($offset = null, $amount = null)
+    {
 
-		if( ! $this->db )                           return array('error' => 'DB_NOT_PROVIDED');
-		if( $this->db instanceof Cleantalk\USP\DB ) return array('error' => 'DB_BAD_CONNECTION');
+        if ( !$this->db ) return array('error' => 'DB_NOT_PROVIDED');
+        if ( $this->db instanceof Cleantalk\USP\DB ) return array('error' => 'DB_BAD_CONNECTION');
 
-		$offset = $offset ?: (int) Get::get('offset');
-		$amount = $amount ?: (int) Get::get('amount');
+        $offset = $offset ?: (int)Get::get('offset');
+        $amount = $amount ?: (int)Get::get('amount');
 
-		$result = $this->db->fetch_all(
-			'SELECT count(fast_hash) as cnt'
-			. ' FROM ' . self::table__scanner___files
-		);
-		$total = (int)$result[0]['cnt'];
+        $result = $this->db->fetch_all(
+            'SELECT count(fast_hash) as cnt'
+            . ' FROM ' . self::table__scanner___files
+        );
+        $total = (int)$result[0]['cnt'];
 
-		$result = $this->db->fetch_all(
-			'SELECT path, fast_hash, status'
-			. ' FROM ' . self::table__scanner___files
-			. " LIMIT $offset, $amount;"
-		);
-		$checked = count($result);
+        $result = $this->db->fetch_all(
+            'SELECT path, fast_hash, status'
+            . ' FROM ' . self::table__scanner___files
+            . " LIMIT $offset, $amount;"
+        );
+        $checked = count($result);
 
-		$to_delete = array();
-		foreach($result as $value){
-			if( ! file_exists( $this->root . $value['path'] ) && $value['status'] != 'QUARANTINED' ){
-				$to_delete[] = "'{$value['fast_hash']}'";
-			}
-		} unset($value);
+        $to_delete = array();
+        foreach ( $result as $value ) {
+            if ( !file_exists($this->root . $value['path']) && $value['status'] != 'QUARANTINED' ) {
+                $to_delete[] = "'{$value['fast_hash']}'";
+            }
+        }
+        unset($value);
 
-		$deleted = 0;
-		if( ! empty( $to_delete ) ){
-			$deleted = $this->db->exec(
-				'DELETE '
-				. ' FROM ' . self::table__scanner___files
-				. ' WHERE fast_hash IN (' . implode( ',', $to_delete ) . ');'
-			);
-		}
+        $deleted = 0;
+        if ( !empty($to_delete) ) {
+            $deleted = $this->db->exec(
+                'DELETE '
+                . ' FROM ' . self::table__scanner___files
+                . ' WHERE fast_hash IN (' . implode(',', $to_delete) . ');'
+            );
+        }
 
-		$out = array(
-			'checked' => (int) $checked,
-			'deleted'   => (int) $deleted,
-			'processed'   => (int) $checked - (int) $deleted,
-			'end'       => $total <= $offset + $amount,
-		);
+        $out = array(
+            'checked' => (int)$checked,
+            'deleted' => (int)$deleted,
+            'processed' => (int)$checked - (int)$deleted,
+            'end' => $total <= $offset + $amount,
+        );
 
-		// Count if needed
-		if( $offset == 0 )
-		  $out['total'] = $total;
+        // Count if needed
+        if ( $offset == 0 )
+            $out['total'] = $total;
 
-		if($deleted === false)
-			$out['error'] = 'COULDNT_DELETE';
+        if ( $deleted === false )
+            $out['error'] = 'COULDNT_DELETE';
 
-		return $out;
-	}
+        return $out;
+    }
 
-	public function action__scanner__get_signatures(){
+    public function action__scanner__get_signatures()
+    {
 
-		$usp = State::getInstance();
+        $usp = State::getInstance();
 
-		$out = array(
-			'success' => true,
-		);
+        $out = array(
+            'success' => true,
+        );
 
-		if ( $usp->settings->scanner_signature_analysis ) {
+        if ( $usp->settings->scanner_signature_analysis ) {
 
-			$result = ScannerHelper::get_hashes__signature($usp->data->stat->scanner->signature_last_update);
+            $result = ScannerHelper::get_hashes__signature($usp->data->stat->scanner->signature_last_update);
 
-			if(empty($result['error'])){
+            if ( empty($result['error']) ) {
 
-				$signatures = new \Cleantalk\USP\Common\Storage( 'signatures', $result, '', 'csv' );
-				$signatures->save();
+                $signatures = new \Cleantalk\USP\Common\Storage('signatures', $result, '', 'csv');
+                $signatures->save();
 
-				$usp->data->stat->scanner->signature_last_update = time();
-				$usp->data->stat->scanner->signature_entries = count( $result );
-				$usp->data->save();
+                $usp->data->stat->scanner->signature_last_update = time();
+                $usp->data->stat->scanner->signature_entries = count($result);
+                $usp->data->save();
 
                 $out['updated'] = count($result);
 
@@ -295,59 +302,61 @@ class ScannerController {
                 Err::add($result['error']);
             }
 
-			$out['end'] = 1;
+            $out['end'] = 1;
 
-		}else{
+        } else {
             Err::add('Signatures scan is disabled');
         }
 
 
-		return Err::check()
-			? Err::check_and_output()
-			: $out;
-	}
+        return Err::check()
+            ? Err::check_and_output()
+            : $out;
+    }
 
-	public function action__scanner__surface_analysis( $offset = null, $amount = null, $path = CT_USP_SITE_ROOT ){
+    public function action__scanner__surface_analysis($offset = null, $amount = null, $path = CT_USP_SITE_ROOT)
+    {
 
-		if( ! $this->db )                           return array('error' => 'DB_NOT_PROVIDED');
-		if( $this->db instanceof Cleantalk\USP\DB ) return array('error' => 'DB_BAD_CONNECTION');
+        if ( !$this->db ) return array('error' => 'DB_NOT_PROVIDED');
+        if ( $this->db instanceof Cleantalk\USP\DB ) return array('error' => 'DB_BAD_CONNECTION');
 
-		$offset = $offset ?: (int) Get::get('offset');
-		$amount = $amount ?: (int) Get::get('amount');
+        $offset = $offset ?: (int)Get::get('offset');
+        $amount = $amount ?: (int)Get::get('amount');
         $time_start = microtime(true);
 
-		$path_to_scan = $path ?: realpath($this->root);
-		$root_path    = realpath($this->root);
-		$init_params = array(
-			'fast_hash'        		=> true,
-			'full_hash'       		=> true,
-			'offset'                => $offset,
-			'amount'                => $amount,
-			'extensions'            => 'php, html, htm',
-			'extensions_exceptions' => '',
-			'file_exceptions'       => '',
-			'files_mandatory' => array(),
-			'dir_exceptions'  => array()
-		);
+        $path_to_scan = $path ?: realpath($this->root);
+        $root_path = realpath($this->root);
+        $init_params = array(
+            'fast_hash' => true,
+            'full_hash' => true,
+            'offset' => $offset,
+            'amount' => $amount,
+            'extensions' => 'php, html, htm',
+            'extensions_exceptions' => '',
+            'file_exceptions' => '',
+            'files_mandatory' => array(),
+            'dir_exceptions' => array()
+        );
 
-		$scanner = new Scanner($path_to_scan, $root_path, $init_params);
+        $scanner = new Scanner($path_to_scan, $root_path, $init_params);
 
-		if( $scanner->files_count ){
+        if ( $scanner->files_count ) {
 
-			$sql_query =
-				'INSERT INTO ' . self::table__scanner___files
-		        . ' (`path`, `size`, `perms`, `mtime`,`status`,`fast_hash`, `full_hash`) VALUES ';
+            $sql_query =
+                'INSERT INTO ' . self::table__scanner___files
+                . ' (`path`, `size`, `perms`, `mtime`,`status`,`fast_hash`, `full_hash`) VALUES ';
 
-			$sql_query__params = array();
-			foreach($scanner->files as $key => $file){
+            $sql_query__params = array();
+            foreach ( $scanner->files as $key => $file ) {
 
-				$file['path'] = addslashes($file['path']);
-				$sql_query__params[] = '("' . implode( '", "', $file ) .'")';
+                $file['path'] = addslashes($file['path']);
+                $sql_query__params[] = '("' . implode('", "', $file) . '")';
 
-			} unset($key, $file);
+            }
+            unset($key, $file);
 
-			$sql_query .= implode( ',', $sql_query__params );
-			$sql_query .= " ON DUPLICATE KEY UPDATE
+            $sql_query .= implode(',', $sql_query__params);
+            $sql_query .= " ON DUPLICATE KEY UPDATE
 			
 			size           = VALUES(`size`),
 			perms          = VALUES(`perms`),
@@ -406,119 +415,121 @@ class ScannerController {
 					NULL
 				);";
 
-			$success = $this->db->execute($sql_query);
+            $success = $this->db->execute($sql_query);
 
-		}else
-			$output  = array('error' => __FUNCTION__ . ' No files to scan',);
+        } else
+            $output = array('error' => __FUNCTION__ . ' No files to scan',);
 
-		if(isset($success)){
-			$output  = array(
-				'processed'   => $scanner->files_count,
-				'dirs_count'  => $scanner->dirs_count,
-				'end'         => $scanner->files_count < $amount,
-				'exec_time'   => round(microtime(true) - $time_start, 3),
-			);
-		}
+        if ( isset($success) ) {
+            $output = array(
+                'processed' => $scanner->files_count,
+                'dirs_count' => $scanner->dirs_count,
+                'end' => $scanner->files_count < $amount,
+                'exec_time' => round(microtime(true) - $time_start, 3),
+            );
+        }
 
-		if( $offset == 0 ){
-			$scanner         = new Scanner(
-				realpath( $this->root ),
-				realpath( substr( $this->root, 0, - 1 ) ),
-				array(
-					'count'           => true,
-					'file_exceptions' => '',
-					'extensions'      => 'php, html, htm',
-					'files_mandatory' => array(),
-					'dir_exceptions'  => array()
-				)
-			);
-			$output['total'] = (int) $scanner->files_count;
-		}
+        if ( $offset == 0 ) {
+            $scanner = new Scanner(
+                realpath($this->root),
+                realpath(substr($this->root, 0, -1)),
+                array(
+                    'count' => true,
+                    'file_exceptions' => '',
+                    'extensions' => 'php, html, htm',
+                    'files_mandatory' => array(),
+                    'dir_exceptions' => array()
+                )
+            );
+            $output['total'] = (int)$scanner->files_count;
+        }
 
-		return $output;
-	}
+        return $output;
+    }
 
-	/**
-	 * Getting remote hashes of approved files
-	 *
-	 * @return array
-	 */
-	public function action__scanner__get_approved() {
+    /**
+     * Getting remote hashes of approved files
+     *
+     * @return array
+     */
+    public function action__scanner__get_approved()
+    {
 
-		$result = ScannerHelper::get_hashes__approved_files('usp','approved', SPBCT_VERSION);
+        $result = ScannerHelper::get_hashes__approved_files('usp', 'approved', SPBCT_VERSION);
 
-		if (empty($result['error'])) {
+        if ( empty($result['error']) ) {
 
-			$prepared_sql = $this->db->prepare('UPDATE '. self::table__scanner___files
-			                                   .' SET
+            $prepared_sql = $this->db->prepare('UPDATE ' . self::table__scanner___files
+                . ' SET
 				checked_signature = 1,
 				checked_heuristic = 1,
 				status   =   \'APPROVED\',
 				severity =   NULL
 				WHERE path = :path AND full_hash = :full_hash;'
-			);
+            );
 
-			foreach ($result as $key => $value) {
-				$prepared_sql->execute(array(
-					':path' => $value[0],
-					':full_hash' => $value[1],
-				));
-			}
-		}
+            foreach ( $result as $key => $value ) {
+                $prepared_sql->execute(array(
+                    ':path' => $value[0],
+                    ':full_hash' => $value[1],
+                ));
+            }
+        }
 
-		return array(
-			'end' => 1,
-			'processed' => empty($result['error']) ? count($result) : 0,
-		);
+        return array(
+            'end' => 1,
+            'processed' => empty($result['error']) ? count($result) : 0,
+        );
 
-	}
+    }
 
-	public function action__scanner__signature_analysis( $offset = null, $amount = null, $status = "'UNKNOWN','MODIFIED','OK','INFECTED'" ){
+    public function action__scanner__signature_analysis($offset = null, $amount = null, $status = "'UNKNOWN','MODIFIED','OK','INFECTED'")
+    {
 
-		if( ! $this->db )                            return array('error' => 'DB_NOT_PROVIDED');
-		if( $this->db instanceof Cleantalk\USP\DB ) return array('error' => 'DB_BAD_CONNECTION');
+        if ( !$this->db ) return array('error' => 'DB_NOT_PROVIDED');
+        if ( $this->db instanceof Cleantalk\USP\DB ) return array('error' => 'DB_BAD_CONNECTION');
 
-		$status = Get::get( 'status' ) ? stripslashes( Get::get( 'status' ) ) : $status;
-		$offset = $offset ?: (int) Get::get('offset');
-		$amount = $amount ?: (int) Get::get('amount');
+        $status = Get::get('status') ? stripslashes(Get::get('status')) : $status;
+        $offset = $offset ?: (int)Get::get('offset');
+        $amount = $amount ?: (int)Get::get('amount');
 
-		$out = array(
-			'found'     => 0,
-			'processed' => 0,
-			'scanned'   => 0,
-		);
+        $out = array(
+            'found' => 0,
+            'processed' => 0,
+            'scanned' => 0,
+        );
 
-		if( $offset == 0 ){
-			$result = $this->db->fetch_all(
-				'SELECT COUNT(fast_hash) as cnt'
-				.' FROM ' . self::table__scanner___files
-				." WHERE checked_signature = 0"
-			);
-			$out['total'] = (int) $result[0]['cnt'];
-		}
+        if ( $offset == 0 ) {
+            $result = $this->db->fetch_all(
+                'SELECT COUNT(fast_hash) as cnt'
+                . ' FROM ' . self::table__scanner___files
+                . " WHERE checked_signature = 0"
+            );
+            $out['total'] = (int)$result[0]['cnt'];
+        }
 
-		$files_to_check = $this->db->fetch_all(
-			'SELECT path, source_type, source_name, source_version, status, checked_signature, fast_hash, real_full_hash, full_hash, weak_spots, difference, severity'
-			.' FROM ' . self::table__scanner___files
-			." WHERE checked_signature = 0"
-			." LIMIT $amount"
-		);
+        $files_to_check = $this->db->fetch_all(
+            'SELECT path, source_type, source_name, source_version, status, checked_signature, fast_hash, real_full_hash, full_hash, weak_spots, difference, severity'
+            . ' FROM ' . self::table__scanner___files
+            . " WHERE checked_signature = 0"
+            . " LIMIT $amount"
+        );
 
-		if ( $files_to_check ) {
+        if ( $files_to_check ) {
 
-			if ( ! empty( $files_to_check ) ) {
+            if ( !empty($files_to_check) ) {
 
-				$prepared_query = $this
-					->db
-					->prepare(
-						'UPDATE ' . self::table__scanner___files
-						. ' SET'
-							.' checked_signature = 1,'
-							.' status = :status,'
-							.' severity = :severity,'
-							.' weak_spots = :weak_spots'
-							.' WHERE fast_hash = :fast_hash'
-					);
+                $prepared_query = $this
+                    ->db
+                    ->prepare(
+                        'UPDATE ' . self::table__scanner___files
+                        . ' SET'
+                        . ' checked_signature = 1,'
+                        . ' status = :status,'
+                        . ' severity = :severity,'
+                        . ' weak_spots = :weak_spots'
+                        . ' WHERE fast_hash = :fast_hash'
+                    );
 
 
                 $signatures = new Storage('signatures', null, '', 'csv', array(
@@ -529,30 +540,30 @@ class ScannerController {
                     'attack_type',
                     'submitted',
                     'cci'
-                ) );
+                ));
                 $signatures = $signatures->convertToArray();
 
                 $decoded_signatures = array();
-                foreach ($signatures as $signature => $value){
+                foreach ( $signatures as $signature => $value ) {
                     $decoded_signatures[$signature] = $value;
                     $decoded_signatures[$signature]['body'] = base64_decode($value['body']);
                 }
 
                 $signatures_ok_hashes = array();
 
-				// Start of iteration check
-				foreach ( $files_to_check as $file ) {
+                // Start of iteration check
+                foreach ( $files_to_check as $file ) {
 
-					$result = Scanner::file__scan__for_signatures( $this->root, $file, $decoded_signatures );
+                    $result = Scanner::file__scan__for_signatures($this->root, $file, $decoded_signatures);
 
-					if ( empty( $result['error'] ) ) {
-                        $status =     ! empty( $file['status'] ) && $file['status'] === 'MODIFIED' ? 'MODIFIED' : $result['status'];
-                        $weak_spots = ! empty( $result['weak_spots'] ) ? json_encode( $result['weak_spots'] ) : NULL;
-                        $severity =   ! empty( $file['severity'] )
+                    if ( empty($result['error']) ) {
+                        $status = !empty($file['status']) && $file['status'] === 'MODIFIED' ? 'MODIFIED' : $result['status'];
+                        $weak_spots = !empty($result['weak_spots']) ? json_encode($result['weak_spots']) : NULL;
+                        $severity = !empty($file['severity'])
                             ? $file['severity']
-                            : ( $result['severity'] ? $result['severity'] : null );
+                            : ($result['severity'] ? $result['severity'] : null);
 
-                        if ($weak_spots === null && $severity === null && $status === 'OK') {
+                        if ( $weak_spots === null && $severity === null && $status === 'OK' ) {
                             //if file is OK, collect it's hash string for further bulk update
                             $signatures_ok_hashes[] = '\'' . $file['fast_hash'] . '\'';
                         } else {
@@ -563,101 +574,102 @@ class ScannerController {
                                         ':status' => $status,
                                         ':severity' => $severity,
                                         ':weak_spots' => $weak_spots,
-                                        ':fast_hash' =>  $file['fast_hash'],
+                                        ':fast_hash' => $file['fast_hash'],
                                     )
                                 );
 
-                            if ($result['status'] !== 'OK') {
+                            if ( $result['status'] !== 'OK' ) {
                                 $out['found']++;
                             }
-                            if ($result_db !== false ) {
+                            if ( $result_db !== false ) {
                                 $out['scanned']++;
                             }
                             $out['processed']++;
                         }
 
-					}else {
-                        return array( 'error' => 'Signature scan: ' . $result['error']);
+                    } else {
+                        return array('error' => 'Signature scan: ' . $result['error']);
                     }
-				}
+                }
                 //end of iteration check
 
                 //do bulk update for every good file
                 try {
-                   $update_ok_files_count = $this->scanner__db_update_ok_files($signatures_ok_hashes, 'signatures');
-                } catch (\Exception $e) {
-                   return array('error' => 'Signature scan: ' . $e->getMessage());
+                    $update_ok_files_count = $this->scanner__db_update_ok_files($signatures_ok_hashes, 'signatures');
+                } catch ( \Exception $e ) {
+                    return array('error' => 'Signature scan: ' . $e->getMessage());
                 }
 
                 $out['scanned'] += $update_ok_files_count;
                 $out['processed'] += $update_ok_files_count;
-			}
-		}
+            }
+        }
 
-		$out['end'] = $out['processed'] < $amount;
+        $out['end'] = $out['processed'] < $amount;
 
-		return $out;
-	}
+        return $out;
+    }
 
-	public function action__scanner__heuristic_analysis( $offset = null, $amount = null, $path = '', $status = "'MODIFIED','UNKNOWN'" ) {
+    public function action__scanner__heuristic_analysis($offset = null, $amount = null, $path = '', $status = "'MODIFIED','UNKNOWN'")
+    {
 
-		if( ! $this->db )                           return array('error' => 'DB_NOT_PROVIDED');
-		if( $this->db instanceof Cleantalk\USP\DB ) return array('error' => 'DB_BAD_CONNECTION');
+        if ( !$this->db ) return array('error' => 'DB_NOT_PROVIDED');
+        if ( $this->db instanceof Cleantalk\USP\DB ) return array('error' => 'DB_BAD_CONNECTION');
 
-		$status = Get::get( 'status' ) ? stripslashes( Get::get( 'status' ) ) : $status;
-		$offset = $offset ?: (int) Get::get('offset');
-		$amount = $amount ?: (int) Get::get('amount');
-		$path = $path ?: (int) $this->root;
+        $status = Get::get('status') ? stripslashes(Get::get('status')) : $status;
+        $offset = $offset ?: (int)Get::get('offset');
+        $amount = $amount ?: (int)Get::get('amount');
+        $path = $path ?: (int)$this->root;
 
-		$out = array(
-			'found'     => 0,
-			'processed' => 0,
-            'scanned'   => 0,
-		);
+        $out = array(
+            'found' => 0,
+            'processed' => 0,
+            'scanned' => 0,
+        );
 
-		if( $offset == 0 ){
-			$result = $this->db->fetch_all(
-				'SELECT COUNT(fast_hash) as cnt'
-				.' FROM ' . self::table__scanner___files
-				." WHERE checked_heuristic = 0"
-			);
-			$out['total'] = (int) $result[0]['cnt'];
-		}
+        if ( $offset == 0 ) {
+            $result = $this->db->fetch_all(
+                'SELECT COUNT(fast_hash) as cnt'
+                . ' FROM ' . self::table__scanner___files
+                . " WHERE checked_heuristic = 0"
+            );
+            $out['total'] = (int)$result[0]['cnt'];
+        }
 
-		$files_to_check = $this->db->fetch_all(
-			'SELECT path, source_type, source_name, source_version, status, checked_heuristic, fast_hash, real_full_hash, full_hash, weak_spots, difference, severity'
-			.' FROM ' . self::table__scanner___files
-			." WHERE checked_heuristic = 0 AND (source_status <> 'OUTDATED' OR source_status IS NULL)"
-			." LIMIT $amount"
-		);
+        $files_to_check = $this->db->fetch_all(
+            'SELECT path, source_type, source_name, source_version, status, checked_heuristic, fast_hash, real_full_hash, full_hash, weak_spots, difference, severity'
+            . ' FROM ' . self::table__scanner___files
+            . " WHERE checked_heuristic = 0 AND (source_status <> 'OUTDATED' OR source_status IS NULL)"
+            . " LIMIT $amount"
+        );
 
-		if ( $files_to_check && count( $files_to_check )) {
+        if ( $files_to_check && count($files_to_check) ) {
 
-			$prepared_query = $this->db->prepare('UPDATE '. self::table__scanner___files
-				.' SET '
-				.' checked_heuristic = 1,'
-				.' status = ?,'
-				.' severity = ?,'
-				.' weak_spots = ?'
-				.' WHERE fast_hash = ?'
-			);
+            $prepared_query = $this->db->prepare('UPDATE ' . self::table__scanner___files
+                . ' SET '
+                . ' checked_heuristic = 1,'
+                . ' status = ?,'
+                . ' severity = ?,'
+                . ' weak_spots = ?'
+                . ' WHERE fast_hash = ?'
+            );
 
             $heuristic_ok_hashes = array();
 
             //Start of iteration check
-			foreach ( $files_to_check as $file ) {
+            foreach ( $files_to_check as $file ) {
 
-				$result = Scanner::file__scan__heuristic( $this->root, $file );
+                $result = Scanner::file__scan__heuristic($this->root, $file);
 
-				if(empty($result['error'])){
+                if ( empty($result['error']) ) {
 
-					$status     = $file['status'] === 'MODIFIED' ? 'MODIFIED'                           : $result['status'];
-					$weak_spots = $result['weak_spots']          ? json_encode( $result['weak_spots'] ) : NULL;
-					$severity   = $file['severity']
-						? $file['severity']
-						: ( $result['severity'] ? $result['severity'] : NULL );
+                    $status = $file['status'] === 'MODIFIED' ? 'MODIFIED' : $result['status'];
+                    $weak_spots = $result['weak_spots'] ? json_encode($result['weak_spots']) : NULL;
+                    $severity = $file['severity']
+                        ? $file['severity']
+                        : ($result['severity'] ? $result['severity'] : NULL);
 
-                    if ($weak_spots === null && $severity === null && $status === 'OK') {
+                    if ( $weak_spots === null && $severity === null && $status === 'OK' ) {
                         //if file is OK, collect it's hash string for further bulk update
                         $heuristic_ok_hashes[] = '\'' . $file['fast_hash'] . '\'';
                     } else {
@@ -672,50 +684,50 @@ class ScannerController {
                                 )
                             );
 
-                        if ($result['status'] !== 'OK') {
+                        if ( $result['status'] !== 'OK' ) {
                             $out['found']++;
                         }
-                        if ($result_db !== false ) {
+                        if ( $result_db !== false ) {
                             $out['scanned']++;
                         }
                         $out['processed']++;
                     }
 
-				}else {
-                    return array( 'error' => 'Heuristic scan: ' . $result['error']);
+                } else {
+                    return array('error' => 'Heuristic scan: ' . $result['error']);
                 }
-			}
+            }
             //end of iteration check
 
             //do bulk update for every good file
             try {
                 $update_ok_files_count = $this->scanner__db_update_ok_files($heuristic_ok_hashes, 'heuristic');
-            } catch (\Exception $e) {
+            } catch ( \Exception $e ) {
                 return array('error' => 'Heuristic scan: ' . $e->getMessage());
             }
 
             $out['scanned'] += $update_ok_files_count;
             $out['processed'] += $update_ok_files_count;
-		}
+        }
 
-		$out['end'] = $out['processed'] < $amount;
-
-		return $out;
+        $out['end'] = $out['processed'] < $amount;
 
         return $out;
-	}
+
+        return $out;
+    }
 
     private function scanner__db_update_ok_files($list_of_ok_hashes, $check_type)
     {
         $ok_hashes_string = '(' . implode(',', $list_of_ok_hashes) . ')';
 
-        if (!is_array($list_of_ok_hashes) || empty($list_of_ok_hashes)) {
-            throw new \Exception( 'Heuristic scan: OK hashes is empty or has wrong format.');
+        if ( !is_array($list_of_ok_hashes) || empty($list_of_ok_hashes) ) {
+            throw new \Exception('Heuristic scan: OK hashes is empty or has wrong format.');
         }
 
-        if ($check_type === 'heuristic') {
+        if ( $check_type === 'heuristic' ) {
             $sql_chunk_check_type = 'checked_heuristic = 1';
-        } elseif ($check_type === 'signatures') {
+        } elseif ( $check_type === 'signatures' ) {
             $sql_chunk_check_type = 'checked_signature = 1';
         }
 
@@ -724,480 +736,499 @@ class ScannerController {
             ->prepare(
                 'UPDATE ' . self::table__scanner___files
                 . ' SET'
-                .' ' . $sql_chunk_check_type . ','
-                .' status = "OK",'
-                .' severity = NULL,'
-                .' weak_spots = NULL'
-                .' WHERE fast_hash IN ' . $ok_hashes_string
+                . ' ' . $sql_chunk_check_type . ','
+                . ' status = "OK",'
+                . ' severity = NULL,'
+                . ' weak_spots = NULL'
+                . ' WHERE fast_hash IN ' . $ok_hashes_string
             );
 
         try {
             $result_db = $query->execute();
-        } catch (\Exception $e) {
-            throw new \Exception( 'Heuristic scan: ' . $e->getMessage());
+        } catch ( \Exception $e ) {
+            throw new \Exception('Heuristic scan: ' . $e->getMessage());
         }
 
-        if ($result_db === false) {
-            throw new \Exception( 'Heuristic scan: can`t update table.');
+        if ( $result_db === false ) {
+            throw new \Exception('Heuristic scan: can`t update table.');
         }
 
         return count($list_of_ok_hashes);
     }
 
-	public function action__scanner__send_results( ) {
+    public function action__scanner__send_results()
+    {
 
-		if( ! $this->db )                           return array('error' => 'DB_NOT_PROVIDED');
-		if( $this->db instanceof Cleantalk\USP\DB ) return array('error' => 'DB_BAD_CONNECTION');
+        if ( !$this->db ) return array('error' => 'DB_NOT_PROVIDED');
+        if ( $this->db instanceof Cleantalk\USP\DB ) return array('error' => 'DB_BAD_CONNECTION');
 
-		$usp = State::getInstance();
+        $usp = State::getInstance();
 
-		$total_scanned = $this->count_files_by_status( "'UNKNOWN','OK','APPROVED','MODIFIED','INFECTED','QUARANTINED'" );
-		$bad_files     = $this->get_files_by_status( "'UNKNOWN', 'MODIFIED'",  array( 'path', 'full_hash', 'mtime', 'size', 'status') );
+        $total_scanned = $this->count_files_by_status("'UNKNOWN','OK','APPROVED','MODIFIED','INFECTED','QUARANTINED'");
+        $bad_files = $this->get_files_by_status("'UNKNOWN', 'MODIFIED'", array('path', 'full_hash', 'mtime', 'size', 'status'));
 
-		$unknown  = array();
-		$modified = array();
+        $unknown = array();
+        $modified = array();
 
-		if( count( $bad_files ) ){
-			foreach( $bad_files as $file ){
-				$file['path'] = Helper::is_windows() ? str_replace( '\\', '/', $file['path'] ) : $file['path'];
-				if( $file['status'] == 'UNKNOWN' ){
-					$unknown[ $file['path'] ] = array(
-						$file['full_hash'],
-						$file['mtime'],
-						$file['size'],
-					);
-				} else{
-					$modified[ $file['path'] ] = array(
-						$file['full_hash'],
-						$file['mtime'],
-						$file['size'],
-						$file['source_type'],
-						$file['source'],
-						$file['source_status'],
-					);
-				}
-			}
-		}
+        if ( count($bad_files) ) {
+            foreach ( $bad_files as $file ) {
+                $file['path'] = Helper::is_windows() ? str_replace('\\', '/', $file['path']) : $file['path'];
+                if ( $file['status'] == 'UNKNOWN' ) {
+                    $unknown[$file['path']] = array(
+                        $file['full_hash'],
+                        $file['mtime'],
+                        $file['size'],
+                    );
+                } else {
+                    $modified[$file['path']] = array(
+                        $file['full_hash'],
+                        $file['mtime'],
+                        $file['size'],
+                        $file['source_type'],
+                        $file['source'],
+                        $file['source_status'],
+                    );
+                }
+            }
+        }
 
-		// API. Sending files scan result
-		$result = API::method__security_mscan_logs(
-			$usp->key,
-			$usp->service_id,
-			date( 'Y-m-d H:i:s' ),
-			$bad_files ? 'warning' : 'passed',
-			$total_scanned,
-			$modified,
-			$unknown
-		);
+        // API. Sending files scan result
+        $result = API::method__security_mscan_logs(
+            $usp->key,
+            $usp->service_id,
+            date('Y-m-d H:i:s'),
+            $bad_files ? 'warning' : 'passed',
+            $total_scanned,
+            $modified,
+            $unknown
+        );
 
-		if( empty( $result['error'] ) ){
+        if ( empty($result['error']) ) {
 
-			$usp->data->stat->scanner->last_sent        = time();
-			$usp->data->stat->scanner->last_scan        = time();
-			$usp->data->stat->scanner->last_scan_amount = isset($_GET['total_scanned']) ? $_GET['total_scanned'] : $total_scanned;
+            $usp->data->stat->scanner->last_sent = time();
+            $usp->data->stat->scanner->last_scan = time();
+            $usp->data->stat->scanner->last_scan_amount = isset($_GET['total_scanned']) ? $_GET['total_scanned'] : $total_scanned;
 
-		}else
-			Err::add('scanner_result_send', $result['error']);
+        } else
+            Err::add('scanner_result_send', $result['error']);
 
-		$usp->data->save();
+        $usp->data->save();
 
-		$result['end'] = 1;
-		return $result;
+        $result['end'] = 1;
+        return $result;
 
-	}
+    }
 
-	public function get_files_by_status( $status, $data = '*' ) {
-		$data = is_array( $data ) ? implode( ', ', $data ) : $data;
-		return $this->db
-			->fetch_all(
-				'SELECT ' . $data
-				.' FROM ' . self::table__scanner___files
-				." WHERE status IN ( $status )");
-	}
+    public function get_files_by_status($status, $data = '*')
+    {
+        $data = is_array($data) ? implode(', ', $data) : $data;
+        return $this->db
+            ->fetch_all(
+                'SELECT ' . $data
+                . ' FROM ' . self::table__scanner___files
+                . " WHERE status IN ( $status )");
+    }
 
-	public function count_files_by_status( $status ) {
-		return $this->db->fetch_all(
-			'SELECT COUNT(fast_hash) as cnt'
-			.' FROM ' . self::table__scanner___files
-			." WHERE status IN ( $status )")[0]['cnt'];
-	}
+    public function count_files_by_status($status)
+    {
+        return $this->db->fetch_all(
+            'SELECT COUNT(fast_hash) as cnt'
+            . ' FROM ' . self::table__scanner___files
+            . " WHERE status IN ( $status )")[0]['cnt'];
+    }
 
-	public function next_state( $state ){
+    public function next_state($state)
+    {
 
-		$state = self::$states[ array_search( $state, self::$states ) + 1 ];
-		$usp = State::getInstance();
-		$setting = 'scanner_' . $state;
+        $state = self::$states[array_search($state, self::$states) + 1];
+        $usp = State::getInstance();
+        $setting = 'scanner_' . $state;
 
-		// Recursion
-		if( isset( $usp->settings->$setting ) && $usp->settings->$setting === 0 ){
-			$state = $this->next_state( $state );
-			$this->offset = 0;
-		}
+        // Recursion
+        if ( isset($usp->settings->$setting) && $usp->settings->$setting === 0 ) {
+            $state = $this->next_state($state);
+            $this->offset = 0;
+        }
 
-		// Recursion. Base case
-		return $state;
-	}
+        // Recursion. Base case
+        return $state;
+    }
 
-	public static function action__scanner__controller___no_sql(){
+    public static function action__scanner__controller___no_sql()
+    {
 
-		$usp = State::getInstance();
+        $usp = State::getInstance();
 
-		sleep(5);
+        sleep(5);
 
-		$state = Get::get('state')
-			? Get::get('state')
-			: 'clear_table';
+        $state = Get::get('state')
+            ? Get::get('state')
+            : 'clear_table';
 
-		$prev_state = $state;
-		$additional_params = array();
+        $prev_state = $state;
+        $additional_params = array();
 
-		switch($state){
+        switch ( $state ) {
 
-			// Cleaning table
-			case 'clear_table':
-				self::action__scanner__clear_table___no_sql();
-				$state = array_search( $state, self::$states );
-				break;
+            // Cleaning table
+            case 'clear_table':
+                self::action__scanner__clear_table___no_sql();
+                $state = array_search($state, self::$states);
+                break;
 
-			// Signatures
-			case 'signature_scan':
-				if(empty($usp->settings->scanner_signature_analysis)){
-					$state = array_search( $state, self::$states );
-					break;
-				}
+            // Signatures
+            case 'signature_scan':
+                if ( empty($usp->settings->scanner_signature_analysis) ) {
+                    $state = array_search($state, self::$states);
+                    break;
+                }
 
                 $result = self::action__scanner__signature_analysis___no_sql(
-					(int) Get::get( 'offset' ),
-					10,
-					substr( CT_USP_SITE_ROOT, 0, - 1 )
-				);
-				if(empty($result['error'])){
-					if($result['processed'] != 10)
-						$state = 'heuristic_scan';
-				}
-				break;
+                    (int)Get::get('offset'),
+                    10,
+                    substr(CT_USP_SITE_ROOT, 0, -1)
+                );
+                if ( empty($result['error']) ) {
+                    if ( $result['processed'] != 10 )
+                        $state = 'heuristic_scan';
+                }
+                break;
 
-			// Heuristic
-			case 'heuristic_scan':
-				if(empty($usp->settings->scanner_heuristic_analysis)){
-					$state = 'cure_backup';
-					break;
-				}
+            // Heuristic
+            case 'heuristic_scan':
+                if ( empty($usp->settings->scanner_heuristic_analysis) ) {
+                    $state = 'cure_backup';
+                    break;
+                }
 
-				$result = self::action__scanner__heuristic_analysis___no_sql(
-					(int) Get::get('offset'),
-					10,
-                    substr( CT_USP_SITE_ROOT, 0, - 1 )
-				);
+                $result = self::action__scanner__heuristic_analysis___no_sql(
+                    (int)Get::get('offset'),
+                    10,
+                    substr(CT_USP_SITE_ROOT, 0, -1)
+                );
 
-				if(empty($result['error'])){
-					if($result['processed'] != 10)
-						$state = 'send_results';
-				}
-				break;
+                if ( empty($result['error']) ) {
+                    if ( $result['processed'] != 10 )
+                        $state = 'send_results';
+                }
+                break;
 
-			// Send result
-			case 'send_results':
+            // Send result
+            case 'send_results':
 
-				$result = self::action__scanner__send_results___no_sql();
-				$end = true;
+                $result = self::action__scanner__send_results___no_sql();
+                $end = true;
 
-				break;
-		}
+                break;
+        }
 
-		// Make next call if everything is ok
-		if(!isset($end) && empty($result['error'])){
-			$def_params = array(
-				'plugin_name'             => 'security',
-				'spbc_remote_call_token'  => md5($usp->settings->key),
-				'spbc_remote_call_action' => 'scanner__controller',
-				'state'                   => $state
-			);
-			Helper::http__request(
-				CT_USP_AJAX_URI,
-				array_merge($def_params, $additional_params),
-				'get async'
-			);
-		}
+        // Make next call if everything is ok
+        if ( !isset($end) && empty($result['error']) ) {
+            $def_params = array(
+                'plugin_name' => 'security',
+                'spbc_remote_call_token' => md5($usp->settings->key),
+                'spbc_remote_call_action' => 'scanner__controller',
+                'state' => $state
+            );
+            Helper::http__request(
+                CT_USP_AJAX_URI,
+                array_merge($def_params, $additional_params),
+                'get async'
+            );
+        }
 
-		// Delete or add an error
-		empty($result['error'])
-			? $usp->error_delete($prev_state, 'and_save_data', 'cron_scan')
-			: $usp->error_add($prev_state, $result, 'cron_scan');
+        // Delete or add an error
+        empty($result['error'])
+            ? $usp->error_delete($prev_state, 'and_save_data', 'cron_scan')
+            : $usp->error_add($prev_state, $result, 'cron_scan');
 
-		return true;
-	}
+        return true;
+    }
 
 
-	/**
-	 * Clears all data about scanned files
-	 *
-	 * @return array
-	 */
-	public static function action__scanner__clear_table___no_sql(){
+    /**
+     * Clears all data about scanned files
+     *
+     * @return array
+     */
+    public static function action__scanner__clear_table___no_sql()
+    {
 
-		State::getInstance()->scan_result->count()
-			? State::getInstance()->scan_result->delete()
-			: null;
+        State::getInstance()->scan_result->count()
+            ? State::getInstance()->scan_result->delete()
+            : null;
 
-		return array(
-			'processed' => 1,
-			'success' => 1,
-			'end' => true,
-		);
-	}
+        return array(
+            'processed' => 1,
+            'success' => 1,
+            'end' => true,
+        );
+    }
 
-	public function action__scanner__get_signatures___no_sql() {
-		return $this->action__scanner__get_signatures();
-	}
+    public function action__scanner__get_signatures___no_sql()
+    {
+        return $this->action__scanner__get_signatures();
+    }
 
-	public static function action__scanner__signature_analysis___no_sql( $offset = 0, $amount = 10, $path = CT_USP_SITE_ROOT ){
+    public static function action__scanner__signature_analysis___no_sql($offset = 0, $amount = 10, $path = CT_USP_SITE_ROOT)
+    {
 
-		$offset = Get::get( 'offset' ) ? Get::get( 'offset' )             : $offset;
-		$amount = Get::get( 'amount' ) ? Get::get( 'amount' )             : $amount;
-		$path   = Get::get( 'path' )   ? realpath( Get::get( 'path' ) )   : realpath( $path );
+        $offset = Get::get('offset') ? Get::get('offset') : $offset;
+        $amount = Get::get('amount') ? Get::get('amount') : $amount;
+        $path = Get::get('path') ? realpath(Get::get('path')) : realpath($path);
 
-		$usp = State::getInstance();
+        $usp = State::getInstance();
 
-		$out = array(
-			'found'     => 0,
-			'processed' => 0,
-		);
+        $out = array(
+            'found' => 0,
+            'processed' => 0,
+        );
 
-		// Count files on the first call with offset
-		if( $offset == 0 ){
-			$path_to_scan = realpath( $path );
-			$root_path    = realpath(substr( CT_USP_SITE_ROOT, 0, -1 ) );
-			$init_params  = array(
-				'count'          => true,
-				'file_exceptions' => '',
-				'extensions'      => 'php, html, htm',
-				'files_mandatory' => array(),
-				'dir_exceptions'  => array()
-			);
-			$scanner = new \Cleantalk\USP\Scanner\Scanner($path_to_scan, $root_path, $init_params);
-			$out['total'] = $scanner->files_count;
-		}
+        // Count files on the first call with offset
+        if ( $offset == 0 ) {
+            $path_to_scan = realpath($path);
+            $root_path = realpath(substr(CT_USP_SITE_ROOT, 0, -1));
+            $init_params = array(
+                'count' => true,
+                'file_exceptions' => '',
+                'extensions' => 'php, html, htm',
+                'files_mandatory' => array(),
+                'dir_exceptions' => array()
+            );
+            $scanner = new \Cleantalk\USP\Scanner\Scanner($path_to_scan, $root_path, $init_params);
+            $out['total'] = $scanner->files_count;
+            if ( empty($usp->data->stat->scanner->last_scan_amount) ) {
+                $usp->data->stat->scanner['last_scan_amount'] = $scanner->files_count;
+                $usp->data->save();
+            }
+        }
 
-		$files_to_check = self::get_files( $offset, $amount );
+        $files_to_check = self::get_files($offset, $amount);
 
-		if ( $files_to_check ) {
+        if ( $files_to_check ) {
 
-			$scanned = 0;
-			$found = 0;
+            $scanned = 0;
+            $found = 0;
 
-			if ( ! empty( $files_to_check ) ) {
+            if ( !empty($files_to_check) ) {
 
-				// Initialing results
+                // Initialing results
 
-				$signatures = new Storage('signatures', null, '', 'csv', array(
-					'id',
-					'name',
-					'body',
-					'type',
-					'attack_type',
-					'submitted',
-					'cci'
-				) );
-				$signatures = $signatures->convertToArray();
+                $signatures = new Storage('signatures', null, '', 'csv', array(
+                    'id',
+                    'name',
+                    'body',
+                    'type',
+                    'attack_type',
+                    'submitted',
+                    'cci'
+                ));
+                $signatures = $signatures->convertToArray();
 
                 $decoded_signatures = array();
-                foreach ($signatures as $signature => $value){
+                foreach ( $signatures as $signature => $value ) {
                     $decoded_signatures[$signature] = $value;
                     $decoded_signatures[$signature]['body'] = base64_decode($value['body']);
                 }
 
 
-				foreach ( $files_to_check as $file ) {
+                foreach ( $files_to_check as $file ) {
 
-					$result = Scanner::file__scan__for_signatures( CT_USP_SITE_ROOT, $file, $decoded_signatures );
+                    $result = Scanner::file__scan__for_signatures(CT_USP_SITE_ROOT, $file, $decoded_signatures);
 
-					if ( empty( $result['error'] ) ) {
+                    if ( empty($result['error']) ) {
 
-						if ( $result['status'] !== 'OK' ) {
+                        if ( $result['status'] !== 'OK' ) {
 
-							$usp->scan_result[] = array(
-								'path'       => $file['path'],
-								'size'       => $file['size'],
-								'perms'      => $file['perms'],
-								'mtime'      => $file['mtime'],
-								'weak_spots' => json_encode($result['weak_spots']),
-								'fast_hash'  => $file['fast_hash'],
-								'full_hash'  => $file['full_hash'],
-							);
+                            $usp->scan_result[] = array(
+                                'path' => $file['path'],
+                                'size' => $file['size'],
+                                'perms' => $file['perms'],
+                                'mtime' => $file['mtime'],
+                                'weak_spots' => json_encode($result['weak_spots']),
+                                'fast_hash' => $file['fast_hash'],
+                                'full_hash' => $file['full_hash'],
+                            );
 
-							$out['found']++;
+                            $out['found']++;
 
-						}
+                        }
 
-					}else
-						return array( 'error' => 'Signature scan: ' . $result['error']);
+                    } else
+                        return array('error' => 'Signature scan: ' . $result['error']);
 
-					$out['processed']++;
-				}
+                    $out['processed']++;
+                }
 
-				$usp->scan_result->save();
+                $usp->scan_result->save();
 
-			}
+            }
 
-		}
+        }
 
-		$out['end'] = $out['processed'] < $amount;
+        $out['end'] = $out['processed'] < $amount;
 
-		return $out;
-	}
+        return $out;
+    }
 
-	public static function action__scanner__heuristic_analysis___no_sql( $offset = 0, $amount = 10, $path = CT_USP_SITE_ROOT ) {
+    public static function action__scanner__heuristic_analysis___no_sql($offset = 0, $amount = 10, $path = CT_USP_SITE_ROOT)
+    {
 
-		$offset = Get::get( 'offset' ) ? Get::get( 'offset' )             : $offset;
-		$amount = Get::get( 'amount' ) ? Get::get( 'amount' )             : $amount;
-		$path   = Get::get( 'path' )   ? realpath( Get::get( 'path' ) )   : realpath( $path );
+        $offset = Get::get('offset') ? Get::get('offset') : $offset;
+        $amount = Get::get('amount') ? Get::get('amount') : $amount;
+        $path = Get::get('path') ? realpath(Get::get('path')) : realpath($path);
 
-		$usp = State::getInstance();
+        $usp = State::getInstance();
 
-		$out = array(
-			'found'     => 0,
-			'processed' => 0,
-		);
+        $out = array(
+            'found' => 0,
+            'processed' => 0,
+        );
 
-		// Count files on the first call with offset
-		if( $offset == 0 ){
-			$path_to_scan = realpath( $path );
-			$root_path    = realpath(substr( CT_USP_SITE_ROOT, 0, -1 ) );
-			$init_params  = array(
-				'count'          => true,
-				'file_exceptions' => '',
-				'extensions'      => 'php, html, htm',
-				'files_mandatory' => array(),
-				'dir_exceptions'  => array()
-			);
-			$scanner = new \Cleantalk\USP\Scanner\Scanner($path_to_scan, $root_path, $init_params);
-			$out['total'] = $scanner->files_count;
-		}
+        // Count files on the first call with offset
+        if ( $offset == 0 ) {
+            $path_to_scan = realpath($path);
+            $root_path = realpath(substr(CT_USP_SITE_ROOT, 0, -1));
+            $init_params = array(
+                'count' => true,
+                'file_exceptions' => '',
+                'extensions' => 'php, html, htm',
+                'files_mandatory' => array(),
+                'dir_exceptions' => array()
+            );
+            $scanner = new \Cleantalk\USP\Scanner\Scanner($path_to_scan, $root_path, $init_params);
+            $out['total'] = $scanner->files_count;
+            if ( empty($usp->data->stat->scanner->last_scan_amount) ) {
+                $usp->data->stat->scanner['last_scan_amount'] = $scanner->files_count;
+                $usp->data->save();
+            }
+        }
 
 
-		$files_to_check = self::get_files( $offset, $amount );
+        $files_to_check = self::get_files($offset, $amount);
 
-		if ( $files_to_check ) {
-			if ( count( $files_to_check ) ) {
-				foreach ( $files_to_check as $file ) {
+        if ( $files_to_check ) {
+            if ( count($files_to_check) ) {
+                foreach ( $files_to_check as $file ) {
 
-					$result = Scanner::file__scan__heuristic( CT_USP_SITE_ROOT, $file );
+                    $result = Scanner::file__scan__heuristic(CT_USP_SITE_ROOT, $file);
 
-					if ( empty( $result['error'] ) ) {
+                    if ( empty($result['error']) ) {
 
-						if ( $result['status'] !== 'OK' ) {
+                        if ( $result['status'] !== 'OK' ) {
 
-							$usp->scan_result[] = array(
-								'path'       => $file['path'],
-								'size'       => $file['size'],
-								'perms'      => $file['perms'],
-								'mtime'      => $file['mtime'],
-								'weak_spots' => json_encode($result['weak_spots']),
-								'fast_hash'  => $file['fast_hash'],
-								'full_hash'  => $file['full_hash'],
-							);
+                            $usp->scan_result[] = array(
+                                'path' => $file['path'],
+                                'size' => $file['size'],
+                                'perms' => $file['perms'],
+                                'mtime' => $file['mtime'],
+                                'weak_spots' => json_encode($result['weak_spots']),
+                                'fast_hash' => $file['fast_hash'],
+                                'full_hash' => $file['full_hash'],
+                            );
 
-							$out['found'] ++;
+                            $out['found']++;
 
-						}
+                        }
 
-					}else
-						return array( 'error' => 'Heuristic scan: ' . $result['error']);
+                    } else
+                        return array('error' => 'Heuristic scan: ' . $result['error']);
 
-					$out['processed']++;
+                    $out['processed']++;
 
-				}
+                }
 
-				$usp->scan_result->save();
-			}
-		}
+                $usp->scan_result->save();
+            }
+        }
 
-		$out['end'] = $out['processed'] < $amount;
+        $out['end'] = $out['processed'] < $amount;
 
-		return $out;
+        return $out;
 
-	}
+    }
 
-	public static function action__scanner__send_results___no_sql( $total_scanned = 0 ) {
+    public static function action__scanner__send_results___no_sql($total_scanned = 0)
+    {
 
-		$usp = State::getInstance();
+        $usp = State::getInstance();
 
-        if ( ! $usp->key ) {
+        if ( !$usp->key ) {
             $result['end'] = 1;
             return $result;
         }
 
-		$total_scanned = $total_scanned ? $total_scanned : Get::get( 'total_scanned' );
+        $total_scanned = $total_scanned ? $total_scanned : Get::get('total_scanned');
 
-		$files = $usp->scan_result->convertToArray();
+        $files = $usp->scan_result->convertToArray();
 
-		$files_count = count( $files );
+        $files_count = count($files);
 
-		$unknown  = array();
-		$modified = array();
-		if($files_count){
-			foreach ( $files as $file ) {
-				$file['path'] = Helper::is_windows() ? str_replace('\\', '/', $file['path']) : $file['path'];
-				$modified[ $file['path'] ] = array(
-					$file['full_hash'],
-					$file['mtime'],
-					$file['size'],
-					'CORE',
-					'unknown',
-					'UNKNOWN',
-				);
-			}
-		}
+        $unknown = array();
+        $modified = array();
+        if ( $files_count ) {
+            foreach ( $files as $file ) {
+                $file['path'] = Helper::is_windows() ? str_replace('\\', '/', $file['path']) : $file['path'];
+                $modified[$file['path']] = array(
+                    $file['full_hash'],
+                    $file['mtime'],
+                    $file['size'],
+                    'CORE',
+                    'unknown',
+                    'UNKNOWN',
+                );
+            }
+        }
 
-		// API. Sending files scan result
-		$result = API::method__security_mscan_logs(
-			$usp->key,
-			$usp->service_id,
-			date( 'Y-m-d H:i:s' ),
-			$files_count ? 'warning' : 'passed',
-			$files_count,
-			$modified,
-			$unknown
-		);
+        // API. Sending files scan result
+        $result = API::method__security_mscan_logs(
+            $usp->key,
+            $usp->service_id,
+            date('Y-m-d H:i:s'),
+            $files_count ? 'warning' : 'passed',
+            $files_count,
+            $modified,
+            $unknown
+        );
 
-		if(empty($result['error'])){
+        if ( empty($result['error']) ) {
 
-			$usp->data->stat->scanner->last_sent        = time();
-			$usp->data->stat->scanner->last_scan        = time();
-			$usp->data->stat->scanner->last_scan_amount = isset($_GET['total_scanned']) ? $_GET['total_scanned'] : $total_scanned;
+            $usp->data->stat->scanner->last_sent = time();
+            $usp->data->stat->scanner->last_scan = time();
+            $usp->data->stat->scanner->last_scan_amount = isset($_GET['total_scanned']) ? $_GET['total_scanned'] : $total_scanned;
 
-		}else
-			Err::add('scanner_result_send', $result['error']);
+        } else
+            Err::add('scanner_result_send', $result['error']);
 
-		$usp->data->save();
+        $usp->data->save();
 
-		$result['end'] = 1;
-		return $result;
+        $result['end'] = 1;
+        return $result;
 
-	}
+    }
 
 
-	public static function get_files( $offset = 0, $amount = 1500, $path = CT_USP_SITE_ROOT ) {
+    public static function get_files($offset = 0, $amount = 1500, $path = CT_USP_SITE_ROOT)
+    {
 
-		$path_to_scan = realpath($path);
-		$root_path = realpath( substr( CT_USP_SITE_ROOT, 0, - 1 ) );
-		$init_params = array(
-			'fast_hash'        		=> true,
-			'full_hash'       		=> true,
-			'offset'                => $offset,
-			'amount'                => $amount,
-			'extensions'            => 'php, html, htm',
-			'extensions_exceptions' => '',
-			'file_exceptions'       => '',
-			'files_mandatory' => array(),
-			'dir_exceptions'  => array()
-		);
+        $path_to_scan = realpath($path);
+        $root_path = realpath(substr(CT_USP_SITE_ROOT, 0, -1));
+        $init_params = array(
+            'fast_hash' => true,
+            'full_hash' => true,
+            'offset' => $offset,
+            'amount' => $amount,
+            'extensions' => 'php, html, htm',
+            'extensions_exceptions' => '',
+            'file_exceptions' => '',
+            'files_mandatory' => array(),
+            'dir_exceptions' => array()
+        );
 
-		$scanner = new Scanner($path_to_scan, $root_path, $init_params);
+        $scanner = new Scanner($path_to_scan, $root_path, $init_params);
 
-		return $scanner->files_count
-			? $scanner->files
-			: false;
-	}
+        return $scanner->files_count
+            ? $scanner->files
+            : false;
+    }
 }
