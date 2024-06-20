@@ -800,3 +800,32 @@ function processValidKeyState($usp, $result)
     $usp->data->key_is_ok       = $usp->data->moderate && $usp->data->valid ? 1 : 0;
     usp_install_cron();
 }
+
+/**
+ * Handle restricted actions for UniForce lite
+ * @return void
+ */
+function usp_handle_uflite_restrictions()
+{
+    $error = 'To perform actions with files, please purchase the full version of Universal Security Plugin.';
+    //get template from views
+    require_once CT_USP_ROOT . 'view' . DIRECTORY_SEPARATOR . 'uf_lite_requires_full.php';
+    if (!isset($usp_purchase_hrefs)) {
+        $usp_purchase_hrefs = $error;
+    } else {
+        $purchase_link = 'https://p.cleantalk.org/?featured=&product_id=4';
+        $install_link = 'https://cleantalk.org/help/install-uniforce-security';
+        $usp_purchase_hrefs = sprintf(
+            $usp_purchase_hrefs,
+            $error,
+            $purchase_link,
+            $install_link
+        );
+    }
+    $json_uf_lite_answer = array(
+        'success' => false,
+        'error' => $error,
+        'uflite_hrefs' => $usp_purchase_hrefs
+    );
+    die(json_encode($json_uf_lite_answer));
+}

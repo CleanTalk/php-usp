@@ -11,18 +11,18 @@ require_once 'inc' . DIRECTORY_SEPARATOR . 'actions.php'; // Actions
 // URL ROUTING
 switch (true){
 	// Installation
-	case \Cleantalk\USP\Common\State::getInstance()->data->is_installed === false:
+	case \Cleantalk\USP\Common\State::getInstance()->data->is_installed === false && ! CT_USP_UNIFORCE_LITE:
 		$page = 'install';
 		break;
 	// Login
-	case \Cleantalk\USP\Variables\Cookie::get('authentificated') !== \Cleantalk\USP\Common\State::getInstance()->data->security_key:
+	case \Cleantalk\USP\Variables\Cookie::get('authentificated') !== \Cleantalk\USP\Common\State::getInstance()->data->security_key && ! CT_USP_UNIFORCE_LITE:
         $additional_js = array(
             'ct_js_test',
         );
 	    $page = 'login';
         break;
     // Settings
-    case \Cleantalk\USP\Variables\Cookie::get('authentificated') === \Cleantalk\USP\Common\State::getInstance()->data->security_key:
+    case \Cleantalk\USP\Variables\Cookie::get('authentificated') === \Cleantalk\USP\Common\State::getInstance()->data->security_key || CT_USP_UNIFORCE_LITE:
 	    $additional_js = array(
 	    	'scanner-plugin',
 	    	'scanner',

@@ -14,6 +14,7 @@ function spbc_scanner_button_file_view_event(obj){
         data: {
             action: 'spbc_scanner_file_view',
             file_id: jQuery(obj).parent().attr('uid'),
+            isUFLite: checkUFLiteInstance()
         },
         spinner: jQuery(obj).parent().siblings('.tbl-preloader--tiny'),
         successCallback: spbc_scannerButtonFileView_callback,

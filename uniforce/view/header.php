@@ -6,7 +6,7 @@
         <link rel="shortcut icon" href="img/ct_logo.png">
 <!--        <link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet">-->
 
-        <title>Universal Security Plugin by CleanTalk</title>
+        <title>UniForce Lite, Malware scanner</title>
 
         <!-- CSS -->
 

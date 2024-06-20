@@ -12,6 +12,10 @@ if( Post::is_set('action', 'security') ) {
 
 	if( Post::get( 'security' ) === md5( Server::get( 'SERVER_NAME' ) ) ) {
 
+        if (Post::get( 'isUFLite' ) == 1) {
+            usp_handle_uflite_restrictions();
+        }
+
 		switch( Post::get( 'action' ) ) {
 
 			case 'key_validate' :
@@ -24,6 +28,10 @@ if( Post::is_set('action', 'security') ) {
 
 			case 'install' :
 				usp_do_install();
+				break;
+
+			case 'spbc_tbl-pagination':
+				call_user_func( '\Cleantalk\USP\Layout\ListTable::ajax__pagination_handler' );
 				break;
 
 			default:
@@ -78,7 +86,7 @@ if( Post::is_set('action', 'security') ) {
 				}
 				die(json_encode( $result, true ));
 				break;
-				
+
 			default:
 				die(Err::add('Unknown action')->get_last( 'as_json' ));
 				break;
