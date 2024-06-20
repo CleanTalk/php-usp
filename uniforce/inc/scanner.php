@@ -779,7 +779,7 @@ function usp_scanner__display___no_sql(){
         $scan_results_tmpl = '
             Website last scan was performed on %s.
             <div class="spbc_scan_results_div">
-                <p class="spbc_scan_results_item">Total site files<b>*</b>: %d, files scanned<b>*</b>: %d, suspicious files detected: %d
+                <p class="spbc_scan_results_item">Total site files<b>*</b> %d, files scanned<b>*</b> %d, suspicious files detected %d
             </div>
             <div style="text-align: left; font-size: 12px">
             <p><b>*</b>Total site files - only executable files (%s) except for the quarantined files, files of zero size and files larger than the acceptable size (2 MB).</p>

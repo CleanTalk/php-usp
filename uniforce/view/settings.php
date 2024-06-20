@@ -108,7 +108,7 @@ if ( defined(CT_USP_UNIFORCE_LITE) && ! CT_USP_UNIFORCE_LITE ) {
     $module_public_name_desc = 'Universal Security Plugin by CleanTalk, full functional version';
 } else {
     $module_public_name = ' - UniForce Lite - ';
-    $module_public_name_desc = 'Universal Security Plugin by CleanTalk, restricted functional version';
+    $module_public_name_desc = 'Universal Security Plugin by CleanTalk, Malware scanner.';
 }
 
 usp_localize_script( 'spbc_ScannerData', $localize_array);
