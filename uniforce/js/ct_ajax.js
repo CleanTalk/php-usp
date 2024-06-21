@@ -153,7 +153,7 @@ class CTAJAX{
 
 	};
 
-	errorOutput( msg ){
+	errorOutput( msg, replace_text ){
 		jQuery('.alert-danger').show(300);
 		if (replace_text) {
 			jQuery('#error-msg').text( msg );
