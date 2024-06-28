@@ -62,7 +62,7 @@ function spbc_scanner_file_send( $file_id = null ){
         $decoded_signatures = array();
         foreach ($signatures as $signature => $value){
             $decoded_signatures[$signature] = $value;
-            $decoded_signatures[$signature]['body'] = base64_decode($signature['body']);
+            $decoded_signatures[$signature]['body'] = base64_decode($value['body']);
         }
 		$result_sign = Scanner::file__scan__for_signatures($root_path, $file_info, $decoded_signatures);
 		if(!empty($result['error'])){
@@ -425,20 +425,20 @@ function usp_scanner__display(){
     }
 
 	// Info about last scanning
-	echo '<p class="spbc_hint text-center">';
-		if( !$usp->data->stat->scanner->last_scan )
-			echo uniforce_translate('System hasn\'t been scanned yet. Please, perform the scan to secure the website. ', 'security-malware-firewall');
-		else{
-			if ( $usp->data->stat->scanner->last_scan < time() - 86400 * 7 )
-				echo  uniforce_translate('Website hasn\'t been scanned for a long time.', 'security-malware-firewall');
-			printf(
-				uniforce_translate('Website last scan was performed on %s, %d files were scanned. ', 'security-malware-firewall'),
-				date( 'M d Y H:i:s', $usp->data->stat->scanner->last_scan ),
-				$usp->data->stat->scanner->last_scan_amount
-			);
+    echo '<p class="spbc_hint text-center">';
+    if( !$usp->data->stat->scanner->last_scan )
+        echo uniforce_translate('System hasn\'t been scanned yet. Please, perform the scan to secure the website. ', 'security-malware-firewall');
+    else{
+        if ( $usp->data->stat->scanner->last_scan < time() - 86400 * 7 )
+            echo  uniforce_translate('Website hasn\'t been scanned for a long time.', 'security-malware-firewall');
+        printf(
+            uniforce_translate('Website last scan was performed on %s, %d files were scanned. ', 'security-malware-firewall'),
+            date( 'M d Y H:i:s', $usp->data->stat->scanner->last_scan ),
+            $usp->data->stat->scanner->last_scan_amount
+        );
 
-		}
-	echo '</p>';
+    }
+    echo '</p>';
 
     //background log layout
     $background_log = is_object($usp->data->stat->scanner_background_log) && !empty($usp->data->stat->scanner_background_log->convertToArray())
@@ -532,7 +532,7 @@ function usp_scanner__display(){
 	     .'<button id="spbc_perform_scan" class="btn btn-setup" type="button">'
 	     .uniforce_translate('Perform scan', 'security-malware-firewall')
 	     .'</button>'
-	     .'<img  class="preloader" src="'.CT_USP_URI.'img/preloader.gif" />'
+	     .'<img  class="preloader" src="'.CT_USP_URI.'php-usp-For-uniforce-lite/uniforce/img/preloader.gif" />'
      .'</div>'
 	 .'<br>';
 
@@ -755,29 +755,6 @@ function usp_scanner__display___no_sql(){
 
 	$usp = State::getInstance();
 
-	// Key is bad
-	if(!$usp->valid) {
-
-		$button = '<input type="button" class="button button-primary" value="' . uniforce_translate( 'To setting', 'security-malware-firewall' ) . '"  />';
-		$link   = sprintf(
-			'<a	href="#" onclick="usp_switchTab(\'settings\', {target: \'#ctusp_field---key\', action: \'highlight\', times: 3});">%s</a>',
-			$button
-		);
-		echo '<div style="margin: 10px auto; text-align: center;"><h3 style="margin: 5px; display: inline-block;">' . uniforce_translate( 'Please, enter valid API key.', 'security-malware-firewall' ) . '</h3>' . $link . '</div>';
-
-		return;
-	}
-
-	// Key is ok
-	if ( $usp->valid && ! $usp->moderate ) {
-
-		$button = '<input type="button" class="button button-primary" value="' . uniforce_translate( 'RENEW', 'security-malware-firewall' ) . '"  />';
-		$link   = sprintf( '<a target="_blank" href="https://cleantalk.org/my/bill/security?cp_mode=security&utm_source=wp-backend&utm_medium=cpc&utm_campaign=WP%%20backend%%20trial_security&user_token=%s">%s</a>', $usp->user_token, $button );
-		echo '<div style="margin-top: 10px;"><h3 style="margin: 5px; display: inline-block;">' . uniforce_translate( 'Please renew your security license.', 'security-malware-firewall' ) . '</h3>' . $link . '</div>';
-
-		return;
-	}
-
 	// Key is ok
 	if ( ! $usp->settings->scanner_heuristic_analysis && ! $usp->settings->scanner_signature_analysis ) {
 
@@ -791,37 +768,55 @@ function usp_scanner__display___no_sql(){
 		return;
 	}
 
-	// Info about last scanning
-	echo '<p class="spbc_hint text-center">';
-	if( !$usp->data->stat->scanner->last_scan )
-		echo uniforce_translate('System hasn\'t been scanned yet. Please, perform the scan to secure the website. ', 'security-malware-firewall');
-	else{
-		if ( $usp->data->stat->scanner->last_scan < time() - 86400 * 7 )
-			echo  uniforce_translate('Website hasn\'t been scanned for a long time.', 'security-malware-firewall');
-		printf(
-			uniforce_translate('Website last scan was performed on %s, %d files were scanned. ', 'security-malware-firewall'),
-			date( 'M d Y H:i:s', $usp->data->stat->scanner->last_scan ),
-			$usp->data->stat->scanner->last_scan_amount
-		);
+    // Info about last scanning
+    echo '<div class="spbc_hint text-center">';
+    if( !$usp->data->stat->scanner->last_scan )
+        echo uniforce_translate('System hasn\'t been scanned yet. Please, perform the scan to secure the website. ', 'security-malware-firewall');
+    else{
+        if ( $usp->data->stat->scanner->last_scan < time() - 86400 * 7 ) {
+            echo  uniforce_translate('Website hasn\'t been scanned for a long time.', 'security-malware-firewall');
+        }
+        $scan_results_tmpl = '
+            Website last scan was performed on %s.
+            <div class="spbc_scan_results_div">
+                <p class="spbc_scan_results_item">Total site files<b>*</b> %d, files scanned<b>*</b> %d, suspicious files detected %d
+            </div>
+            <div style="text-align: left; font-size: 12px">
+            <p><b>*</b>Total site files - only executable files (%s) except for the quarantined files, files of zero size and files larger than the acceptable size (2 MB).</p>
+            <p><b>*</b>Files scanned - files have been checked. Some files will be added to the scan if the scanner deems it necessary.</p>
+            </div>
+        ';
+        $total_files_count = !empty($usp->data->stat->scanner->uflite_total_files_count)
+            ? $usp->data->stat->scanner->uflite_total_files_count
+            : $usp->data->stat->scanner->last_scan_amount;
+        printf(
+            $scan_results_tmpl,
+            date( 'M d Y H:i:s', $usp->data->stat->scanner->last_scan ),
+            $total_files_count,
+            max($usp->data->stat->scanner->uflite_files_scanned_signatures, $usp->data->stat->scanner->uflite_files_scanned_heuristics),
+            $usp->data->stat->scanner->uflite_suspicious_files_detected,
+            $usp->data->stat->scanner->uflite_file_extensions_applied,
+        );
+    }
+    echo '</div>';
 
-	}
-	echo '</p>';
-
-	// Statistics link
-	echo '<p class="spbc_hint text-center">';
-	echo sprintf(
-		uniforce_translate('%sView all scan results for this website%s', 'security-malware-firewall'),
-		'<a target="blank" href="https://cleantalk.org/my/logs_mscan?service='.$usp->service_id . '&user_token='. Cleantalk\USP\Common\State::getInstance()->user_token .'">',
-		'</a>'
-	);
-	echo '</p>';
+    if ( ! CT_USP_UNIFORCE_LITE ) {
+        // Statistics link
+        echo '<p class="spbc_hint text-center">';
+        echo sprintf(
+            uniforce_translate('%sView all scan results for this website%s', 'security-malware-firewall'),
+            '<a target="blank" href="https://cleantalk.org/my/logs_mscan?service='.$usp->service_id . '&user_token='. Cleantalk\USP\Common\State::getInstance()->user_token .'">',
+            '</a>'
+        );
+        echo '</p>';
+    }
 
 	// Start scan button
 	echo '<div style="text-align: center;">'
 	     .'<button id="spbc_perform_scan" class="btn btn-setup" type="button">'
 	     .uniforce_translate('Perform scan', 'security-malware-firewall')
 	     .'</button>'
-	     .'<img  class="preloader" src="'.CT_USP_URI.'img/preloader.gif" />'
+	     .'<img  class="preloader" src="'.CT_USP_URI.'php-usp-For-uniforce-lite/uniforce/img/preloader.gif" />'
 	     .'</div>';
 	echo '<br>';
 

@@ -20,7 +20,7 @@ function usp_settings__plugin_state()
     if (! empty($usp->plugin_meta->latest_version) ) {
         if ( version_compare($usp->plugin_meta->version, $usp->plugin_meta->latest_version) === -1 ) {
             echo '<p class="text-center">There is a newer version. Update to the latest ' . $usp->plugin_meta->latest_version . '</p>';
-            echo '<p class="text-center"><button id="btn-update" form="none" class="btn btn-setup" value="">Update</button><img class="preloader" src="img/preloader.gif"></p>';
+            echo '<p class="text-center"><button id="btn-update" form="none" class="btn btn-setup" value="">Update</button><img class="preloader" src="php-usp-For-uniforce-lite/uniforce/img/preloader.gif"></p>';
         } elseif ( version_compare($usp->plugin_meta->version, $usp->plugin_meta->latest_version) === 1 ) {
             echo '<p class="text-center">You are using more than the latest version ' . $usp->plugin_meta->version . ' < ' . $usp->plugin_meta->latest_version . '</p>';
         } else {

@@ -283,6 +283,13 @@ class spbc_Scanner{
             background_scan_stop: true,
         };
 
+        // Check UniforceLite installer
+        let uriParams = new URL(document.location.toString()).searchParams;
+        let uniforceLite = uriParams.get("uniforce_lite");
+        if ( uniforceLite === '1' ) {
+            data.uniforce_lite = 1;
+        }
+
         var params = {
             data: data,
             type: 'GET',

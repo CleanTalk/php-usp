@@ -47,3 +47,61 @@
     #spbc_estimated_output, #spbc_elapsed_output {
         font-weight: 600;
     }
+
+.spbc_progressbar_counter{
+    position: absolute;
+    height: 22px;
+    width: 100%;
+    left: 0;
+    top: 0;
+    text-align: center;
+}
+.spbc_progressbar_counter span{
+    vertical-align: sub;
+    line-height: 22px;
+    font-weight: 600;
+    font-size: 18px;
+}
+.ui-progressbar-value{ background-image: url(../img/pbar-ani.gif) !important; }
+
+.spbc_view_file_row_wrapper { line-height: 19px; }
+.spbc_view_file_row_wrapper:nth-child(odd) { background: #ccc; }
+.spbc_view_file_row_wrapper:nth-child(even) { background: #ddd; }
+.spbc_view_file_row_num { display: inline-block; width: 30px; margin: 0 0 0 5px; border-right: 1px solid black; }
+.spbc_view_file_row { display: inline; margin: 0 0 0 5px; }
+.spbc_view_file_row_wrapper_weak_spots { background-color: #f00; }
+
+#spbc_estimated_time_hint
+{
+    width: 100%;
+    text-align: right;
+    vertical-align: sub;
+    font-weight: 400;
+    font-size: 12px;
+}
+
+#spbc_estimated_time_block{
+    border: 1px solid #ddd;
+    padding: 10px;
+    border-radius: 3px;
+}
+
+.spbc_estimated_item {
+    width: 50%;
+    text-align: left;
+    vertical-align: sub;
+    font-weight: 400;
+    font-size: 14px;
+}
+
+#spbc_estimated_output, #spbc_elapsed_output {
+    font-weight: 600;
+}
+
+.spbc_scan_results_div {
+    margin-top: 15px; margin-bottom: 15px; padding: 5px; border-radius: 3px; background: #f8f8f8
+}
+
+.spbc_scan_results_item {
+    margin: 0px; padding: 5px;
+}

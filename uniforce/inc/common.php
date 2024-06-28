@@ -5,7 +5,7 @@
  *
  * Sets all main constants
  *
- * Version: 3.10.0
+ * Version: 3.11.0
  */
 
 use Cleantalk\USP\Common\Err;
@@ -14,7 +14,7 @@ use Cleantalk\USP\Variables\Server;
 use Cleantalk\USP\Common\RemoteCalls;
 
 if( ! defined( 'SPBCT_PLUGIN' ) )     define( 'SPBCT_PLUGIN', 'uniforce' );
-if( ! defined( 'SPBCT_VERSION' ) )    define( 'SPBCT_VERSION', '3.10.0' );
+if( ! defined( 'SPBCT_VERSION' ) )    define( 'SPBCT_VERSION', '3.11.0' );
 if( ! defined( 'SPBCT_AGENT' ) )      define( 'SPBCT_AGENT', SPBCT_PLUGIN . '-' . str_replace( '.', '', SPBCT_VERSION ) );
 if( ! defined( 'SPBCT_USER_AGENT' ) ) define( 'SPBCT_USER_AGENT', 'Cleantalk-Security-Universal-Plugin/' . SPBCT_VERSION );
 
@@ -22,10 +22,18 @@ if ( ! defined('DS') ) {
     define( 'DS', DIRECTORY_SEPARATOR );
 }
 
+// Uniforce Lite installer
+define('CT_USP_UNIFORCE_LITE', isset($_GET['uniforce_lite']) && $_GET['uniforce_lite'] === '1');
+
 // Directories
 define( 'CT_USP_INC', realpath(__DIR__ ) . DS );
 define( 'CT_USP_ROOT', realpath( CT_USP_INC . '..') . DS );
-define( 'CT_USP_SITE_ROOT', realpath( CT_USP_ROOT . '..') . DS );
+
+$site_root = CT_USP_UNIFORCE_LITE
+    ? dirname(dirname(realpath( CT_USP_ROOT . '..')))
+    : realpath( CT_USP_ROOT . '..');
+
+define( 'CT_USP_SITE_ROOT', $site_root . DS );
 define( 'CT_USP_LIB', CT_USP_ROOT . 'lib' . DS );
 define( 'CT_USP_VIEW', CT_USP_ROOT . DS . 'view' . DS );
 define( 'CT_USP_DATA', CT_USP_ROOT . 'data' . DS );

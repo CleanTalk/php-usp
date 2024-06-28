@@ -302,3 +302,13 @@ function uspSettingsDependencies(settingsIDs, enable){
 
     });
 }
+
+function checkUFLiteInstance() {
+    // Check UniforceLite installer
+    let uriParams = new URL(document.location.toString()).searchParams;
+    let uniforceLite = uriParams.get("uniforce_lite");
+    if ( uniforceLite === '1' ) {
+        return 1;
+    }
+    return 0;
+}
