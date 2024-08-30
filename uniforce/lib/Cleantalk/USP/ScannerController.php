@@ -819,7 +819,8 @@ class ScannerController
             $bad_files ? 'warning' : 'passed',
             $total_scanned,
             $modified,
-            $unknown
+            $unknown,
+            $usp->data->scanner->background_scan_stop ? 'manual' : 'auto'
         );
 
         if ( empty($result['error']) ) {
@@ -1218,7 +1219,8 @@ class ScannerController
             $files_count ? 'warning' : 'passed',
             $files_count,
             $modified,
-            $unknown
+            $unknown,
+            $usp->data->scanner->background_scan_stop ? 'manual' : 'auto'
         );
 
         if ( empty($result['error']) ) {
