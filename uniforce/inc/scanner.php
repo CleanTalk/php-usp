@@ -795,7 +795,7 @@ function usp_scanner__display___no_sql(){
             $total_files_count,
             max($usp->data->stat->scanner->uflite_files_scanned_signatures, $usp->data->stat->scanner->uflite_files_scanned_heuristics),
             $usp->data->stat->scanner->uflite_suspicious_files_detected,
-            $usp->data->stat->scanner->uflite_file_extensions_applied,
+            $usp->data->stat->scanner->uflite_file_extensions_applied
         );
     }
     echo '</div>';
