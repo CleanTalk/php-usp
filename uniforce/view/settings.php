@@ -98,7 +98,10 @@ $localize_array = array(
     'last_scan_was_just_now_links'  => uniforce_translate('Website last scan was just now. %s files were scanned. %s outbound links were found.', 'security-malware-firewall'),
 );
 
-if ( defined(CT_USP_UNIFORCE_LITE) && ! CT_USP_UNIFORCE_LITE ) {
+if ( defined('CT_USP_UNIFORCE_LITE') && CT_USP_UNIFORCE_LITE ) {
+    $module_public_name = ' - UniForce Lite - ';
+    $module_public_name_desc = 'Universal Security Plugin by CleanTalk, Malware scanner.';
+} else {
     $localize_array['view_all_results'] = sprintf(
         uniforce_translate('</br>%sView all scan results for this website%s', 'security-malware-firewall'),
         '<a target="blank" href="https://cleantalk.org/my/logs_mscan?service=' . Cleantalk\USP\Common\State::getInstance()->service_id . '&user_token='. Cleantalk\USP\Common\State::getInstance()->user_token .'">',
@@ -106,9 +109,6 @@ if ( defined(CT_USP_UNIFORCE_LITE) && ! CT_USP_UNIFORCE_LITE ) {
     );
     $module_public_name = ' - UniForce - ';
     $module_public_name_desc = 'Universal Security Plugin by CleanTalk, full functional version';
-} else {
-    $module_public_name = ' - UniForce Lite - ';
-    $module_public_name_desc = 'Universal Security Plugin by CleanTalk, Malware scanner.';
 }
 
 usp_localize_script( 'spbc_ScannerData', $localize_array);
