@@ -1,27 +1,47 @@
 <?php
 
     $no_sql = false;
+    $no_pdo_found = false;
+    $php_version_failed = false;
 
 	$show_errors = ini_get( 'display_errors' );
+
+    register_shutdown_function( function() {
+        $last_error_template = '
+                    <div>
+                    <h3><p class="text-center">UniForce requirements error:</p></h3>
+                    <h4><p class="text-center">Shutdown trace</p></h4>
+                    <pre>%s</pre>
+                    </div>
+                    ';
+        $error_trace = var_export(error_get_last(), true);
+        printf($last_error_template, $error_trace);
+    });
+
 	ini_set( 'display_errors', 0);
-	try{
-		$db = \Cleantalk\USP\DB::getInstance(
-			'mysql:host=db2c.cleantalk.org;charset=utf8',
-			'test_user',
-			'oMae9Neid8yi'
-		);
-	}catch(Exception $e){
-        $no_sql = true;
+    if (class_exists('\PDO')) {
+        try{
+            $db = \Cleantalk\USP\DB::getInstance(
+                'mysql:host=db2c.cleantalk.org;charset=utf8',
+                'test_user',
+                'oMae9Neid8yi'
+            );
+        }catch(Exception $e){
+            $no_sql = true;
+        }
+    } else {
+        $no_pdo_found = true;
     }
+
+    $php_version_failed = version_compare(phpversion(), '5.6', '<' );
 
 	ini_set( 'display_errors', $show_errors);
 
     // Check if the openssl extension is installed
     define( 'CT_USP__NO_SQL', $no_sql );
-
 ?>
 
-<?php if( version_compare( phpversion(), '5.6', '<' ) ) : ?>
+<?php if( $php_version_failed || $no_pdo_found ) : ?>
 	<!DOCTYPE html>
 	<html>
 	<head>
@@ -50,15 +70,21 @@
 					<div class="page-icon animated bounceInDown">
 						<img  src="img/ct_logo.png" alt="Cleantalk logo" />
 					</div>
-					<div class="setup-logo">
+					<div class="setup-logo" style="text-align: center">
 						<h3> - Universal Anti-Spam Plugin - </h3>
 					</div>
 					<hr />
 					<div class="setup-form">
-						<!-- Check requirements -->
-						<h4><p class="text-center">PHP version is <?php echo phpversion(); ?></p></h4>
-						<h4><p class="text-center">The plugin requires version 5.6 or higher.</p></h4>
-						<h4><p class="text-center">Please, contact your hosting provider to update it.</p></h4>
+                        <?php if ($no_pdo_found) : ?>
+                            <h4><p class="text-center">No PDO drivers found.</p></h4>
+                            <p class="text-center">The plugin requires PDO MySQL driver to be installed and configured in PHP environment</p>
+                            <p class="text-center">Please, contact your hosting provider to update it.</p>
+                        <?php endif;  ?>
+                        <?php if ($php_version_failed) : ?>
+                            <h4><p class="text-center">PHP version is <?php echo phpversion(); ?></p></h4>
+                            <p class="text-center">The plugin requires version 5.6 or higher.</p>
+                            <p class="text-center">Please, contact your hosting provider to update it.</p>
+                        <?php endif;  ?>
 					</div>
 				</div>
 			</div>
