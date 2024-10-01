@@ -17,7 +17,7 @@ class Storage extends \ArrayObject {
 	private $map;
 
 	public function __construct( $name, $data = array(), $directory = null, $type = 'php', $map = array() ) {
-		
+
 		$this->directory = $directory ? $directory : $this->directory;
 		$this->type = $type;
 		$this->map = $map;
@@ -75,9 +75,9 @@ class Storage extends \ArrayObject {
 	protected function get($option_name)
 	{
 		$filename = $this->directory . $option_name . '.' . $this->type;
-		
+
 		if( file_exists( $filename ) ){
-			
+
 			switch( $this->type ){
 				case 'php':
 					require $filename;
@@ -86,7 +86,7 @@ class Storage extends \ArrayObject {
 				case 'csv':
                     $out = array();
 					$fd = fopen( $filename, 'r' );
-                        while( $line = fgetcsv( $fd, 2000, ',', '\'' ) ){
+                        while( $line = fgetcsv( $fd, 15000, ',', '\'' ) ){
                             $combined = \Cleantalk\USP\Uniforce\Helper::arrayCombine($this->map, $line);
                             if ($combined) {
                                 $out[] = $combined;
@@ -98,7 +98,7 @@ class Storage extends \ArrayObject {
 					break;
 			}
 		}
-		
+
 		return isset( $out ) ? $out : array();
 	}
 
@@ -111,9 +111,9 @@ class Storage extends \ArrayObject {
 	public function save()
 	{
 		$filename = $this->directory . $this->storage_name . '.' . $this->type;
-		
+
 		switch( $this->type ){
-			
+
 			case 'php':
 				file_put_contents( $filename , "<?php\n");
 				\Cleantalk\USP\Common\File::inject__variable(
@@ -122,7 +122,7 @@ class Storage extends \ArrayObject {
 					$this->convertToArray()
 				);
 				break;
-				
+
 			case 'csv':
 				$fp = fopen( $filename, 'w' );
                     foreach( $this->convertToArray() as &$field ){
