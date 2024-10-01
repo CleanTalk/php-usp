@@ -87,7 +87,12 @@ class Storage extends \ArrayObject {
                     $out = array();
 					$fd = fopen( $filename, 'r' );
                         while( $line = fgetcsv( $fd, 2000, ',', '\'' ) ){
-                            $out[] = array_combine($this->map, $line);
+                            $combined = \Cleantalk\USP\Uniforce\Helper::arrayCombine($this->map, $line);
+                            if ($combined) {
+                                $out[] = $combined;
+                            } else {
+                                Err::add('UniForce CSV parsing: line structure is not compatible with expected:' . var_export($line, true));
+                            }
                         }
                     fclose( $fd );
 					break;

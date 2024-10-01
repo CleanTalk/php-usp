@@ -94,4 +94,25 @@ class Helper extends \Cleantalk\USP\Common\Helper {
         }
         return 'no last PHP error detected';
     }
+
+    /**
+     * Safely use array_combine.
+     *
+     * @param $first
+     * @param $second
+     *
+     * @return array|false Combined array, false on failure.
+     */
+    static function arrayCombine($first, $second) {
+        if (is_array($first)) {
+            $first_args_count = count($first);
+            if (is_array($second)) {
+                $second_args_count = count($second);
+                if ($first_args_count === $second_args_count) {
+                    return array_combine($first, $second);
+                }
+            }
+        }
+        return false;
+    }
 }

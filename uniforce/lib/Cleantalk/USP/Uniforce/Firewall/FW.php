@@ -544,7 +544,7 @@ class FW extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 				){
 
 					$entry = Helper::buffer__csv__pop_line_to_array( $data );
-                    if( in_array($entry[0], $networks_to_skip ) ){
+                    if( !is_array($entry) || !isset($entry[0]) || in_array($entry[0], $networks_to_skip ) ){
                         continue;
                     }
 

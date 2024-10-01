@@ -86,7 +86,10 @@ class Helper {
 		$out = array();
 		while( $data ){
 			$row = \Cleantalk\USP\Uniforce\Helper::buffer__csv__pop_line_to_array( $data, $map, true );
-			if ( isset($row['body']) ) {
+			if (false === $row) {
+                continue;
+            }
+            if ( isset($row['body']) ) {
 				$row['body'] = base64_encode($row['body']);
 			}
 			$out[] = $row;

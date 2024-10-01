@@ -1169,8 +1169,9 @@ class Helper{
                 $line
             );
         }
-		if( $map )
-			$line = array_combine( $map, $line );
+		if( $map ) {
+            $line = \Cleantalk\USP\Uniforce\Helper::arrayCombine( $map, $line );
+        }
 
 		return $line;
 	}
@@ -1186,7 +1187,11 @@ class Helper{
 	static public function buffer__csv__to_array( &$csv, $map = array() ){
 		$out = array();
 		while( $csv !== '' ){
-			$out[] = static::buffer__csv__pop_line_to_array( $csv, $map );
+            $pop = static::buffer__csv__pop_line_to_array( $csv, $map );
+            if (false === $pop) {
+                continue;
+            }
+            $out[] = $pop;
 		}
 		return $out;
 	}

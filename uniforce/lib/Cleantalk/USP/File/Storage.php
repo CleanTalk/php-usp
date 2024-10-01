@@ -224,8 +224,16 @@ class Storage {
                 $read_line_offset += $col['length'];
             }
 
-            $this->output[] = array_combine( array_keys( $this->cols ), $line );
+            if (!isset($line) || !is_array($line)) {
+                continue;
+            }
 
+            $combined = Helper::arrayCombine(array_keys($this->cols ), $line );
+            if (false === $combined) {
+                continue;
+            }
+
+            $this->output[] = $combined;
         }
 
         return true;
