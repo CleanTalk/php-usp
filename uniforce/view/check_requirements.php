@@ -6,17 +6,19 @@
 
 	$show_errors = ini_get( 'display_errors' );
 
-    register_shutdown_function( function() {
-        $last_error_template = '
-                    <div>
-                    <h3><p class="text-center">UniForce requirements error:</p></h3>
-                    <h4><p class="text-center">Shutdown trace</p></h4>
-                    <pre>%s</pre>
-                    </div>
-                    ';
-        $error_trace = var_export(error_get_last(), true);
-        printf($last_error_template, $error_trace);
-    });
+//    register_shutdown_function( function() {
+//        $last_error_template = '
+//                    <div>
+//                    <h3><p class="text-center">UniForce requirements error:</p></h3>
+//                    <h4><p class="text-center">Shutdown trace</p></h4>
+//                    <pre>%s</pre>
+//                    </div>
+//                    ';
+//        $error_trace = var_export(error_get_last(), true);
+//        if ($error_trace) {
+//            printf($last_error_template, $error_trace);
+//        }
+//    });
 
 	ini_set( 'display_errors', 0);
     if (class_exists('\PDO')) {
