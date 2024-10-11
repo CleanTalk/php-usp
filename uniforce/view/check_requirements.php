@@ -26,11 +26,13 @@
 	ini_set( 'display_errors', 0);
     if (class_exists('\PDO')) {
         try{
-            $db = \Cleantalk\USP\DB::getInstance(
+            $db = new \Cleantalk\USP\DB();
+            $db->init(
                 'mysql:host=db2c.cleantalk.org;charset=utf8',
                 'test_user',
                 'oMae9Neid8yi'
             );
+            unset($db);
         }catch(Exception $e){
             $no_sql = true;
         }
