@@ -366,11 +366,16 @@ class BFP extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 				break;
 			case 'Bitrix' :
 				if (class_exists( 'CUser')) {
-					if (method_exists( 'CUser', 'IsAuthorized')) {
-						return \CUser::IsAuthorized();
-					}
+                    try {
+                        $method_checker = new \ReflectionMethod('CUser','IsAuthorized');
+                        if ($method_checker->isStatic()) {
+                            return \CUser::IsAuthorized();
+                        }
+                    } catch (\ReflectionException $e) {
+                        //do nothing
+                    }
 					global $USER;
-					return $USER->IsAuthorized();
+                    return $USER->IsAuthorized();
 				}
 				break;
 			case 'OpenCart' :
