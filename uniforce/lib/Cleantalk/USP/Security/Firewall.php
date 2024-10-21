@@ -129,6 +129,11 @@ class Firewall
                             $this->test_block = $result;
                         }
                     }
+			// Add check for test IP regardless of status
+			if ($module->test_ip && $result['ip'] === $module->test_ip) {
+				$result['status'] = 'DENY';  // Force block test IP
+				$this->test_block = $result;
+			}
                 }
 
 				// Prioritize
