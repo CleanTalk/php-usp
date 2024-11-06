@@ -159,7 +159,19 @@ class Helper{
 			}
 
 			// Is private network
-			if($ip_type === false || ($ip_type && (self::ip__is_private_network($ips['real'], $ip_type) || self::ip__mask_match($ips['real'], $_SERVER['SERVER_ADDR'] . '/24', $ip_type)))){
+            $server_addr = isset($_SERVER['SERVER_ADDR']) ? $_SERVER['SERVER_ADDR'] : null;
+            $server_addr = is_null($server_addr) && isset ($_SERVER['LOCAL_ADDR']) ? $_SERVER['LOCAL_ADDR'] : $server_addr;
+
+			if(
+                $ip_type === false ||
+                (
+                    $ip_type &&
+                    (
+                        self::ip__is_private_network($ips['real'], $ip_type) ||
+                        self::ip__mask_match($ips['real'], $server_addr . '/24', $ip_type)
+                    )
+                )
+            ){
 
 				// X-Forwarded-For
 				if(isset($headers['X-Forwarded-For'])){
