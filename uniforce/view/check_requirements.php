@@ -20,7 +20,6 @@
     define( 'CT_USP__NO_SQL', $no_sql );
 
 ?>
-
 <?php if( version_compare( phpversion(), '5.6', '<' ) ) : ?>
 	<!DOCTYPE html>
 	<html>
