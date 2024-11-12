@@ -399,7 +399,9 @@ class BFP extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
     public static function is_login_page() {
         $usp = State::getInstance();
 
-        if(mb_strtolower($usp->detected_cms) === 'unknown') {
+        $detected_cms = function_exists('mb_strtolower') ? mb_strtolower($usp->detected_cms) : strtolower($usp->detected_cms);
+
+        if($detected_cms === 'unknown') {
             if(isset($_POST) && !empty($_POST)) {
                 $number_matches = 0;
                 $number_pass_matches = 0;
