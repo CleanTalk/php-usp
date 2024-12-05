@@ -470,7 +470,7 @@ class BFP extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
                 }
 
                 // Results
-                if($usp->settings->bfp_login_form_fields && ($number_matches >= 2 || $number_matches > 0 && $number_pass_matches > 0) ) {
+                if($usp->settings->bfp_login_form_fields && ($number_matches >= 2 || ($number_matches > 0 && $number_pass_matches > 0) ) ) {
                     return true;
                 }
 
