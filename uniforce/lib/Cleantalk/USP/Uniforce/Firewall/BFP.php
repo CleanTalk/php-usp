@@ -81,16 +81,18 @@ class BFP extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 
 			foreach( $bfp_blacklist_fast as $bad_ip => $bad_ip__details ){
 
-				if( $bad_ip === $current_ip__real && $bad_ip__details->added + $allowed_interval > time() ){
-					$found_ip = $bad_ip;
-					$found_ip__details = array(
-						'added' => $bad_ip__details->added,
-						'js_on' => $js_on,
-						'count' => ++$bad_ip__details->count,
-					);
-				}elseif( isset( $bfp_blacklist_fast->$current_ip__real ) ){
-                    unset( $bfp_blacklist_fast->$current_ip__real );
-					$bfp_blacklist_fast->save();
+				if( $bad_ip === $current_ip__real ){
+                    if ( $bad_ip__details->added + $allowed_interval > time() ) {
+                        $found_ip = $bad_ip;
+                        $found_ip__details = array(
+                            'added' => $bad_ip__details->added,
+                            'js_on' => $js_on,
+                            'count' => ++$bad_ip__details->count,
+                        );
+                    } else {
+                        unset( $bfp_blacklist_fast->$current_ip__real );
+                        $bfp_blacklist_fast->save();
+                    }
 				}
 
 			} unset( $bad_ip, $bad_ip__details );
