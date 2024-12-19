@@ -106,7 +106,9 @@ class BFP extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 				// Check count of the logins and move the IP to the black list.
 				if( $found_ip__details['count'] > $allowed_count ){
 
-					$bfp_blacklist->$current_ip__real['added'] = time();
+					$bfp_blacklist->$current_ip__real = array(
+                        'added' => time()
+                    );
 					$bfp_blacklist->save();
 
 					unset( $bfp_blacklist_fast->$current_ip__real );
