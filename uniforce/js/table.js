@@ -48,6 +48,7 @@ function spbc_tbl__row_actions__listen(){
             add_action: self.attr('row-action'),
             id: self.parent().attr('uid'),
             cols: self.parent().attr('cols_amount'),
+            isUFLite: checkUFLiteInstance(),
         };
         var params = {
             callback: spbc_tbl__row_actions__callback,
@@ -55,13 +56,15 @@ function spbc_tbl__row_actions__listen(){
         };
         if(!spbc_bulk_action){
             var confirmation = spbc_TableData['warning_'+self.attr('row-action')] || spbc_TableData.warning_default;
-            if(confirm(confirmation))
+            var checkConfirm = checkUFLiteInstance() ? true : confirm(confirmation);
+            if(checkConfirm) {
                 ctAJAX({
                     data: data,
                     successCallback: spbc_tbl__row_actions__callback,
                     spinner: self.parent().siblings('.tbl-preloader--tiny'),
                     obj: self.parents('tr'),
                 });
+            }
         }
         if(spbc_bulk_action){
             ctAJAX({

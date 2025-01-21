@@ -55,7 +55,7 @@ class Firewall
 	public function __construct( $db = null  ){
 
 		$this->debug    = !! Get::get( 'debug' );
-		$this->ip_array = $this->ip__get( array('real'), true );
+		$this->ip_array = $this->ip__get( array('real'), false );
 
 		if( isset( $db ) )
 			$this->db       = $db;

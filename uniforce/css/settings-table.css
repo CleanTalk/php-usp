@@ -50,10 +50,16 @@ tbody{
         vertical-align: top;
         padding: 8px 10px;
     }
-    tbody tr td{ position: relative;}
+    tbody tr td {
+        position: relative;
+    }
 
 tfoot{
     border: 1px solid #ccd0d4;
+}
+
+.column-path {
+    word-break: break-word !important;
 }
 
 [disabled]:hover{cursor: not-allowed;}

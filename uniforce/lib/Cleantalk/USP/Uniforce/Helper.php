@@ -6,7 +6,7 @@ use Cleantalk\USP\Variables\Server;
 
 /**
  * Cleantalk's hepler class
- * 
+ *
  * Mostly contains request's wrappers.
  *
  * @version 2.4
@@ -15,12 +15,12 @@ use Cleantalk\USP\Variables\Server;
  * @author Cleantalk team (welcome@cleantalk.org)
  * @copyright (C) 2014 CleanTalk team (http://cleantalk.org)
  * @license GNU/GPL: http://www.gnu.org/copyleft/gpl.html
- * @see https://github.com/CleanTalk/php-antispam 
+ * @see https://github.com/CleanTalk/php-antispam
  *
  */
 
 class Helper extends \Cleantalk\USP\Common\Helper {
-	
+
 	static public function http__user_agent(){
 		return defined( 'SPBCT_USER_AGENT' ) ? SPBCT_USER_AGENT : static::DEFAULT_USER_AGENT;
 	}
@@ -83,4 +83,36 @@ class Helper extends \Cleantalk\USP\Common\Helper {
         return $param;
     }
 
+    /**
+     * Get error_last_msg as error string.
+     * @return string
+     */
+    static function errorGetLastMsg() {
+        $error = error_get_last();
+        if (is_array($error) && !empty($error['message']) && is_string($error['message'])) {
+            return $error['message'];
+        }
+        return 'no last PHP error detected';
+    }
+
+    /**
+     * Safely use array_combine.
+     *
+     * @param $first
+     * @param $second
+     *
+     * @return array|false Combined array, false on failure.
+     */
+    static function arrayCombine($first, $second) {
+        if (is_array($first)) {
+            $first_args_count = count($first);
+            if (is_array($second)) {
+                $second_args_count = count($second);
+                if ($first_args_count === $second_args_count) {
+                    return array_combine($first, $second);
+                }
+            }
+        }
+        return false;
+    }
 }

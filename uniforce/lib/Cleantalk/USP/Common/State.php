@@ -3,9 +3,9 @@
 namespace Cleantalk\USP\Common;
 
 /*
- * 
+ *
  * CleanTalk Security State class
- * 
+ *
  * @package Security Plugin by CleanTalk
  * @subpackage State
  * @Version 2.0
@@ -77,7 +77,7 @@ class State extends \Cleantalk\USP\Common\Storage{
 		'db_user' => '',
 		'db_password' => '',
 		'db_created' => '',
-		
+
 		// Application
 		'is_installed'   => false,
 		'detected_cms'   => 'Unknown',
@@ -105,15 +105,34 @@ class State extends \Cleantalk\USP\Common\Storage{
 				'logs_sent_amount' => 0,
 				'count' => 0,
 			),
-			'scanner' => array(
-				'last_scan' => 0,
-				'last_scan_amount' => 0,
-				'signature_last_update'	=> 0,
-				'signature_entries'	=> 0,
-			),
+            'scanner' => array(
+                'last_scan' => 0,
+                'last_scan_amount' => 0,
+                'signature_last_update'	=> 0,
+                'signature_entries'	=> 0,
+                'uflite_files_scanned_heuristics' => 0,
+                'uflite_files_scanned_signatures' => 0,
+                'uflite_suspicious_files_detected' => 0,
+                'uflite_file_extensions_applied' => '',
+                'uflite_total_files_count' => 0
+            ),
 			'php_logs' => array(
 				'last_sent' => 0,
 			),
+            'scanner_background_log' => array(
+                'create_db' => array(),
+                'clear_table' => array(),
+                'get_signatures' => array(),
+                'surface_analysis' => array(),
+                'get_approved' => array(),
+                'signature_analysis' => array(),
+                'heuristic_analysis' => array(),
+                'auto_cure' => array(),
+                //'frontend_analysis',
+                //'outbound_links',
+                'send_results' => array(),
+                'last_executed' => array()
+            ),
 		),
 
 		// Account
@@ -141,8 +160,10 @@ class State extends \Cleantalk\USP\Common\Storage{
 				'offset'        => 0,
 			),
 			'cured' => array(),
+            'background_scan_stop' => false,
 		),
 		'2fa_keys'          => array(),
+		'no_sql'            => true,
 	);
 
 	public $default_remote_calls = array(
@@ -187,13 +208,13 @@ class State extends \Cleantalk\USP\Common\Storage{
 		'logs_sent_time' => 0,
 		'last_update'    => 0,
 	);
-	
+
 	private $default_plugin_meta = array(
 		'version' => '1.0.0',
 		'latest_version' => '1.0.0',
 		'is_installed' => false,
 	);
-	
+
 	public function __construct( ...$options )
 	{
 		// Default options to get
@@ -211,7 +232,7 @@ class State extends \Cleantalk\USP\Common\Storage{
 			$option = is_array( $option )
 				? array_merge( $this->$def_option_name, $option )
 				: $this->$def_option_name;
-			
+
 			// Generating salt
 			if($option_name === 'data'){
 

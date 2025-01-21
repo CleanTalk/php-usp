@@ -280,7 +280,15 @@ class spbc_Scanner{
             plugin_name: 'spbc', // Adding security code
             offset: this.offset,
             no_sql: this.settings['no_sql'],
+            background_scan_stop: true,
         };
+
+        // Check UniforceLite installer
+        let uriParams = new URL(document.location.toString()).searchParams;
+        let uniforceLite = uriParams.get("uniforce_lite");
+        if ( uniforceLite === '1' ) {
+            data.uniforce_lite = 1;
+        }
 
         var params = {
             data: data,
@@ -289,7 +297,7 @@ class spbc_Scanner{
             complete: null,
             errorOutput: this.errorOutput,
             context: this,
-            timeout: 40000
+            timeout: 40000,
         };
 
         switch (this.state) {

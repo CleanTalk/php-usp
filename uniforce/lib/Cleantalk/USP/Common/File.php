@@ -116,8 +116,8 @@ class File{
 					$result = $new_content !== null ? true : false;
 					
 					if($result){
-						if( file_put_contents( $file_path, $new_content, LOCK_EX ) ){
-							return true;
+						if( $bytes = file_put_contents( $file_path, $new_content, LOCK_EX ) ){
+							return $bytes;
 						}else
 							return Err::add(__CLASS__, __FUNCTION__, 'Write error'); // Cannot write new content to template PHP file
 					}else

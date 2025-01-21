@@ -83,7 +83,7 @@ $usp = \Cleantalk\USP\Common\State::getInstance();
                             <small id="access_key_desc">If you already have the access key, insert the key in this field</small>
                             </div>
                             <div class="setup-hint">
-                            <img class="preloader" src="img/preloader.gif" style="display: none;" alt="">
+                            <img class="preloader" src="php-usp-master/uniforce/img/preloader.gif" style="display: none;" alt="">
                             <p><b><small>Additional scripts</small></b></p>
                             <input type="text" class="input-field" name="addition_scripts" />
                                 <small>Universal Security plugin will write protection code to index.php file by default.</small>
@@ -93,7 +93,7 @@ $usp = \Cleantalk\USP\Common\State::getInstance();
                         </div>
                         <button type="submit" class="btn btn-setup" disabled>Install</button>
                         <div id="install_preloader" style="display: none;">
-                            <img class="preloader" src="img/preloader.gif" style="display: block;" alt="">
+                            <img class="preloader" src="php-usp-master/uniforce/img/preloader.gif" style="display: block;" alt="">
                         </div>
 	                    <?php if( CT_USP__NO_SQL ): ?>
                             <input type="hidden" name="no_sql" value="1" />

@@ -81,16 +81,18 @@ class BFP extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 
 			foreach( $bfp_blacklist_fast as $bad_ip => $bad_ip__details ){
 
-				if( $bad_ip === $current_ip__real && $bad_ip__details->added + $allowed_interval > time() ){
-					$found_ip = $bad_ip;
-					$found_ip__details = array(
-						'added' => $bad_ip__details->added,
-						'js_on' => $js_on,
-						'count' => ++$bad_ip__details->count,
-					);
-				}elseif( isset( $bfp_blacklist_fast->$current_ip__real ) ){
-                    unset( $bfp_blacklist_fast->$current_ip__real );
-					$bfp_blacklist_fast->save();
+				if( $bad_ip === $current_ip__real ){
+                    if ( $bad_ip__details->added + $allowed_interval > time() ) {
+                        $found_ip = $bad_ip;
+                        $found_ip__details = array(
+                            'added' => $bad_ip__details->added,
+                            'js_on' => $js_on,
+                            'count' => ++$bad_ip__details->count,
+                        );
+                    } else {
+                        unset( $bfp_blacklist_fast->$current_ip__real );
+                        $bfp_blacklist_fast->save();
+                    }
 				}
 
 			} unset( $bad_ip, $bad_ip__details );
@@ -104,7 +106,9 @@ class BFP extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 				// Check count of the logins and move the IP to the black list.
 				if( $found_ip__details['count'] > $allowed_count ){
 
-					$bfp_blacklist->$current_ip__real['added'] = time();
+					$bfp_blacklist->$current_ip__real = array(
+                        'added' => time()
+                    );
 					$bfp_blacklist->save();
 
 					unset( $bfp_blacklist_fast->$current_ip__real );
@@ -366,11 +370,16 @@ class BFP extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 				break;
 			case 'Bitrix' :
 				if (class_exists( 'CUser')) {
-					if (method_exists( 'CUser', 'IsAuthorized')) {
-						return \CUser::IsAuthorized();
-					}
+                    try {
+                        $method_checker = new \ReflectionMethod('CUser','IsAuthorized');
+                        if ($method_checker->isStatic()) {
+                            return \CUser::IsAuthorized();
+                        }
+                    } catch (\ReflectionException $e) {
+                        //do nothing
+                    }
 					global $USER;
-					return $USER->IsAuthorized();
+                    return $USER->IsAuthorized();
 				}
 				break;
 			case 'OpenCart' :
@@ -394,7 +403,9 @@ class BFP extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
     public static function is_login_page() {
         $usp = State::getInstance();
 
-        if(mb_strtolower($usp->detected_cms) === 'unknown') {
+        $detected_cms = function_exists('mb_strtolower') ? mb_strtolower($usp->detected_cms) : strtolower($usp->detected_cms);
+
+        if($detected_cms === 'unknown') {
             if(isset($_POST) && !empty($_POST)) {
                 $number_matches = 0;
                 $number_pass_matches = 0;
@@ -463,7 +474,7 @@ class BFP extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
                 }
 
                 // Results
-                if($usp->settings->bfp_login_form_fields && ($number_matches >= 2 || $number_matches > 0 && $number_pass_matches > 0) ) {
+                if($usp->settings->bfp_login_form_fields && ($number_matches >= 2 || ($number_matches > 0 && $number_pass_matches > 0) ) ) {
                     return true;
                 }
 

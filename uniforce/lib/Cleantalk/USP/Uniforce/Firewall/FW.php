@@ -51,7 +51,7 @@ class FW extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 		if( Get::get('spbct_test') == md5( $this->api_key ) ){
 			$ip_type = Helper::ip__validate( Get::get('spbct_test_ip') );
 			$test_ip = $ip_type == 'v6' ? Helper::ip__v6_normalize( Get::get('spbct_test_ip') ) : Get::get('spbct_test_ip');
-			if( $ip_type ){
+			if( $test_ip ){
 				$ips['test']   = $test_ip;
 				$this->test_ip = $test_ip;
 				$this->test    = true;
@@ -544,7 +544,7 @@ class FW extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 				){
 
 					$entry = Helper::buffer__csv__pop_line_to_array( $data );
-                    if( in_array($entry[0], $networks_to_skip ) ){
+                    if( !is_array($entry) || !isset($entry[0]) || in_array($entry[0], $networks_to_skip ) ){
                         continue;
                     }
 

@@ -10,8 +10,9 @@ require_once 'inc' . DIRECTORY_SEPARATOR . 'common.php';
 
 $usp = State::getInstance();
 
-if( ! $usp->key )
+if( ! $usp->data->key_is_ok) {
     return;
+}
 
 // Helper functions
 require_once( CT_USP_INC . 'functions.php' );
@@ -24,7 +25,7 @@ if( $usp->settings->fw || $usp->settings->waf || $usp->settings->bfp ){
 
 	// Security FireWall
 	$firewall = new \Cleantalk\USP\Uniforce\Firewall();
-	
+
 	if( $usp->settings->fw && $usp->fw_stats->entries )
 		$firewall->module__load( new \Cleantalk\USP\Uniforce\Firewall\FW(
 			array(
@@ -32,7 +33,7 @@ if( $usp->settings->fw || $usp->settings->waf || $usp->settings->bfp ){
 				'api_key' => $usp->key,
 			)
 		) );
-	
+
 	if( $usp->settings->waf )
 		$firewall->module__load( new \Cleantalk\USP\Uniforce\Firewall\WAF(
 			array(
@@ -44,9 +45,9 @@ if( $usp->settings->fw || $usp->settings->waf || $usp->settings->bfp ){
                 'state'   => $usp,
 			)
 		) );
-	
+
 	if( $usp->settings->bfp ){
-		
+
 		$firewall->module__load( new \Cleantalk\USP\Uniforce\Firewall\BFP(
             array(
                 'is_login_page' => \Cleantalk\USP\Uniforce\Firewall\BFP::is_login_page(),
@@ -58,17 +59,17 @@ if( $usp->settings->fw || $usp->settings->waf || $usp->settings->bfp ){
             )
 		) );
 	}
-	
+
 	//Pass the check if cookie is set.
 	foreach( $firewall->ip_array as $spbc_cur_ip ) {
 		if( Cookie::get( 'spbc_firewall_pass_key' ) == md5( $spbc_cur_ip . $usp->key ) )
 			return;
 	}
-	
+
 	if( $firewall->module__is_loaded__any() && ! usp__is_admin() ){
 		$firewall->run();
 	}
-	
+
 }
 
 // Catching buffer and doing protection
@@ -80,14 +81,27 @@ if( Cookie::get('spbct_authorized') )
 
 function uniforce_attach_js( $buffer ){
     global $usp_is_js_attached;
+
+    //init custom ajax event flag
+    $custom_ajax_flag = false;
+
     if ($usp_is_js_attached){
         return $buffer;
     }
 
-    if(
+    //phpBB ajax detection on superglobals deactivated
+    if (State::getInstance()->detected_cms === 'phpBB') {
+        global $request;
+        if (!empty($request) && is_object($request) && method_exists($request, 'is_ajax')) {
+            $custom_ajax_flag = $request->is_ajax();
+        }
+    }
+
+    if (
+        !$custom_ajax_flag &&
         !(isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') // No ajax
         && preg_match('/^\s*(<!doctype|<!DOCTYPE|<html)/i', $buffer) == 1 // Only for HTML documents
-    ){
+    ) {
         $html_addition =
             '<script>var spbct_checkjs_val = "' . md5( State::getInstance()->key ) . '";</script>'
             .'<script src="/uniforce/js/ct_js_test.js"></script>'
@@ -109,7 +123,7 @@ function uniforce_attach_js( $buffer ){
 			    \Cleantalk\USP\Uniforce\Firewall\BFP::update_log( 'login' );
 			    \Cleantalk\USP\Uniforce\Firewall\BFP::send_log( State::getInstance()->key );
 		    }
-		    
+
 	    }else{
 
 		    if( Cookie::get('spbct_authorized') ) {

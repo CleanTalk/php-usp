@@ -40,54 +40,62 @@ class Helper {
 	 */
 	static public function get_hashes__signature( $last_signature_update = 0 )
 	{
-		if( \Cleantalk\USP\Uniforce\Helper::http__request__get_response_code(self::signatures_version_file_url) == 200) {
+		if( \Cleantalk\USP\Uniforce\Helper::http__request__get_response_code(self::signatures_version_file_url) != 200) {
+			return array('error' => 'NO_VERSION_FILE');
+		}
 
-			$latest_signatures = \Cleantalk\USP\Uniforce\Helper::http__request__get_content(self::signatures_version_file_url);
+		$latest_signatures = \Cleantalk\USP\Uniforce\Helper::http__request__get_content(self::signatures_version_file_url);
 
-			if(strtotime($latest_signatures)){
+		if (!is_string($latest_signatures)) {
+			return array('error' => 'NO_VERSION_FILE');
+		}
 
-				if(strtotime($last_signature_update) < strtotime($latest_signatures)){
+		if(!strtotime($latest_signatures)) {
+			return array('error' =>'WRONG_VERSION_FILE');
+		}
 
-					if(\Cleantalk\USP\Uniforce\Helper::http__request__get_response_code(self::signatures_file_url) == 200) {
+		if(strtotime($last_signature_update) > strtotime($latest_signatures)) {
+			return array('error' =>'UP_TO_DATE');
+		}
 
-						$gz_data = \Cleantalk\USP\Uniforce\Helper::http__request__get_content(self::signatures_file_url);
+		if(\Cleantalk\USP\Uniforce\Helper::http__request__get_response_code(self::signatures_file_url) != 200) {
+			return array('error' =>'NO_FILE');
+		}
 
-						if(empty($gz_data['error'])){
+		$gz_data = \Cleantalk\USP\Uniforce\Helper::http__request__get_content(self::signatures_file_url);
 
-							if(function_exists('gzdecode')){
+		if(!empty($gz_data['error'])) {
+			return $gz_data;
+		}
 
-								$data = gzdecode($gz_data);
+		if(!function_exists('gzdecode')){
+			return array('error' => 'Function gzdecode not exists. Please update your PHP to version 5.4');
+		}
 
-								if($data !== false){
+		$data = gzdecode($gz_data);
 
-                                    // Set map for file
-                                    $map = strpos( self::signatures_file_url, '_mapped' ) !== false
-                                        ? \Cleantalk\USP\Uniforce\Helper::buffer__csv__get_map( $data ) // Map from file
-                                        : array( 'id', 'name', 'body', 'type', 'attack_type', 'submitted', 'cci' ); // Default map
+		if($data == false) {
+			return array('error' => 'COULDNT_UNPACK');
+		}
 
-									$out = array();
-                                    while( $data ){
-                                        $row = \Cleantalk\USP\Uniforce\Helper::buffer__csv__pop_line_to_array( $data, $map, true );
-                                        if ( isset($row['body']) ) {
-                                            $row['body'] = base64_encode($row['body']);
-                                        }
-                                        $out[] = $row;
-                                    }
-									return $out;
-								}else
-									return array('error' => 'COULDNT_UNPACK');
-							}else
-								return array('error' => 'Function gzdecode not exists. Please update your PHP to version 5.4');
-						}else
-							return $gz_data;
-					}else
-						return array('error' =>'NO_FILE');
-				}else
-					return array('error' =>'UP_TO_DATE');
-			}else
-				return array('error' =>'WRONG_VERSION_FILE');
-		}else
-			return array('error' =>'NO_VERSION_FILE');
+		// Set map for file
+		$map = strpos( self::signatures_file_url, '_mapped' ) !== false
+			? \Cleantalk\USP\Uniforce\Helper::buffer__csv__get_map( $data ) // Map from file
+			: array( 'id', 'name', 'body', 'type', 'attack_type', 'submitted', 'cci' ); // Default map
+
+		$out = array();
+		while( $data ){
+			$row = \Cleantalk\USP\Uniforce\Helper::buffer__csv__pop_line_to_array( $data, $map, true );
+			if (false === $row) {
+                continue;
+            }
+            if ( isset($row['body']) ) {
+				$row['body'] = base64_encode($row['body']);
+			}
+			$out[] = $row;
+		}
+
+		return $out;
 	}
 
 	/**

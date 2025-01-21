@@ -433,11 +433,12 @@ class API{
 	 * @param int    $scanned_total
 	 * @param array  $modified  List of modified files with details
 	 * @param array  $unknown   List of modified files with details
+	 * @param string $scan_type
 	 * @param bool   $do_check
 	 *
 	 * @return array|bool|mixed
 	 */
-	static public function method__security_mscan_logs($api_key, $service_id, $scan_time, $scan_result, $scanned_total, $modified, $unknown, $do_check = true)
+	static public function method__security_mscan_logs($api_key, $service_id, $scan_time, $scan_result, $scanned_total, $modified, $unknown, $scan_type, $do_check = true)
 	{
 		$request = array(
 			'method_name'      => 'security_mscan_logs',
@@ -446,6 +447,7 @@ class API{
 			'started'          => $scan_time,
 			'result'           => $scan_result,
 			'total_core_files' => $scanned_total,
+			'scan_type'        => $scan_type,
 		);
 		
 		if(!empty($modified)){
