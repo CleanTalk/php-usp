@@ -531,9 +531,9 @@ function usp_do_login($apikey, $password, $email ) {
  */
 function usp_do_logout() {
 
-	setcookie('authentificated', 0, time()-86400, '/', '', false, true);
+	$result = setcookie('authentificated', 0, time()-86400, '/', '', false, true);
 
-    die( json_encode( array( 'success' => true ) ) );
+    die( json_encode( array( 'success' => $result ) ) );
 }
 
 /**

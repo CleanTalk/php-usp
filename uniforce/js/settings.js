@@ -103,8 +103,14 @@ function logout() {
             action: 'logout',
         },
         function (result, data, params, obj) {
-            if (result.success)
+            if (result.success) {
+                // is cookie removed successful on backend
                 location.reload();
+            } else {
+                // something happened due to cookie removing, like headers already sent. trying to remove it from client side
+                document.cookie = 'authentificated=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+                location.reload();
+            }
         }
     );
 }
