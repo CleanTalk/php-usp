@@ -61,23 +61,25 @@ class BFP extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 					$found_ip__details = $bad_ip__details;
 				}
 
-			} unset( $bad_ip, $bad_ip__details );
+			}
+
+            unset( $bad_ip, $bad_ip__details );
 
 			if( $found_ip ) {
-
 				// Remove the IP from the blacklist and proceed the checking
-				if( $found_ip__details->added + $block_time < time() ) {
+				if( isset($found_ip__details) && $found_ip__details->added + $block_time < time() ) {
 					unset( $bfp_blacklist->$current_ip__real );
-					$bfp_blacklist->save();
-				}else{
+                    $bfp_blacklist->save();
+				} else {
 					$results[] = array( 'status' => 'DENY_BY_BFP', );
 				}
-
 			}
 
 			// Check count of logins
 			$found_ip = null;
 			$js_on    = spbct_js_test();
+
+            $updated_blacklist_fast  = $bfp_blacklist_fast;
 
 			foreach( $bfp_blacklist_fast as $bad_ip => $bad_ip__details ){
 
@@ -90,21 +92,26 @@ class BFP extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
                             'count' => ++$bad_ip__details->count,
                         );
                     } else {
-                        unset( $bfp_blacklist_fast->$current_ip__real );
-                        $bfp_blacklist_fast->save();
+                        unset( $updated_blacklist_fast->$current_ip__real );
+                        $updated_blacklist_fast->save();
                     }
 				}
+			}
 
-			} unset( $bad_ip, $bad_ip__details );
+            $bfp_blacklist_fast = $updated_blacklist_fast;
+            $bfp_blacklist_fast->save();
+
+
+            unset( $bad_ip, $bad_ip__details );
 
 			if( $found_ip ) {
 
 				//increased allowed count to 20 if JS is on!
-				if( $found_ip__details['js_on'] == 1 )
+				if( isset($found_ip__details['js_on']) && $found_ip__details['js_on'] == 1 )
 					$allowed_count = $allowed_count * 2;
 
 				// Check count of the logins and move the IP to the black list.
-				if( $found_ip__details['count'] > $allowed_count ){
+				if( isset($found_ip__details['js_on']) && $found_ip__details['count'] > $allowed_count ){
 
 					$bfp_blacklist->$current_ip__real = array(
                         'added' => time()
