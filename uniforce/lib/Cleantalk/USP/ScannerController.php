@@ -784,7 +784,7 @@ class ScannerController
         $usp = State::getInstance();
 
         $total_scanned = $this->count_files_by_status("'UNKNOWN','OK','APPROVED','MODIFIED','INFECTED','QUARANTINED'");
-        $bad_files = $this->get_files_by_status("'UNKNOWN', 'MODIFIED'", array('path', 'full_hash', 'mtime', 'size', 'status'));
+        $bad_files = $this->get_files_by_status("'MODIFIED'", array('path', 'full_hash', 'mtime', 'size', 'status'));
 
         $unknown = array();
         $modified = array();
