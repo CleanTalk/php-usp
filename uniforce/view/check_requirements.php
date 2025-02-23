@@ -29,8 +29,7 @@
     // Check if the openssl extension is installed
     define( 'CT_USP__NO_SQL', $no_sql );
 ?>
-
-<?php if( $php_version_failed || $no_pdo_found || $curl_failed) : ?>
+<?php if( $php_version_failed || $no_pdo_found || $curl_failed && !headers_sent()) : ?>
 	<!DOCTYPE html>
 	<html>
 	<head>
