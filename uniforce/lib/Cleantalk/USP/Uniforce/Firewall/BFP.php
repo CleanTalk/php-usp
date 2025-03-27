@@ -68,8 +68,10 @@ class BFP extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 			if( $found_ip ) {
 				// Remove the IP from the blacklist and proceed the checking
 				if( isset($found_ip__details) && $found_ip__details->added + $block_time < time() ) {
-					unset( $bfp_blacklist->$current_ip__real );
-                    $bfp_blacklist->save();
+					$bfp_blacklist_copy = $bfp_blacklist;
+					unset( $bfp_blacklist_copy->$current_ip__real );
+					$bfp_blacklist = $bfp_blacklist_copy;
+					$bfp_blacklist->save();
 				} else {
 					$results[] = array( 'status' => 'DENY_BY_BFP', );
 				}
@@ -79,28 +81,26 @@ class BFP extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 			$found_ip = null;
 			$js_on    = spbct_js_test();
 
-            $updated_blacklist_fast  = $bfp_blacklist_fast;
-
+			$to_remove = array();
 			foreach( $bfp_blacklist_fast as $bad_ip => $bad_ip__details ){
-
 				if( $bad_ip === $current_ip__real ){
-                    if ( $bad_ip__details->added + $allowed_interval > time() ) {
-                        $found_ip = $bad_ip;
-                        $found_ip__details = array(
-                            'added' => $bad_ip__details->added,
-                            'js_on' => $js_on,
-                            'count' => ++$bad_ip__details->count,
-                        );
-                    } else {
-                        unset( $updated_blacklist_fast->$current_ip__real );
-                        $updated_blacklist_fast->save();
-                    }
+					if ( $bad_ip__details->added + $allowed_interval > time() ) {
+						$found_ip = $bad_ip;
+						$found_ip__details = array(
+							'added' => $bad_ip__details->added,
+							'js_on' => $js_on,
+							'count' => ++$bad_ip__details->count,
+						);
+					} else {
+						$to_remove[] = $bad_ip;
+					}
 				}
 			}
 
-            $bfp_blacklist_fast = $updated_blacklist_fast;
-            $bfp_blacklist_fast->save();
-
+			foreach( $to_remove as $ip_to_remove ){
+				unset( $bfp_blacklist_fast->$ip_to_remove );
+			}
+			$bfp_blacklist_fast->save();
 
             unset( $bad_ip, $bad_ip__details );
 
