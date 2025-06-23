@@ -164,6 +164,7 @@ class State extends \Cleantalk\USP\Common\Storage{
 		),
 		'2fa_keys'          => array(),
 		'no_sql'            => true,
+		'no_sql_checked'            => false,
 	);
 
 	public $default_remote_calls = array(

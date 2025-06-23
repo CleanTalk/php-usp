@@ -40,8 +40,13 @@ class DB extends \PDO implements Common\DB {
                     \PDO::MYSQL_ATTR_SSL_KEY => CT_USP_DATA_SSL_CERT . 'client-key.pem',
                 );
 
-                parent::__construct( $dsn, $username, $password, $options );
-
+                @parent::__construct( $dsn, $username, $password, $options );
+                // Check if connection is alive
+                try {
+                    $this->query('SELECT 1');
+                } catch (\PDOException $e) {
+                    throw new \PDOException("Connection verification failed");
+                }
             }else{
                 self::$instance = null;
             }
