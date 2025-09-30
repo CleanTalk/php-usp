@@ -434,7 +434,11 @@ class ScannerController
 					NULL
 				);";
 
-            $success = $this->db->execute($sql_query);
+            try {
+                $success = $this->db->execute($sql_query);
+            } catch ( \Exception $e ) {
+                return array('error' => 'DB_BAD_CONNECTION ' . $e->getMessage() . ' ' . $sql_query);
+            }
 
         } else
             $output = array('error' => __FUNCTION__ . ' No files to scan',);
