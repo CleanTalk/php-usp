@@ -511,7 +511,9 @@ function usp_do_login($apikey, $password, $email ) {
             hash( 'sha256', trim( Post::get( 'password' ) ) ) == $password ) {
             //if session cookies is cached will try to set cookie via js
             $sec_key = State::getInstance()->data->security_key;
-            setcookie('authentificated', $sec_key, strtotime( '+30 days' ), '/', '', false, false);
+            if ( ! headers_sent() ) {
+                setcookie('authentificated', $sec_key, strtotime( '+30 days' ), '/', '', false, false);
+            }
         }
         else {
             Err::add('Incorrect login or password');
@@ -530,9 +532,10 @@ function usp_do_login($apikey, $password, $email ) {
  * AJAX handler (returns json result)
  */
 function usp_do_logout() {
-
-	$result = setcookie('authentificated', 0, time()-86400, '/', '', false, true);
-
+    $result = false;
+    if ( ! headers_sent() ) {
+        $result = setcookie('authentificated', 0, time()-86400, '/', '', false, true);
+    }
     die( json_encode( array( 'success' => $result ) ) );
 }
 

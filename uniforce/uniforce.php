@@ -143,9 +143,11 @@ function uniforce_attach_js( $buffer ){
 }
 
 // Set Cookies test for cookie test
-setcookie('spbct_timestamp',     time(),                        0, '/');
-setcookie( 'spbct_cookies_test', md5( $usp->key . time() ), 0, '/');
-setcookie('spbct_timezone',      '0',                           0, '/');
-setcookie('spbct_fkp_timestamp', '0',                           0, '/');
-setcookie('spbct_pointer_data',  '0',                           0, '/');
-setcookie('spbct_ps_timestamp',  '0',                           0, '/');
+if ( ! headers_sent() ) {
+    setcookie('spbct_timestamp',     time(),                        0, '/');
+    setcookie( 'spbct_cookies_test', md5( $usp->key . time() ), 0, '/');
+    setcookie('spbct_timezone',      '0',                           0, '/');
+    setcookie('spbct_fkp_timestamp', '0',                           0, '/');
+    setcookie('spbct_pointer_data',  '0',                           0, '/');
+    setcookie('spbct_ps_timestamp',  '0',                           0, '/');
+}
