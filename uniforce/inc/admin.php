@@ -64,6 +64,15 @@ function usp_get_key() {
  */
 function usp_do_install() {
 
+    $state = State::getInstance();
+    if (
+        ! empty( $state->data->is_installed ) ||
+        ! empty( $state->plugin_meta->is_installed )
+    ) {
+        Err::add( 'UniForce is already installed' );
+        die( Err::get_last( 'as_json' ) );
+    }
+
     // Parsing key
     if( preg_match( '/^[a-z0-9]{1,20}$/', Post::get( 'key' ), $matches ) ){
 
