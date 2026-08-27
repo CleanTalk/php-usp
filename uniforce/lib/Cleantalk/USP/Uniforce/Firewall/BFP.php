@@ -61,50 +61,57 @@ class BFP extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 					$found_ip__details = $bad_ip__details;
 				}
 
-			} unset( $bad_ip, $bad_ip__details );
+			}
+
+            unset( $bad_ip, $bad_ip__details );
 
 			if( $found_ip ) {
-
 				// Remove the IP from the blacklist and proceed the checking
-				if( $found_ip__details->added + $block_time < time() ) {
-					unset( $bfp_blacklist->$current_ip__real );
+				if( isset($found_ip__details) && $found_ip__details->added + $block_time < time() ) {
+					$bfp_blacklist_copy = $bfp_blacklist;
+					unset( $bfp_blacklist_copy->$current_ip__real );
+					$bfp_blacklist = $bfp_blacklist_copy;
 					$bfp_blacklist->save();
-				}else{
+				} else {
 					$results[] = array( 'status' => 'DENY_BY_BFP', );
 				}
-
 			}
 
 			// Check count of logins
 			$found_ip = null;
 			$js_on    = spbct_js_test();
 
+			$to_remove = array();
 			foreach( $bfp_blacklist_fast as $bad_ip => $bad_ip__details ){
-
 				if( $bad_ip === $current_ip__real ){
-                    if ( $bad_ip__details->added + $allowed_interval > time() ) {
-                        $found_ip = $bad_ip;
-                        $found_ip__details = array(
-                            'added' => $bad_ip__details->added,
-                            'js_on' => $js_on,
-                            'count' => ++$bad_ip__details->count,
-                        );
-                    } else {
-                        unset( $bfp_blacklist_fast->$current_ip__real );
-                        $bfp_blacklist_fast->save();
-                    }
+					if ( $bad_ip__details->added + $allowed_interval > time() ) {
+						$found_ip = $bad_ip;
+						$found_ip__details = array(
+							'added' => $bad_ip__details->added,
+							'js_on' => $js_on,
+							'count' => ++$bad_ip__details->count,
+						);
+					} else {
+						$to_remove[] = $bad_ip;
+					}
 				}
+			}
 
-			} unset( $bad_ip, $bad_ip__details );
+			foreach( $to_remove as $ip_to_remove ){
+				unset( $bfp_blacklist_fast->$ip_to_remove );
+			}
+			$bfp_blacklist_fast->save();
+
+            unset( $bad_ip, $bad_ip__details );
 
 			if( $found_ip ) {
 
 				//increased allowed count to 20 if JS is on!
-				if( $found_ip__details['js_on'] == 1 )
+				if( isset($found_ip__details['js_on']) && $found_ip__details['js_on'] == 1 )
 					$allowed_count = $allowed_count * 2;
 
 				// Check count of the logins and move the IP to the black list.
-				if( $found_ip__details['count'] > $allowed_count ){
+				if( isset($found_ip__details['js_on']) && $found_ip__details['count'] > $allowed_count ){
 
 					$bfp_blacklist->$current_ip__real = array(
                         'added' => time()
@@ -447,12 +454,12 @@ class BFP extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 
                 // Search in Request URI
                 foreach ($form_field_markers as $marker) {
-                    if(strpos($_SERVER['REQUEST_URI'], $marker) !== false) {
+                    if($marker !== '' && strpos($_SERVER['REQUEST_URI'], $marker) !== false) {
                         $number_matches++;
                     }
                 }
                 foreach ($pass_field_markers as $marker) {
-                    if(strpos($_SERVER['REQUEST_URI'], $marker) !== false) {
+                    if($marker !== '' && strpos($_SERVER['REQUEST_URI'], $marker) !== false) {
                         $number_pass_matches++;
                     }
                 }
@@ -460,14 +467,14 @@ class BFP extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
                 // Search in Reference URI
                 if(isset($_SERVER['HTTP_REFERER']) && $_SERVER['HTTP_REFERER']) {
                     foreach ($form_field_markers as $marker) {
-                        if(strpos($_SERVER['HTTP_REFERER'], $marker) !== false) {
+                        if($marker !== '' && strpos($_SERVER['HTTP_REFERER'], $marker) !== false) {
                             $number_matches++;
                         }
                     }
                 }
                 if(isset($_SERVER['HTTP_REFERER']) && $_SERVER['HTTP_REFERER']) {
                     foreach ($pass_field_markers as $marker) {
-                        if(strpos($_SERVER['HTTP_REFERER'], $marker) !== false) {
+                        if($marker !== '' && strpos($_SERVER['HTTP_REFERER'], $marker) !== false) {
                             $number_pass_matches++;
                         }
                     }

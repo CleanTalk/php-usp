@@ -434,7 +434,11 @@ class ScannerController
 					NULL
 				);";
 
-            $success = $this->db->execute($sql_query);
+            try {
+                $success = $this->db->execute($sql_query);
+            } catch ( \Exception $e ) {
+                return array('error' => 'DB_BAD_CONNECTION ' . $e->getMessage() . ' ' . $sql_query);
+            }
 
         } else
             $output = array('error' => __FUNCTION__ . ' No files to scan',);
@@ -784,7 +788,7 @@ class ScannerController
         $usp = State::getInstance();
 
         $total_scanned = $this->count_files_by_status("'UNKNOWN','OK','APPROVED','MODIFIED','INFECTED','QUARANTINED'");
-        $bad_files = $this->get_files_by_status("'UNKNOWN', 'MODIFIED'", array('path', 'full_hash', 'mtime', 'size', 'status'));
+        $bad_files = $this->get_files_by_status("'MODIFIED'", array('path', 'full_hash', 'mtime', 'size', 'status'));
 
         $unknown = array();
         $modified = array();

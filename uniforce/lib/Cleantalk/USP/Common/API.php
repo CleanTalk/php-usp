@@ -14,9 +14,9 @@ namespace Cleantalk\USP\Common;
  * @see           https://github.com/CleanTalk/php-antispam
  */
 class API{
-	
+
 	use \Cleantalk\USP\Templates\Singleton;
-	
+
 	/* Default params  */
 	const URL = 'https://api.cleantalk.org';
 	const DEFAULT_AGENT = 'cleantalk-api-321';
@@ -40,13 +40,13 @@ class API{
 			'auth_key'    => $api_key,
 			'out'         => $out,
 		);
-		
+
 		$result = static::send_request($request);
 		$result = $do_check ? static::check_response($result, '2s_blacklists_db') : $result;
-		
+
 		return $result;
 	}
-	
+
 	/**
 	 * Wrapper for get_api_key API method.
 	 * Gets access key automatically.
@@ -80,13 +80,13 @@ class API{
 			'hoster_whitelabel'    => $white_label,
 			'hoster_api_key'       => $hoster_api_key,
 		);
-		
+
 		$result = static::send_request($request);
 		$result = $do_check ? static::check_response($result, 'get_api_key') : $result;
-		
+
 		return $result;
 	}
-	
+
 	/**
 	 * Wrapper for get_antispam_report API method.
 	 * Gets spam report.
@@ -104,13 +104,13 @@ class API{
 			'hostname'    => $host,
 			'period'      => $period
 		);
-		
+
 		$result = static::send_request($request);
 		$result = $do_check ? static::check_response($result, 'get_antispam_report') : $result;
-		
+
 		return $result;
 	}
-	
+
 	/**
 	 * Wrapper for get_antispam_report_breif API method.
 	 * Ggets spam statistics.
@@ -126,13 +126,13 @@ class API{
 			'method_name' => 'get_antispam_report_breif',
 			'auth_key'    => $api_key,
 		);
-		
+
 		$result = static::send_request($request);
 		$result = $do_check ? static::check_response($result, 'get_antispam_report_breif') : $result;
-		
+
 		return $result;
 	}
-	
+
 	/**
 	 * Wrapper for notice_paid_till API method.
 	 * Gets information about renew notice.
@@ -151,19 +151,19 @@ class API{
 			'path_to_cms'  => $path_to_cms,
 			'auth_key'     => $api_key,
 		);
-		
+
 		$product_id = null;
 		$product_id = $product_name == 'antispam' ? 1 : $product_id;
 		$product_id = $product_name == 'security' ? 4 : $product_id;
 		if($product_id)
 			$request['product_id'] = $product_id;
-		
+
 		$result = static::send_request($request);
 		$result = $do_check ? static::check_response($result, 'notice_paid_till') : $result;
-		
+
 		return $result;
 	}
-	
+
 	/**
 	 * Wrapper for ip_info API method.
 	 * Gets IP country.
@@ -179,12 +179,12 @@ class API{
 			'method_name' => 'ip_info',
 			'data'        => $data
 		);
-		
+
 		$result = static::send_request($request);
 		$result = $do_check ? static::check_response($result, 'ip_info') : $result;
 		return $result;
 	}
-	
+
 	/**
 	 * Wrapper for spam_check_cms API method.
 	 * Checks IP|email via CleanTalk's database.
@@ -203,15 +203,15 @@ class API{
 			'auth_key'    => $api_key,
 			'data'        => is_array($data) ? implode(',', $data) : $data,
 		);
-		
+
 		if($date) $request['date'] = $date;
-		
+
 		$result = static::send_request($request);
 		$result = $do_check ? static::check_response($result, 'spam_check_cms') : $result;
-		
+
 		return $result;
 	}
-	
+
 	/**
 	 * Wrapper for spam_check API method.
 	 * Checks IP|email via CleanTalk's database.
@@ -230,15 +230,15 @@ class API{
 			'auth_key'    => $api_key,
 			'data'        => is_array($data) ? implode(',', $data) : $data,
 		);
-		
+
 		if($date) $request['date'] = $date;
-		
+
 		$result = static::send_request($request);
 		$result = $do_check ? static::check_response($result, 'spam_check') : $result;
-		
+
 		return $result;
 	}
-	
+
 	/**
 	 * Wrapper for sfw_logs API method.
 	 * Sends SpamFireWall logs to the cloud.
@@ -251,7 +251,7 @@ class API{
 	 */
 	static public function method__sfw_logs($api_key, $data, $do_check = true)
 	{
-		
+
 		$request = array(
 			'auth_key'    => $api_key,
 			'method_name' => 'sfw_logs',
@@ -259,13 +259,13 @@ class API{
 			'rows'        => count($data),
 			'timestamp'   => time()
 		);
-		
+
 		$result = static::send_request($request);
 		$result = $do_check ? static::check_response($result, 'sfw_logs') : $result;
-		
+
 		return $result;
 	}
-	
+
 	/**
 	 * Wrapper for security_logs API method.
 	 * Sends security logs to the cloud.
@@ -285,13 +285,13 @@ class API{
 			'data'        => json_encode($data),
 			'rows'        => count($data),
 		);
-		
+
 		$result = static::send_request($request);
 		$result = $do_check ? static::check_response($result, 'security_logs') : $result;
-		
+
 		return $result;
 	}
-	
+
 	/**
 	 * Wrapper for security_logs API method.
 	 * Sends Securitty Firewall logs to the cloud.
@@ -304,7 +304,7 @@ class API{
 	 */
 	static public function method__security_logs__sendFWData($api_key, $data, $do_check = true)
 	{
-		
+
 		$request = array(
 			'auth_key'    => $api_key,
 			'method_name' => 'security_logs',
@@ -312,13 +312,13 @@ class API{
 			'data_fw'     => json_encode($data),
 			'rows_fw'     => count($data),
 		);
-		
+
 		$result = static::send_request($request);
 		$result = $do_check ? static::check_response($result, 'security_logs') : $result;
-		
+
 		return $result;
 	}
-	
+
 	/**
 	 * Wrapper for security_logs API method.
 	 * Sends empty data to the cloud to syncronize version.
@@ -335,13 +335,13 @@ class API{
 			'method_name' => 'security_logs',
 			'data'        => '0',
 		);
-		
+
 		$result = static::send_request($request);
 		$result = $do_check ? static::check_response($result, 'security_logs') : $result;
-		
+
 		return $result;
 	}
-	
+
 	/**
 	 * Wrapper for security_firewall_data API method.
 	 * Gets Securitty Firewall data to write to the local database.
@@ -353,18 +353,18 @@ class API{
 	 */
 	static public function method__security_firewall_data($api_key, $do_check = true)
 	{
-		
+
 		$request = array(
 			'auth_key'    => $api_key,
 			'method_name' => 'security_firewall_data',
 		);
-		
+
 		$result = static::send_request($request);
 		$result = $do_check ? static::check_response($result, 'security_firewall_data') : $result;
-		
+
 		return $result;
 	}
-	
+
 	/**
 	 * Wrapper for security_firewall_data_file API method.
 	 * Gets URI with security firewall data in .csv.gz file to write to the local database.
@@ -376,7 +376,7 @@ class API{
 	 */
 	static public function method__security_firewall_data_file($api_key, $out = null, $do_check = true)
 	{
-		
+
 		$request = array(
 			'auth_key'    => $api_key,
 			'method_name' => 'security_firewall_data_file',
@@ -388,10 +388,10 @@ class API{
 
 		$result = static::send_request($request);
 		$result = $do_check ? static::check_response($result, 'security_firewall_data_file') : $result;
-		
+
 		return $result;
 	}
-	
+
 	/**
 	 * Wrapper for security_linksscan_logs API method.
 	 * Send data to the cloud about scanned links.
@@ -415,13 +415,13 @@ class API{
 			'total_links_found' => $links_total,
 			'links_list'        => $links_list,
 		);
-		
+
 		$result = static::send_request($request);
 		$result = $do_check ? static::check_response($result, 'security_linksscan_logs') : $result;
-		
+
 		return $result;
 	}
-	
+
 	/**
 	 * Wrapper for security_mscan_logs API method.
 	 * Sends result of file scan to the cloud.
@@ -449,22 +449,18 @@ class API{
 			'total_core_files' => $scanned_total,
 			'scan_type'        => $scan_type,
 		);
-		
+
 		if(!empty($modified)){
 			$request['failed_files']      = json_encode($modified);
 			$request['failed_files_rows'] = count($modified);
 		}
-		if(!empty($unknown)){
-			$request['unknown_files']      = json_encode($unknown);
-			$request['unknown_files_rows'] = count($unknown);
-		}
-		
+
 		$result = static::send_request($request);
 		$result = $do_check ? static::check_response($result, 'security_mscan_logs') : $result;
-		
+
 		return $result;
 	}
-	
+
 	/**
 	 * Wrapper for security_mscan_files API method.
 	 * Sends file to the cloud for analysis.
@@ -488,13 +484,13 @@ class API{
 			'md5sum_sfile'   => $file_md5,
 			'dangerous_code' => json_encode( $weak_spots ),
 		);
-		
+
 		$result = static::send_request($request);
 		$result = $do_check ? static::check_response($result, 'security_mscan_files') : $result;
-		
+
 		return $result;
 	}
-	
+
 	/**
 	 * Wrapper for get_antispam_report API method.
 	 * Function gets spam domains report.
@@ -513,15 +509,15 @@ class API{
 			'auth_key'    => $api_key,
 			'data'        => is_array($data) ? implode(',', $data) : $data,
 		);
-		
+
 		if($date) $request['date'] = $date;
-		
+
 		$result = static::send_request($request);
 		$result = $do_check ? static::check_response($result, 'backlinks_check_cms') : $result;
-		
+
 		return $result;
 	}
-	
+
 	/**
 	 * Wrapper for get_antispam_report API method.
 	 * Function gets spam domains report
@@ -540,13 +536,13 @@ class API{
 			'logs'        => json_encode($logs),
 			'total_logs'  => count($logs),
 		);
-		
+
 		$result = static::send_request($request);
 		$result = $do_check ? static::check_response($result, 'security_backend_logs') : $result;
-		
+
 		return $result;
 	}
-	
+
 	/**
 	 * Wrapper for get_antispam_report API method.
 	 * Sends data about auto repairs
@@ -573,13 +569,13 @@ class API{
 			'backup_id'                    => $backup_id,
 			'mscan_log_id'                 => 1,
 		);
-		
+
 		$result = static::send_request($request);
 		$result = $do_check ? static::check_response($result, 'security_mscan_repairs') : $result;
-		
+
 		return $result;
 	}
-	
+
 	/**
 	 * Wrapper for get_antispam_report API method.
 	 * Force server to update checksums for specific plugin\theme
@@ -597,13 +593,13 @@ class API{
 			'auth_key'    => $api_key,
 			'data'        => $plugins_and_themes_to_refresh
 		);
-		
+
 		$result = static::send_request($request);
 		$result = $do_check ? static::check_response($result, 'request_checksums') : $result;
-		
+
 		return $result;
 	}
-    
+
     /**
      * DataBase Client 2 Client
      * Creates remote database
@@ -615,19 +611,19 @@ class API{
      * @return array|bool|mixed|string[] Returns the following data on success call db_name, db_user, db_password, db_host, created
      */
 	static public function method__dbc2c_get_info( $api_key, $force = null, $do_check = true ) {
-		
+
 		$request = array(
 			'method_name' => 'dbc2c_get_info',
 			'auth_key'    => $api_key,
 		);
-		
+
 		if( $force ){
 		    $request['force'] = 1;
         }
-		
+
 		$result = static::send_request( $request );
 		$result = $do_check ? static::check_response( $result, 'dbc2c_get_info' ) : $result;
-		
+
 		return $result;
 	}
 
@@ -636,7 +632,7 @@ class API{
 static public function get_agent(){
 		return defined( 'CLEANTALK_AGENT' ) ? CLEANTALK_AGENT : static::DEFAULT_AGENT;
 	}
-	
+
 	/**
 	 * Function sends raw request to API server
 	 *
@@ -651,16 +647,16 @@ static public function get_agent(){
 	{
 		// Default preset is 'api'
 		$presets = array( 'api' );
-		
+
 		$data['agent'] = static::get_agent();
-		
+
 		// Add ssl to 'presets' if enabled
 		if( $ssl ){
             array_push( $presets, 'ssl' );
         }
 
 		$result = Helper::http__request( $url, $data,  $presets );
-		
+
 		// Retry with SSL enabled if failed
 		if( ! empty ( $result['error'] ) && $ssl === false ) {
             $result = Helper::http__request( $url, $data, 'api ssl' );
@@ -673,7 +669,7 @@ static public function get_agent(){
 
 		return $result;
 	}
-	
+
 	/**
 	 * Function checks server response
 	 *
@@ -691,7 +687,7 @@ static public function get_agent(){
 				'error' => 'CONNECTION_ERROR' . (isset($result['error']) ? ': "' . $result['error'] . '"' : ''),
 			);
 		}
-		
+
 		// JSON decode errors
 		$result = json_decode($result, true);
 		if(empty($result)){
@@ -699,7 +695,7 @@ static public function get_agent(){
 				'error' => 'JSON_DECODE_ERROR',
 			);
 		}
-		
+
 		// Server errors
 		if($result &&
 			(isset($result['error_no']) || isset($result['error_message'])) &&
@@ -711,15 +707,15 @@ static public function get_agent(){
 				'error_message' => $result['error_message'],
 			);
 		}
-		
+
 		// Pathces for different methods
 		switch($method_name){
-			
+
 			// notice_paid_till
 			case 'notice_paid_till':
-				
+
 				$result = isset($result['data']) ? $result['data'] : $result;
-				
+
 				if((isset($result['error_no']) && $result['error_no'] == 12) ||
 				   (
 					   !(isset($result['service_id']) && is_int($result['service_id'])) &&
@@ -729,28 +725,28 @@ static public function get_agent(){
 					$result['valid'] = 0;
 				else
 					$result['valid'] = 1;
-				
+
 				return $result;
-				
+
 				break;
-			
+
 			// get_antispam_report_breif
 			case 'get_antispam_report_breif':
-				
+
 				$out = isset($result['data']) && is_array($result['data'])
 					? $result['data']
 					: array('error' => 'NO_DATA');
-				
+
 				for($tmp = array(), $i = 0; $i < 7; $i++){
 					$tmp[date('Y-m-d', time() - 86400 * 7 + 86400 * $i)] = 0;
 				}
 				$out['spam_stat'] = (array)array_merge($tmp, isset($out['spam_stat']) ? $out['spam_stat'] : array());
 				$out['top5_spam_ip'] = isset($out['top5_spam_ip']) ? $out['top5_spam_ip'] : array();
-				
+
 				return $out;
-				
+
 				break;
-			
+
 			default:
 				return isset($result['data']) && is_array($result['data'])
 					? $result['data']

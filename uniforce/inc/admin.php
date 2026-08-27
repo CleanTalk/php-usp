@@ -64,6 +64,15 @@ function usp_get_key() {
  */
 function usp_do_install() {
 
+    $state = State::getInstance();
+    if (
+        ! empty( $state->data->is_installed ) ||
+        ! empty( $state->plugin_meta->is_installed )
+    ) {
+        Err::add( 'UniForce is already installed' );
+        die( Err::get_last( 'as_json' ) );
+    }
+
     // Parsing key
     if( preg_match( '/^[a-z0-9]{1,20}$/', Post::get( 'key' ), $matches ) ){
 
@@ -511,7 +520,9 @@ function usp_do_login($apikey, $password, $email ) {
             hash( 'sha256', trim( Post::get( 'password' ) ) ) == $password ) {
             //if session cookies is cached will try to set cookie via js
             $sec_key = State::getInstance()->data->security_key;
-            setcookie('authentificated', $sec_key, strtotime( '+30 days' ), '/', '', false, false);
+            if ( ! headers_sent() ) {
+                setcookie('authentificated', $sec_key, strtotime( '+30 days' ), '/', '', false, false);
+            }
         }
         else {
             Err::add('Incorrect login or password');
@@ -530,10 +541,11 @@ function usp_do_login($apikey, $password, $email ) {
  * AJAX handler (returns json result)
  */
 function usp_do_logout() {
-
-	setcookie('authentificated', 0, time()-86400, '/', '', false, true);
-
-    die( json_encode( array( 'success' => true ) ) );
+    $result = false;
+    if ( ! headers_sent() ) {
+        $result = setcookie('authentificated', 0, time()-86400, '/', '', false, true);
+    }
+    die( json_encode( array( 'success' => $result ) ) );
 }
 
 /**
