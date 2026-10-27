@@ -454,12 +454,12 @@ class BFP extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
 
                 // Search in Request URI
                 foreach ($form_field_markers as $marker) {
-                    if(strpos($_SERVER['REQUEST_URI'], $marker) !== false) {
+                    if($marker !== '' && strpos($_SERVER['REQUEST_URI'], $marker) !== false) {
                         $number_matches++;
                     }
                 }
                 foreach ($pass_field_markers as $marker) {
-                    if(strpos($_SERVER['REQUEST_URI'], $marker) !== false) {
+                    if($marker !== '' && strpos($_SERVER['REQUEST_URI'], $marker) !== false) {
                         $number_pass_matches++;
                     }
                 }
@@ -467,14 +467,14 @@ class BFP extends \Cleantalk\USP\Uniforce\Firewall\FirewallModule {
                 // Search in Reference URI
                 if(isset($_SERVER['HTTP_REFERER']) && $_SERVER['HTTP_REFERER']) {
                     foreach ($form_field_markers as $marker) {
-                        if(strpos($_SERVER['HTTP_REFERER'], $marker) !== false) {
+                        if($marker !== '' && strpos($_SERVER['HTTP_REFERER'], $marker) !== false) {
                             $number_matches++;
                         }
                     }
                 }
                 if(isset($_SERVER['HTTP_REFERER']) && $_SERVER['HTTP_REFERER']) {
                     foreach ($pass_field_markers as $marker) {
-                        if(strpos($_SERVER['HTTP_REFERER'], $marker) !== false) {
+                        if($marker !== '' && strpos($_SERVER['HTTP_REFERER'], $marker) !== false) {
                             $number_pass_matches++;
                         }
                     }
